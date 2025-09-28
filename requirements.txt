@@ -1,0 +1,17 @@
+# Database
+asyncpg==0.29.0
+
+# Web scraping
+playwright==1.52.0
+
+# API framework
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.11.9
+
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Type checking (optional but recommended)
+mypy==1.7.0
