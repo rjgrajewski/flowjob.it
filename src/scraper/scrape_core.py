@@ -315,7 +315,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
                 "salary_b2b": sanitize_string(salary_b2b),
                 "salary_internship": sanitize_string(salary_internship),
                 "salary_mandate": sanitize_string(salary_mandate),
-                "salary_perm": sanitize_string(salary_permanent),
+                "salary_permanent": sanitize_string(salary_permanent),
                 "salary_specific_task": sanitize_string(salary_specific_task),
                 "work_type": sanitize_string(work_type),
                 "experience": sanitize_string(experience),
@@ -331,13 +331,13 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             try:
                 await conn.execute(
                     """
-                    INSERT INTO offers (job_url, job_title, category, company, location, salary_any, salary_b2b, salary_internship, salary_mandate, salary_perm, salary_specific_task, work_type, experience, employment_type, operating_mode, tech_stack)
+                    INSERT INTO offers (job_url, job_title, category, company, location, salary_any, salary_b2b, salary_internship, salary_mandate, salary_permanent, salary_specific_task, work_type, experience, employment_type, operating_mode, tech_stack)
                     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
                     """,
                     offer_data["job_url"], offer_data["job_title"], offer_data["category"], 
                     offer_data["company"], offer_data["location"], offer_data["salary_any"], 
                     offer_data["salary_b2b"], offer_data["salary_internship"], offer_data["salary_mandate"], 
-                    offer_data["salary_perm"], offer_data["salary_specific_task"], offer_data["work_type"], 
+                    offer_data["salary_permanent"], offer_data["salary_specific_task"], offer_data["work_type"], 
                     offer_data["experience"], offer_data["employment_type"], offer_data["operating_mode"], 
                     offer_data["tech_stack"]
                 )

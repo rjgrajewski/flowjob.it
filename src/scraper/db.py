@@ -144,7 +144,7 @@ async def insert_offers(conn: asyncpg.Connection, offers: Iterable[Sequence]):
         INSERT INTO offers (
             job_url, job_title, category, company, location,
             salary_any, salary_b2b, salary_internship, salary_mandate,
-            salary_perm, salary_specific_task, work_type, experience,
+            salary_permanent, salary_specific_task, work_type, experience,
             employment_type, operating_mode, tech_stack
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
         ON CONFLICT (job_url) DO NOTHING

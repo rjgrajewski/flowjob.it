@@ -14,7 +14,7 @@ WITH
             , salary_b2b
             , salary_internship
             , salary_mandate
-            , salary_perm
+            , salary_permanent
             , salary_specific_task
             , work_type
             , experience
