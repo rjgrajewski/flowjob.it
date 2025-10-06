@@ -14,7 +14,7 @@ def sanitize_string(value, max_length=None):
         cleaned = cleaned[:max_length]
     return cleaned if cleaned else None
 
-SCROLL_PAUSE = 0.512
+SCROLL_PAUSE = 0.212
 SCROLL_STEP = None
 
 async def init_browser(headless: bool = True):
@@ -23,39 +23,31 @@ async def init_browser(headless: bool = True):
     page = await browser.new_page()
     return playwright, browser, page
 
-async def collect_offer_links(page: Page, max_links: int = None) -> list[str]:
+async def collect_offer_links(page: Page) -> list[str]:
     """
     Collects job offer links from JustJoin.it by scrolling through the page.
     
     Args:
         page: Playwright page object
-        max_links: Maximum number of links to collect (None for no limit)
     
     Returns:
         list[str]: List of job offer URLs
     """
     unique_urls = set()
     idle_count = 0
-    max_idle = 3  # Reduced to 3 for faster testing
-    scroll_count = 0
+    max_idle = 10  # Increased patience for better coverage of all offers
     
     logging.info("🔄 Starting to collect job offer links...")
     
     # Wait for page to load initially
     await asyncio.sleep(3)
     
-    while scroll_count < 1:  # Limit total scrolls for safety
-        scroll_count += 1
+    while True:
         
         # Get current links and extract URLs
-        try:
-            # Wait a bit for content to load
-            await asyncio.sleep(2)
-            
+        try:            
             current_links = await page.locator('a[href*="/job-offer/"]').all()
             current_urls = set()
-            
-            logging.info(f"🔍 Found {len(current_links)} link elements")
             
             for i, link in enumerate(current_links):
                 try:
@@ -64,8 +56,6 @@ async def collect_offer_links(page: Page, max_links: int = None) -> list[str]:
                         if href.startswith('/'):
                             href = f"https://justjoin.it{href}"
                         current_urls.add(href)
-                        if len(current_urls) <= 5:  # Log first few URLs
-                            logging.info(f"  📎 {len(current_urls)}: {href}")
                 except Exception as e:
                     # Skip this link and continue
                     continue
@@ -78,10 +68,9 @@ async def collect_offer_links(page: Page, max_links: int = None) -> list[str]:
         new_urls = current_urls - unique_urls
         unique_urls.update(current_urls)
         
-        logging.info(f"📊 Scroll {scroll_count}: Found {len(current_urls)} links on page, {len(unique_urls)} unique total")
+        logging.info(f"📊 Collected {len(unique_urls)} unique links.")
         
         if new_urls:
-            logging.info(f"✅ Found {len(new_urls)} new unique links")
             idle_count = 0
         else:
             idle_count += 1
@@ -91,10 +80,6 @@ async def collect_offer_links(page: Page, max_links: int = None) -> list[str]:
                 logging.info("🛑 Stopping - no new links found for 3 consecutive scrolls")
                 break
         
-        # Check if we've reached the limit
-        if max_links and len(unique_urls) >= max_links:
-            logging.info(f"✅ Reached maximum links limit: {max_links}")
-            break
             
         # Scroll down
         await page.evaluate("window.scrollBy(0, window.innerHeight)")
@@ -104,7 +89,7 @@ async def collect_offer_links(page: Page, max_links: int = None) -> list[str]:
     logging.info(f"✅ Collected {len(offer_urls)} unique job offer links")
     return offer_urls
 
-async def process_offers(page: Page, conn, offer_urls: list[str], max_offers: int = None) -> int:
+async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
     """
     Process job offers and save them to the database.
     
@@ -112,14 +97,10 @@ async def process_offers(page: Page, conn, offer_urls: list[str], max_offers: in
         page: Playwright page object
         conn: Database connection
         offer_urls: List of job offer URLs to process
-        max_offers: Maximum number of offers to process (None for no limit)
     
     Returns:
         int: Number of offers processed
     """
-    if max_offers:
-        offer_urls = offer_urls[:max_offers]
-        logging.info(f"🎯 Processing limited to {max_offers} offers")
     
     # Get existing URLs to avoid duplicates
     existing_urls = set()
@@ -130,17 +111,26 @@ async def process_offers(page: Page, conn, offer_urls: list[str], max_offers: in
     except Exception as e:
         logging.warning(f"⚠️ Could not fetch existing URLs: {e}")
     
+    # Filter out existing URLs before processing
+    new_offer_urls = [url for url in offer_urls if url not in existing_urls]
+    skipped_count = len(offer_urls) - len(new_offer_urls)
+    
+    logging.info(f"📊 Total collected: {len(offer_urls)} offers")
+    logging.info(f"⏭️ Already in database: {skipped_count} offers")
+    logging.info(f"🆕 New offers to process: {len(new_offer_urls)} offers")
+    
+    if not new_offer_urls:
+        logging.info("✅ No new offers to process - all offers already exist in database")
+        return 0
+    
     processed_count = 0
     
-    for i, href in enumerate(offer_urls, 1):
+    for i, href in enumerate(new_offer_urls, 1):
         try:
-            logging.info(f"🔄 Processing offer {i}/{len(offer_urls)}: {href}")
+            logging.info(f"🔄 Processing new offer {i}/{len(new_offer_urls)}: {href}")
             
             # Navigate to the offer page
             await page.goto(href, wait_until='networkidle', timeout=30000)
-            
-            # Wait for the page to load
-            await asyncio.sleep(1)
             
             # Extract job details
             job_url = href
@@ -197,7 +187,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str], max_offers: in
                 internship_pattern = r'.*per.*- Internship$'
                 mandate_pattern = r'.*per.*- Mandate$'
                 permanent_pattern = r'.*per.*- Permanent$'
-                specific_task_pattern = r'.*per.*- Specific Task$'
+                specific_task_pattern = r'.*per.*- Specific-task$'
                 
                 for span in spans:
                     try:
@@ -337,28 +327,26 @@ async def process_offers(page: Page, conn, offer_urls: list[str], max_offers: in
             # Log offer data
             logging.info(f"{i}: {offer_data.get('job_title', 'Unknown title')}")
             
-            # Save to database immediately if it's a new offer
-            if job_url not in existing_urls:
-                try:
-                    await conn.execute(
-                        """
-                        INSERT INTO offers (job_url, job_title, category, company, location, salary_any, salary_b2b, salary_internship, salary_mandate, salary_perm, salary_specific_task, work_type, experience, employment_type, operating_mode, tech_stack)
-                        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
-                        ON CONFLICT (job_url) DO NOTHING
-                        """,
-                        offer_data["job_url"], offer_data["job_title"], offer_data["category"], 
-                        offer_data["company"], offer_data["location"], offer_data["salary_any"], 
-                        offer_data["salary_b2b"], offer_data["salary_internship"], offer_data["salary_mandate"], 
-                        offer_data["salary_perm"], offer_data["salary_specific_task"], offer_data["work_type"], 
-                        offer_data["experience"], offer_data["employment_type"], offer_data["operating_mode"], 
-                        offer_data["tech_stack"]
-                    )
-                    existing_urls.add(job_url)
-                except Exception as db_error:
-                    logging.error(f"Database error saving offer {job_url}: {db_error}")
-                    # If it's a connection error, we'll let the caller handle reconnection
-                    if "connection is closed" in str(db_error).lower():
-                        raise db_error
+            # Save to database (we already filtered out existing offers)
+            try:
+                await conn.execute(
+                    """
+                    INSERT INTO offers (job_url, job_title, category, company, location, salary_any, salary_b2b, salary_internship, salary_mandate, salary_perm, salary_specific_task, work_type, experience, employment_type, operating_mode, tech_stack)
+                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+                    """,
+                    offer_data["job_url"], offer_data["job_title"], offer_data["category"], 
+                    offer_data["company"], offer_data["location"], offer_data["salary_any"], 
+                    offer_data["salary_b2b"], offer_data["salary_internship"], offer_data["salary_mandate"], 
+                    offer_data["salary_perm"], offer_data["salary_specific_task"], offer_data["work_type"], 
+                    offer_data["experience"], offer_data["employment_type"], offer_data["operating_mode"], 
+                    offer_data["tech_stack"]
+                )
+                processed_count += 1
+            except Exception as db_error:
+                logging.error(f"Database error saving offer {job_url}: {db_error}")
+                # If it's a connection error, we'll let the caller handle reconnection
+                if "connection is closed" in str(db_error).lower():
+                    raise db_error
                         
         except Exception as e:
             logging.error(f"Error processing job offer {href}: {e}")

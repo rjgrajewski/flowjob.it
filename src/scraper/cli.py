@@ -57,7 +57,7 @@ async def main():
     conn = await init_db_connection()
     playwright, browser, page = await init_browser(headless=headless)
 
-    await page.goto("https://justjoin.it/job-offers/all-locations?with-salary=yes")
+    await page.goto("https://justjoin.it/job-offers")
 
     try:
         # Collect job offer links
@@ -73,14 +73,7 @@ async def main():
             conn = await reconnect_db()
 
         # Process offers and save to database
-        max_offers = os.getenv('MAX_OFFERS')
-        if max_offers:
-            try:
-                max_offers = int(max_offers)
-            except ValueError:
-                max_offers = None
-
-        processed_count = await process_offers(page, conn, offer_urls, max_offers)
+        processed_count = await process_offers(page, conn, offer_urls)
         
         logging.info(f"🎉 Scraping completed successfully!")
         logging.info(f"📊 Total offers processed: {processed_count}")
