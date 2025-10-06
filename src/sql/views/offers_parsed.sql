@@ -24,5 +24,3 @@ WITH
         FROM public.offers
     )
 SELECT * FROM offers;
-
-DROP VIEW offers_parsed;

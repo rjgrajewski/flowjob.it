@@ -14,7 +14,7 @@ def sanitize_string(value, max_length=None):
         cleaned = cleaned[:max_length]
     return cleaned if cleaned else None
 
-SCROLL_PAUSE = 0.212
+SCROLL_PAUSE = 0.112
 SCROLL_STEP = None
 
 async def init_browser(headless: bool = True):
@@ -153,10 +153,10 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             except Exception:
                 pass
             
-            # Company - use the specific XPath selector
+            # Company - look for link with ApartmentRoundedIcon
             company = None
             try:
-                company_element = page.locator('xpath=/html/body/div[2]/div/div[1]/div[4]/div/div[3]/div[1]/div[1]/div[2]/div[2]/a/p').first
+                company_element = page.locator('a:has(svg[data-testid="ApartmentRoundedIcon"]) p').first
                 if await company_element.count() > 0:
                     company = await company_element.inner_text()
             except Exception:

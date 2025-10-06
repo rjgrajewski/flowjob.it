@@ -152,7 +152,6 @@ async def insert_offers(conn: asyncpg.Connection, offers: Iterable[Sequence]):
 
     try:
         await conn.executemany(insert_query, offers)
-        logging.info(f"✅ Inserted {len(list(offers))} offers into database")
     except Exception as e:
         logging.error(f"❌ Error inserting offers: {e}")
         raise
