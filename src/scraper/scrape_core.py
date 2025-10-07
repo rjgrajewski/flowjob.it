@@ -1,7 +1,7 @@
 # scrape_core.py
 import asyncio
 import re
-from playwright.async_api import async_playwright, Browser, Page
+from playwright.async_api import async_playwright, Page
 import logging
 from .selectors import SELECTORS, PATTERNS, get_selector
 from .config import ScrapingConfig
@@ -214,7 +214,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
                     except Exception as span_error:
                         continue
             except Exception as e:
-                print(f"❌ Error in salary extraction: {e}")
+                logging.error(f"❌ Error in salary extraction: {e}")
                 pass
             
             # Work type - use the specific XPath selector
@@ -301,10 +301,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             tech_stack_formatted = "; ".join(
                 f"{name}: {level}" for name, level in tech_stack.items()
             )
-            
-            # Debug: Log extracted data
-            logging.info(f"📊 Extracted data for {job_title}:")
-            
+
             # Sanitize and prepare offer data
             offer_data = {
                 "job_url": sanitize_string(job_url),
@@ -324,9 +321,6 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
                 "operating_mode": sanitize_string(operating_mode),
                 "tech_stack": sanitize_string(tech_stack_formatted)
             }
-            
-            # Log offer data
-            logging.info(f"{i}: {offer_data.get('job_title', 'Unknown title')}")
             
             # Save to database (we already filtered out existing offers)
             try:

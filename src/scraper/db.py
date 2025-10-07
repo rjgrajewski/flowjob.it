@@ -2,7 +2,6 @@
 
 import asyncpg, logging, os
 from pathlib import Path
-from typing import Iterable, Sequence
 
 def get_database_dsn():
     """Get database DSN from environment variables for AWS RDS or DATABASE_URL."""
@@ -82,32 +81,6 @@ async def reconnect_db() -> asyncpg.Connection:
     logging.info("🔄 Reconnecting to database...")
     return await init_db_connection()
 
-async def insert_offers(conn: asyncpg.Connection, offers: Iterable[Sequence]):
-    """
-    Insert multiple job offers into the database.
-
-    Args:
-        conn: Database connection.
-        offers: Iterable of offer data tuples.
-    """
-    if not offers:
-        return
-
-    insert_query = """
-        INSERT INTO offers (
-            job_url, job_title, category, company, location,
-            salary_any, salary_b2b, salary_internship, salary_mandate,
-            salary_permanent, salary_specific_task, work_type, experience,
-            employment_type, operating_mode, tech_stack
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-        ON CONFLICT (job_url) DO NOTHING
-    """
-
-    try:
-        await conn.executemany(insert_query, offers)
-    except Exception as e:
-        logging.error(f"❌ Error inserting offers: {e}")
-        raise
 
 async def purge_stale_offers(conn: asyncpg.Connection, current_urls: set[str]):
     """
@@ -118,8 +91,12 @@ async def purge_stale_offers(conn: asyncpg.Connection, current_urls: set[str]):
         current_urls: Set of URLs currently present on the website.
     """
     if not current_urls:
+        logging.info("🗑️ No current URLs provided, skipping stale offers cleanup")
         return
 
+    # Count offers before deletion
+    total_offers_before = await conn.fetchval("SELECT COUNT(*) FROM offers")
+    
     # Convert set to list for SQL IN clause
     current_urls_list = list(current_urls)
     
@@ -131,7 +108,11 @@ async def purge_stale_offers(conn: asyncpg.Connection, current_urls: set[str]):
 
     try:
         result = await conn.execute(delete_query, current_urls_list)
-        logging.info(f"🗑️ Purged stale offers: {result}")
+        # Extract number of deleted rows from result string
+        deleted_count = int(result.split()[-1]) if result and result.split()[-1].isdigit() else 0
+        
+        logging.info(f"🗑️ Purged {deleted_count} stale offers")
+        logging.info(f"📊 Database sync: {total_offers_before} → {total_offers_before - deleted_count} offers")
     except Exception as e:
         logging.error(f"❌ Error purging stale offers: {e}")
         raise

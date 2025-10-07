@@ -1,8 +1,8 @@
 # cli.py
-import asyncio, logging, os
+import asyncio, logging
 from dotenv import load_dotenv
 
-from .db import init_db_connection, check_connection, reconnect_db, cleanup_empty_offers
+from .db import init_db_connection, check_connection, reconnect_db, cleanup_empty_offers, purge_stale_offers
 from .scrape_core import init_browser, collect_offer_links, process_offers
 from .config import ScrapingConfig
 
@@ -44,11 +44,13 @@ async def main():
         # Process offers and save to database
         processed_count = await process_offers(page, conn, offer_urls)
         
+        # Remove stale offers that are no longer on the website
+        await purge_stale_offers(conn, set(offer_urls))
+        
         # Clean up offers with empty data (only job_url, all other fields NULL)
         await cleanup_empty_offers(conn)
         
         logging.info(f"🎉 Scraping completed successfully!")
-        logging.info(f"📊 Total offers processed: {processed_count}")
 
     except Exception as e:
         logging.error(f"❌ Error during scraping: {e}")
