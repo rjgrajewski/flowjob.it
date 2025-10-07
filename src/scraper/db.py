@@ -1,63 +1,33 @@
 # db.py
 
 import asyncpg, logging, os
-from dotenv import load_dotenv
 from pathlib import Path
 from typing import Iterable, Sequence
 
 def get_database_dsn():
-    """Get database DSN from environment variables."""
+    """Get database DSN from environment variables for AWS RDS or DATABASE_URL."""
     database_url = os.getenv('DATABASE_URL')
     if database_url:
         return database_url
     
-    # Check for AWS RDS configuration first
+    # AWS RDS configuration
     aws_endpoint = os.getenv('AWS_DB_ENDPOINT')
     aws_username = os.getenv('AWS_DB_USERNAME')
     aws_password = os.getenv('AWS_DB_PASSWORD')
-    aws_db_name = os.getenv('AWS_DB_NAME', 'aligno_db')
+    aws_db_name = os.getenv('AWS_DB_NAME')
     
-    if aws_endpoint and aws_username and aws_password:
-        # Use AWS RDS
-        logging.info(f"Connecting to AWS RDS: {aws_endpoint}")
-        return f"postgresql://{aws_username}:{aws_password}@{aws_endpoint}:5432/{aws_db_name}"
+    if not all([aws_endpoint, aws_username, aws_password, aws_db_name]):
+        raise ValueError("Missing AWS RDS configuration. Please set AWS_DB_ENDPOINT, AWS_DB_USERNAME, AWS_DB_PASSWORD, and AWS_DB_NAME environment variables.")
     
-    # Fallback to local configuration
-    user = os.getenv('DB_USER', 'aligno')
-    password = os.getenv('DB_PASSWORD')
-    host = os.getenv('DB_HOST', 'localhost')
-    port = os.getenv('DB_PORT', '5432')
-    db_name = os.getenv('DB_NAME', 'aligno_db')
-    
-    if not password:
-        raise ValueError("Either DATABASE_URL, AWS credentials, or DB_PASSWORD must be set")
-    
-    logging.info(f"Connecting to local database: {host}:{port}/{db_name}")
-    return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
+    logging.info(f"Connecting to AWS RDS: {aws_endpoint}")
+    return f"postgresql://{aws_username}:{aws_password}@{aws_endpoint}:5432/{aws_db_name}"
 
-def validate_database_name(name):
-    """Simple database name validation."""
-    if not name or not isinstance(name, str):
-        raise ValueError("Database name must be a non-empty string")
-    # Basic SQL injection prevention
-    if any(char in name for char in [';', '--', '/*', '*/', 'xp_', 'sp_']):
-        raise ValueError("Invalid characters in database name")
-    return name
-
-
-# Load environment variables from .env file
-load_dotenv()
-
-# Set up logging configuration
-logging.basicConfig(level=logging.INFO)
 
 async def init_db_connection() -> asyncpg.Connection:
     """
-    Initializes and returns an asyncpg database connection.
+    Initializes and returns an asyncpg database connection to AWS RDS.
 
-    - Connects to a PostgreSQL database using environment variables or user input.
-    - For AWS RDS: assumes database already exists
-    - For local: creates database if it doesn't exist.
+    - Connects to a PostgreSQL database using AWS RDS configuration.
     - Ensures the 'offers' table exists with the required schema.
 
     Returns:
@@ -66,31 +36,14 @@ async def init_db_connection() -> asyncpg.Connection:
     # Get database DSN
     dsn = get_database_dsn()
     
-    # Check if we're using AWS RDS
-    aws_endpoint = os.getenv('AWS_DB_ENDPOINT')
-    
     try:
         conn = await asyncpg.connect(dsn=dsn, command_timeout=60)
         logging.info("✅ Database connection established successfully")
     except asyncpg.exceptions.InvalidCatalogNameError:
-        if aws_endpoint:
-            # For AWS RDS, database must exist - we can't create it
-            raise Exception(f"❌ Database not found on AWS RDS endpoint: {aws_endpoint}. Please create the database manually in AWS console.")
-        else:
-            # For local databases, create if it doesn't exist
-            db_name = os.getenv('DB_NAME', 'aligno_db')
-            validate_database_name(db_name)
-            
-            user = os.getenv('DB_USER', 'aligno')
-            password = os.getenv('DB_PASSWORD')
-            host = os.getenv('DB_HOST', 'localhost')
-            port = os.getenv('DB_PORT', '5432')
-            temp_dsn = f"postgresql://{user}:{password}@{host}:{port}/postgres"
-            temp_conn = await asyncpg.connect(dsn=temp_dsn)
-            await temp_conn.execute(f'CREATE DATABASE "{db_name}"')
-            await temp_conn.close()
-            conn = await asyncpg.connect(dsn=dsn, command_timeout=60)
-            logging.info(f"✅ Created local database: {db_name}")
+        aws_endpoint = os.getenv('AWS_DB_ENDPOINT')
+        raise Exception(f"❌ Database not found on AWS RDS endpoint: {aws_endpoint}. Please create the database manually in AWS console.")
+    except Exception as e:
+        raise Exception(f"❌ Failed to connect to database: {e}")
 
     # Ensure the offers table exists
     schema_path = Path(__file__).parent.parent / "sql" / "tables" / "offers.sql"
@@ -181,4 +134,39 @@ async def purge_stale_offers(conn: asyncpg.Connection, current_urls: set[str]):
         logging.info(f"🗑️ Purged stale offers: {result}")
     except Exception as e:
         logging.error(f"❌ Error purging stale offers: {e}")
+        raise
+
+async def cleanup_empty_offers(conn: asyncpg.Connection):
+    """
+    Remove offers that have only job_url but all other fields are NULL.
+    These are typically offers that failed during data extraction.
+
+    Args:
+        conn: Database connection.
+    """
+    cleanup_query = """
+        DELETE FROM offers 
+        WHERE job_url IS NOT NULL 
+        AND job_title IS NULL 
+        AND category IS NULL 
+        AND company IS NULL 
+        AND location IS NULL 
+        AND salary_any IS NULL 
+        AND salary_b2b IS NULL 
+        AND salary_internship IS NULL 
+        AND salary_mandate IS NULL 
+        AND salary_permanent IS NULL 
+        AND salary_specific_task IS NULL 
+        AND work_type IS NULL 
+        AND experience IS NULL 
+        AND employment_type IS NULL 
+        AND operating_mode IS NULL 
+        AND tech_stack IS NULL
+    """
+
+    try:
+        result = await conn.execute(cleanup_query)
+        logging.info(f"🧹 Cleaned up empty offers: {result}")
+    except Exception as e:
+        logging.error(f"❌ Error cleaning up empty offers: {e}")
         raise

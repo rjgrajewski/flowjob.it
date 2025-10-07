@@ -3,6 +3,8 @@ import asyncio
 import re
 from playwright.async_api import async_playwright, Browser, Page
 import logging
+from .selectors import SELECTORS, PATTERNS, get_selector
+from .config import ScrapingConfig
 
 def sanitize_string(value, max_length=None):
     """Simple string sanitization without validation."""
@@ -14,7 +16,7 @@ def sanitize_string(value, max_length=None):
         cleaned = cleaned[:max_length]
     return cleaned if cleaned else None
 
-SCROLL_PAUSE = 0.112
+SCROLL_PAUSE = ScrapingConfig.SCROLL_PAUSE_TIME
 SCROLL_STEP = None
 
 async def init_browser(headless: bool = True):
@@ -33,9 +35,9 @@ async def collect_offer_links(page: Page) -> list[str]:
     Returns:
         list[str]: List of job offer URLs
     """
-    unique_urls = set()
+    unique_urls: set[str] = set()
     idle_count = 0
-    max_idle = 10  # Increased patience for better coverage of all offers
+    max_idle = ScrapingConfig.MAX_IDLE_SCROLLS
     
     logging.info("🔄 Starting to collect job offer links...")
     
@@ -46,12 +48,12 @@ async def collect_offer_links(page: Page) -> list[str]:
         
         # Get current links and extract URLs
         try:            
-            current_links = await page.locator('a[href*="/job-offer/"]').all()
+            current_links = await page.locator(get_selector(SELECTORS.JOB_OFFER_LINKS)).all()
             current_urls = set()
             
             for i, link in enumerate(current_links):
                 try:
-                    href = await link.get_attribute('href', timeout=2000)  # 2 second timeout
+                    href = await link.get_attribute('href', timeout=ScrapingConfig.LINK_TIMEOUT)
                     if href and '/job-offer/' in href:
                         if href.startswith('/'):
                             href = f"https://justjoin.it{href}"
@@ -130,7 +132,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             logging.info(f"🔄 Processing new offer {i}/{len(new_offer_urls)}: {href}")
             
             # Navigate to the offer page
-            await page.goto(href, wait_until='networkidle', timeout=30000)
+            await page.goto(href, wait_until='networkidle', timeout=ScrapingConfig.PAGE_LOAD_TIMEOUT)
             
             # Extract job details
             job_url = href
@@ -138,7 +140,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             # Job title
             job_title = None
             try:
-                title_element = page.locator('h1').first
+                title_element = page.locator(get_selector(SELECTORS.JOB_TITLE)).first
                 if await title_element.count() > 0:
                     job_title = await title_element.inner_text()
             except Exception:
@@ -147,7 +149,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             # Category - use the specific XPath selector
             category = None
             try:
-                category_element = page.locator('xpath=/html/body/div[2]/div/div[1]/div[4]/div/div[3]/div[1]/div[1]/div[2]/div[1]/div').first
+                category_element = page.locator(get_selector(SELECTORS.CATEGORY)).first
                 if await category_element.count() > 0:
                     category = await category_element.inner_text()
             except Exception:
@@ -156,7 +158,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             # Company - look for link with ApartmentRoundedIcon
             company = None
             try:
-                company_element = page.locator('a:has(svg[data-testid="ApartmentRoundedIcon"]) p').first
+                company_element = page.locator(get_selector(SELECTORS.COMPANY)).first
                 if await company_element.count() > 0:
                     company = await company_element.inner_text()
             except Exception:
@@ -165,7 +167,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             # Location - use the specific XPath selector
             location = None
             try:
-                location_element = page.locator('xpath=/html/body/div[2]/div/div[1]/div[4]/div/div[2]/div/div/nav/ol/li[3]/a').first
+                location_element = page.locator(get_selector(SELECTORS.LOCATION)).first
                 if await location_element.count() > 0:
                     location = await location_element.inner_text()
             except Exception:
@@ -181,13 +183,13 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             
             # Salary extraction - check all spans with " per "
             try:
-                spans = await page.locator('span:has-text(" per ")').all()
-                any_pattern = r'.*per.*- Any$'
-                b2b_pattern = r'.*per.*- B2B$'
-                internship_pattern = r'.*per.*- Internship$'
-                mandate_pattern = r'.*per.*- Mandate$'
-                permanent_pattern = r'.*per.*- Permanent$'
-                specific_task_pattern = r'.*per.*- Specific-task$'
+                spans = await page.locator(get_selector(SELECTORS.SALARY_SPANS)).all()
+                any_pattern = PATTERNS.SALARY_ANY
+                b2b_pattern = PATTERNS.SALARY_B2B
+                internship_pattern = PATTERNS.SALARY_INTERNSHIP
+                mandate_pattern = PATTERNS.SALARY_MANDATE
+                permanent_pattern = PATTERNS.SALARY_PERMANENT
+                specific_task_pattern = PATTERNS.SALARY_SPECIFIC_TASK
                 
                 for span in spans:
                     try:
@@ -219,7 +221,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             # Work type - use the specific XPath selector
             work_type = None
             try:
-                work_type_element = page.locator('xpath=/html/body/div[2]/div/div[1]/div[4]/div/div[3]/div[1]/div[1]/div[3]/div[1]/div[2]').first
+                work_type_element = page.locator(get_selector(SELECTORS.WORK_TYPE)).first
                 if await work_type_element.count() > 0:
                     work_type = await work_type_element.inner_text()
             except Exception:
@@ -228,7 +230,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             # Experience - use the specific XPath selector
             experience = None
             try:
-                experience_element = page.locator('xpath=/html/body/div[2]/div/div[1]/div[4]/div/div[3]/div[1]/div[1]/div[3]/div[3]/div[2]').first
+                experience_element = page.locator(get_selector(SELECTORS.EXPERIENCE)).first
                 if await experience_element.count() > 0:
                     experience = await experience_element.inner_text()
             except Exception:
@@ -237,7 +239,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             # Employment type - use the specific XPath selector
             employment_type = None
             try:
-                employment_element = page.locator('xpath=/html/body/div[2]/div/div[1]/div[4]/div/div[3]/div[1]/div[1]/div[3]/div[2]/div[2]').first
+                employment_element = page.locator(get_selector(SELECTORS.EMPLOYMENT_TYPE)).first
                 if await employment_element.count() > 0:
                     employment_type = await employment_element.inner_text()
             except Exception:
@@ -259,14 +261,14 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             tech_stack = {}
             try:
                 # Approach 1: Look for h4 elements that might be tech names
-                tech_names = await page.locator('h4').all()
+                tech_names = await page.locator(get_selector(SELECTORS.TECH_NAMES)).all()
                 for name_elem in tech_names:
                     try:
                         name_text = await name_elem.inner_text()
                         if name_text and name_text.strip():
                             # Look for span element in the same parent
                             parent = name_elem.locator('..')
-                            span_elem = parent.locator('span').first
+                            span_elem = parent.locator(get_selector(SELECTORS.TECH_LEVELS)).first
                             if await span_elem.count() > 0:
                                 level_text = await span_elem.inner_text()
                                 if level_text and level_text.strip():
@@ -277,11 +279,11 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
                 # If no tech found, try approach 2: look for specific patterns
                 if not tech_stack:
                     # Look for elements that contain both h4 and span
-                    tech_containers = page.locator('div').all()
+                    tech_containers = await page.locator(get_selector(SELECTORS.TECH_CONTAINERS)).all()
                     for container in tech_containers[:20]:  # Limit to first 20
                         try:
-                            h4_elem = container.locator('h4').first
-                            span_elem = container.locator('span').first
+                            h4_elem = container.locator(get_selector(SELECTORS.TECH_NAMES)).first
+                            span_elem = container.locator(get_selector(SELECTORS.TECH_LEVELS)).first
                             
                             if await h4_elem.count() > 0 and await span_elem.count() > 0:
                                 name = await h4_elem.inner_text()
@@ -352,7 +354,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             logging.error(f"Error processing job offer {href}: {e}")
         finally:
             # Small delay between requests to be respectful
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(ScrapingConfig.REQUEST_DELAY)
     
     logging.info(f"✅ Processed {processed_count} new offers")
     return processed_count

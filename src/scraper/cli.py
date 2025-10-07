@@ -1,8 +1,12 @@
 # cli.py
 import asyncio, logging, os
+from dotenv import load_dotenv
 
-from .db import init_db_connection, check_connection, reconnect_db
+from .db import init_db_connection, check_connection, reconnect_db, cleanup_empty_offers
 from .scrape_core import init_browser, collect_offer_links, process_offers
+
+# Load environment variables from .env file
+load_dotenv()
 
 def check_required_env_vars():
     """Check if required environment variables are set."""
@@ -10,23 +14,18 @@ def check_required_env_vars():
     aws_endpoint = os.getenv('AWS_DB_ENDPOINT')
     aws_username = os.getenv('AWS_DB_USERNAME')
     aws_password = os.getenv('AWS_DB_PASSWORD')
+    aws_db_name = os.getenv('AWS_DB_NAME')
     
-    if aws_endpoint and aws_username and aws_password:
+    if aws_endpoint and aws_username and aws_password and aws_db_name:
         return  # AWS configuration is complete
     
-    # Check for DATABASE_URL
-    if os.getenv('DATABASE_URL'):
+    # Check for DATABASE_URL as fallback
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
         return  # DATABASE_URL is set
     
-    # Check for local database configuration
-    if os.getenv('DB_PASSWORD'):
-        return  # Local database configuration is complete
-    
     # No valid configuration found
-    raise ValueError("Missing required environment variables. Please set either:\n"
-                    "1. AWS RDS: AWS_DB_ENDPOINT, AWS_DB_USERNAME, AWS_DB_PASSWORD\n"
-                    "2. DATABASE_URL: Complete database connection string\n"
-                    "3. Local DB: DB_PASSWORD (with optional DB_USER, DB_HOST, DB_PORT, DB_NAME)")
+    raise ValueError("Missing required environment variables. Please set AWS_DB_ENDPOINT, AWS_DB_USERNAME, AWS_DB_PASSWORD, and AWS_DB_NAME, or set DATABASE_URL.")
 
 # Logging configuration
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -74,6 +73,9 @@ async def main():
 
         # Process offers and save to database
         processed_count = await process_offers(page, conn, offer_urls)
+        
+        # Clean up offers with empty data (only job_url, all other fields NULL)
+        await cleanup_empty_offers(conn)
         
         logging.info(f"🎉 Scraping completed successfully!")
         logging.info(f"📊 Total offers processed: {processed_count}")
