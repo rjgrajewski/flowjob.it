@@ -19,11 +19,6 @@ def check_required_env_vars():
     if aws_endpoint and aws_username and aws_password and aws_db_name:
         return  # AWS configuration is complete
     
-    # Check for DATABASE_URL as fallback
-    database_url = os.getenv('DATABASE_URL')
-    if database_url:
-        return  # DATABASE_URL is set
-    
     # No valid configuration found
     raise ValueError("Missing required environment variables. Please set AWS_DB_ENDPOINT, AWS_DB_USERNAME, AWS_DB_PASSWORD, and AWS_DB_NAME, or set DATABASE_URL.")
 
@@ -35,20 +30,11 @@ async def main():
     Main entry point for scraping JustJoin.it job offers.
 
     This function orchestrates the entire scraping process:
-    - Validates environment variables and establishes database connection.
     - Initializes browser and navigates to JustJoin.it.
     - Collects job offer links and determines new offers.
     - Processes new offers and inserts them into the database.
     - Closes all resources and logs completion.
     """
-
-    # Check required environment variables on startup
-    try:
-        check_required_env_vars()
-        logging.info("✅ Environment check passed")
-    except ValueError as e:
-        logging.error(f"❌ Environment check failed: {e}")
-        return
 
     # Browser mode configuration from environment
     headless = os.getenv('HEADLESS', 'true').lower() == 'true'

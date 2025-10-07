@@ -17,7 +17,6 @@ def sanitize_string(value, max_length=None):
     return cleaned if cleaned else None
 
 SCROLL_PAUSE = ScrapingConfig.SCROLL_PAUSE_TIME
-SCROLL_STEP = None
 
 async def init_browser(headless: bool = True):
     playwright = await async_playwright().start()
