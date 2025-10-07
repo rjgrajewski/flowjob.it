@@ -1,5 +1,5 @@
 # Aligno: IT Job Search Engine
-![Python 3.9](https://img.shields.io/badge/python-3.9-blue) ![asyncpg](https://img.shields.io/badge/asyncpg-0.29.0-blue) ![Playwright](https://img.shields.io/badge/playwright-1.52-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.3-blue) ![AWS](https://img.shields.io/badge/AWS-RDS-orange)
+![Python 3.9](https://img.shields.io/badge/python-3.9-blue) ![asyncpg](https://img.shields.io/badge/asyncpg-0.29.0-blue) ![Playwright](https://img.shields.io/badge/playwright-1.52.0-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.3-blue) ![AWS](https://img.shields.io/badge/AWS-RDS-orange) ![OpenAI](https://img.shields.io/badge/OpenAI-1.3.0-purple) ![Pydantic](https://img.shields.io/badge/Pydantic-2.11.9-green)
 
 ## 🚀 Overview
 
@@ -14,9 +14,24 @@ Aligno is a web application for collecting, processing and analyzing job offers 
 - ✅ **JustJoin.it Scraper**: Fully implemented with Playwright
 - ✅ **Database Schema**: Complete with offers table and processed view
 - ✅ **AWS RDS Support**: Ready for production deployment
+- ✅ **Dependency Management**: All dependencies pinned to specific versions for reproducible builds
+- ✅ **Environment Configuration**: Simplified AWS RDS-focused configuration
 - ⏳ **Market Dashboard**: Planned
 - ⏳ **Job Search API**: Planned
 - ⏳ **CV Generation**: Planned
+
+## 📦 Dependencies
+
+The project uses the following key dependencies with pinned versions for reproducible builds:
+
+- **Database**: `asyncpg==0.29.0` for async PostgreSQL connections
+- **Web Scraping**: `playwright==1.52.0` for browser automation
+- **Web Framework**: `fastapi==0.104.1` with `uvicorn==0.24.0` for API development
+- **AI Integration**: `openai==1.3.0` for future AI-powered features
+- **Data Validation**: `pydantic==2.11.9` for data modeling and validation
+- **Environment**: `python-dotenv==1.0.0` for environment variable management
+- **Type Checking**: `mypy==1.7.0` for static type checking
+- **HTTP Client**: `httpx==0.28.1` for async HTTP requests
 
 ## 🔧 Key Features
 
@@ -86,20 +101,27 @@ Aligno/
    ```bash
    pip install -r requirements.txt
    ```
+   
+   **Note:** All dependencies are pinned to specific versions for reproducible builds.
 
-4. **Configure environment variables:**
+4. **Install Playwright browsers (required for scraping):**
    ```bash
-   cp .env.example .env
-   # Edit .env with your actual values
+   playwright install
    ```
 
-5. **Run the scraper:**
+5. **Configure environment variables:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your AWS RDS database credentials
+   ```
+
+6. **Run the scraper:**
    ```bash
    cd src
    ../venv/bin/python -m scraper
    ```
 
-6. **Run API (when implemented):**
+7. **Run API (when implemented):**
    ```bash
    cd src
    ../venv/bin/python -m api
@@ -109,28 +131,19 @@ Aligno/
 
 Create a `.env` file in the root directory by copying from `.env.example` and updating with your actual values:
 
-### 🏗️ **Database Configuration Options:**
+### 🏗️ **Database Configuration**
 
-#### **Option 1: AWS RDS (Recommended for production)**
+The project is configured to use AWS RDS PostgreSQL for production deployment. Configure your database connection by setting the following variables in your `.env` file:
+
 ```bash
-# AWS RDS Configuration
+# AWS RDS Configuration (Required)
 AWS_DB_ENDPOINT=your-rds-endpoint.amazonaws.com
 AWS_DB_NAME=aligno-db
 AWS_DB_USERNAME=your_db_username
 AWS_DB_PASSWORD=your_db_password
 ```
 
-#### **Option 2: Local PostgreSQL Database**
-```bash
-# Local Database Configuration
-DATABASE_URL=postgresql://user:password@localhost:5432/aligno_db
-# Alternative: individual database settings
-DB_USER=aligno
-DB_PASSWORD=your_password_here
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=aligno_db
-```
+**Note:** The project is optimized for AWS RDS deployment. For local development, you can also use a local PostgreSQL instance by setting the `DATABASE_URL` environment variable, but AWS RDS is the recommended approach.
 
 ### 🎛️ **Scraper Configuration:**
 ```bash
@@ -179,13 +192,17 @@ MAX_OFFERS=
 ### 🚨 Required Environment Variables
 
 The following environment variables are **required**:
-- Either `DATABASE_URL` OR `AWS_DB_ENDPOINT` with credentials OR `DB_PASSWORD` (if using individual DB settings)
+- `AWS_DB_ENDPOINT`: Your AWS RDS PostgreSQL endpoint
+- `AWS_DB_NAME`: Database name
+- `AWS_DB_USERNAME`: Database username
+- `AWS_DB_PASSWORD`: Database password
 
 ### 📋 Optional Environment Variables
 
 - `OPENAI_API_KEY`: Required for future AI-powered features (CV generation, skill matching)
 - `HEADLESS`: Set to `false` for debugging (shows browser window during scraping)
 - `MAX_OFFERS`: Limit number of offers for testing (leave empty for unlimited)
+- `DATABASE_URL`: Alternative to AWS RDS settings (for local development)
 
 ## 🌐 AWS RDS Setup
 
