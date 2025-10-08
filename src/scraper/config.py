@@ -9,6 +9,7 @@ class ScrapingConfig:
     
     # Browser configuration
     HEADLESS = True
+    RESTART_BROWSER_EVERY = 500  # Restart browser every N offers for memory cleanup
     
     # Scraping limits
     SCROLL_PAUSE_TIME = 0.05

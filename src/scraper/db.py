@@ -38,10 +38,14 @@ async def init_db_connection() -> asyncpg.Connection:
     try:
         conn = await asyncpg.connect(dsn=dsn, command_timeout=60)
         logging.info("✅ Database connection established successfully")
-    except asyncpg.exceptions.InvalidCatalogNameError:
+    except asyncpg.exceptions.InvalidCatalogNameError as e:
         aws_endpoint = os.getenv('AWS_DB_ENDPOINT')
-        raise Exception(f"❌ Database not found on AWS RDS endpoint: {aws_endpoint}. Please create the database manually in AWS console.")
+        aws_db_name = os.getenv('AWS_DB_NAME')
+        logging.error(f"❌ InvalidCatalogNameError: {e}")
+        logging.error(f"❌ Trying to connect to database: '{aws_db_name}' on endpoint: {aws_endpoint}")
+        raise Exception(f"❌ Database '{aws_db_name}' not found on AWS RDS endpoint: {aws_endpoint}. Please create the database manually in AWS console.")
     except Exception as e:
+        logging.error(f"❌ Connection error: {e}")
         raise Exception(f"❌ Failed to connect to database: {e}")
 
     # Ensure the offers table exists

@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info
+.mypy_cache/
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Deployment files (nie potrzebne w obrazie)
+aws/
+deployment/
+
+# Documentation
+*.md
+README.md
+
+# Environment (nie wrzucamy .env do obrazu - przekazujemy przez ECS)
+.env
+.env.example
+
+# Tests
+tests/
+test_*
+
+# Logs
+*.log
+logs/

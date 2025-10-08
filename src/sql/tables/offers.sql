@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS offers (
     experience TEXT,
     employment_type TEXT,
     operating_mode TEXT,
-    tech_stack TEXT
+    tech_stack TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

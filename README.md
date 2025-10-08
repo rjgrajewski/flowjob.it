@@ -14,6 +14,7 @@ Aligno is a web application for collecting, processing and analyzing job offers 
 - ✅ **JustJoin.it Scraper**: Fully implemented with Playwright
 - ✅ **Database Schema**: Complete with offers table and processed view
 - ✅ **AWS RDS Support**: Ready for production deployment
+- ✅ **AWS Fargate Deployment**: Complete deployment setup in `aws/deployment/scraper/` folder
 - ✅ **Dependency Management**: All dependencies pinned to specific versions for reproducible builds
 - ✅ **Environment Configuration**: Simplified AWS RDS-focused configuration
 - ⏳ **Market Dashboard**: Planned
@@ -334,3 +335,38 @@ WHERE salary_b2b_per = 'month' AND salary_b2b_min > 15000;
    * Consider implementing skill matching algorithms for job recommendations
    * Database migration scripts for production deployments
    * Multi-region AWS RDS setup for high availability
+
+## 🚀 AWS Deployment
+
+The project uses **AWS Fargate Scheduled Task** - runs daily at 2 AM UTC and automatically stops after completion.
+
+**Estimated cost:** ~$18/month (Fargate + RDS)
+
+### Quick Deploy
+```bash
+cd aws/deployment/scraper
+./quick-deploy.sh
+```
+
+### Update Code
+```bash
+cd aws/deployment/scraper
+./deploy.sh
+```
+
+### Management
+```bash
+cd aws/deployment/scraper
+./management-commands.sh logs              # View logs
+./management-commands.sh run-now           # Run manually
+./management-commands.sh disable-schedule  # Disable daily runs
+```
+
+### Cleanup AWS Resources
+```bash
+cd aws/cleanup/scraper
+./cleanup-aws.sh
+```
+
+See `aws/deployment/scraper/README.md` and `aws/deployment/scraper/DEPLOY.md` for detailed deployment instructions.
+See `aws/cleanup/scraper/README.md` for cleanup instructions.

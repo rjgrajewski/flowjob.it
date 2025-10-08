@@ -90,7 +90,7 @@ async def collect_offer_links(page: Page) -> list[str]:
     logging.info(f"✅ Collected {len(offer_urls)} unique job offer links")
     return offer_urls
 
-async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
+async def process_offers(page: Page, conn, offer_urls: list[str], browser=None, playwright=None) -> tuple[int, Page]:
     """
     Process job offers and save them to the database.
     
@@ -98,10 +98,15 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
         page: Playwright page object
         conn: Database connection
         offer_urls: List of job offer URLs to process
+        browser: Playwright browser object (optional, for memory cleanup)
+        playwright: Playwright instance (optional, for memory cleanup)
     
     Returns:
-        int: Number of offers processed
+        tuple[int, Page]: Number of offers processed and the current page object
     """
+    
+    # Memory management: restart browser every N offers to prevent memory leaks
+    can_restart = browser is not None and playwright is not None
     
     # Get existing URLs to avoid duplicates
     existing_urls = set()
@@ -122,12 +127,24 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
     
     if not new_offer_urls:
         logging.info("✅ No new offers to process - all offers already exist in database")
-        return 0
+        return 0, page
     
     processed_count = 0
     
     for i, href in enumerate(new_offer_urls, 1):
         try:
+            # Memory cleanup: restart browser every N offers (from config)
+            if can_restart and i > 1 and (i - 1) % ScrapingConfig.RESTART_BROWSER_EVERY == 0:
+                logging.info(f"♻️  Restarting browser for memory cleanup (processed {i-1}/{len(new_offer_urls)} offers)")
+                try:
+                    await page.close()
+                    await browser.close()
+                    browser = await playwright.chromium.launch(headless=True)
+                    page = await browser.new_page()
+                    logging.info("✅ Browser restarted successfully")
+                except Exception as e:
+                    logging.warning(f"⚠️  Browser restart failed: {e}, continuing with existing browser")
+            
             logging.info(f"🔄 Processing new offer {i}/{len(new_offer_urls)}: {href}")
             
             # Navigate to the offer page
@@ -328,12 +345,12 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
                 "tech_stack": sanitize_string(tech_stack_formatted)
             }
             
-            # Save to database (we already filtered out existing offers)
+            # Save to database (we already filtered out existing offers at the start)
             try:
                 await conn.execute(
                     """
-                    INSERT INTO offers (job_url, job_title, category, company, location, salary_any, salary_b2b, salary_internship, salary_mandate, salary_permanent, salary_specific_task, work_type, experience, employment_type, operating_mode, tech_stack)
-                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+                    INSERT INTO offers (job_url, job_title, category, company, location, salary_any, salary_b2b, salary_internship, salary_mandate, salary_permanent, salary_specific_task, work_type, experience, employment_type, operating_mode, tech_stack, created_at)
+                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16, CURRENT_TIMESTAMP)
                     """,
                     offer_data["job_url"], offer_data["job_title"], offer_data["category"], 
                     offer_data["company"], offer_data["location"], offer_data["salary_any"], 
@@ -356,4 +373,4 @@ async def process_offers(page: Page, conn, offer_urls: list[str]) -> int:
             await asyncio.sleep(ScrapingConfig.REQUEST_DELAY)
     
     logging.info(f"✅ Processed {processed_count} new offers")
-    return processed_count
+    return processed_count, page

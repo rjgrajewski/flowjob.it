@@ -1,0 +1,43 @@
+{
+  "family": "scraper",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "2048",
+  "memory": "4096",
+  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/scraper-execution-role",
+  "taskRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/scraper-task-role",
+  "containerDefinitions": [
+    {
+      "name": "scraper",
+          "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/scraper:latest",
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/scraper",
+          "awslogs-region": "${AWS_REGION}",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      },
+      "environment": [
+        {
+          "name": "AWS_REGION",
+          "value": "${AWS_REGION}"
+        },
+        {
+          "name": "SECRET_ARN",
+          "value": "${SECRET_ARN}"
+        },
+        {
+          "name": "AWS_DB_ENDPOINT",
+          "value": "${AWS_DB_ENDPOINT}"
+        },
+        {
+          "name": "AWS_DB_NAME",
+          "value": "${AWS_DB_NAME}"
+        }
+      ]
+    }
+  ]
+}

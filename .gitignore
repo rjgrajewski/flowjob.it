@@ -3,6 +3,11 @@ __pycache__/
 .mypy_cache/
 .env
 venv/
+
+# Generated deployment files
+aws/deployment/scraper/ecs-task-definition.json
+aws/deployment/scraper/task-role-policy.json
+aws/deployment/scraper/execution-role-policy.json
 *.pyc
 *.pyo
 *.pyd

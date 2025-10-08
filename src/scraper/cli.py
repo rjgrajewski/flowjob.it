@@ -1,16 +1,25 @@
 # cli.py
 import asyncio, logging
+import os
 from dotenv import load_dotenv
 
 from .db import init_db_connection, check_connection, reconnect_db, cleanup_empty_offers, purge_stale_offers
 from .scrape_core import init_browser, collect_offer_links, process_offers
 from .config import ScrapingConfig
+from .aws_secrets import setup_database_credentials_from_secrets
 
-# Load environment variables from .env file
+# Logging configuration - MUST be first before any logging calls
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
+# Load environment variables from .env file (for local development)
 load_dotenv()
 
-# Logging configuration
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+# Setup database credentials from AWS Secrets Manager (with .env fallback)
+SECRET_ARN = os.getenv('SECRET_ARN')
+if SECRET_ARN:
+    setup_database_credentials_from_secrets(SECRET_ARN)
+else:
+    logging.info("ℹ️ No SECRET_ARN provided, using .env file for database credentials")
 
 async def main():
     """
@@ -41,8 +50,8 @@ async def main():
             logging.warning("⚠️ Database connection lost, attempting to reconnect...")
             conn = await reconnect_db()
 
-        # Process offers and save to database
-        processed_count = await process_offers(page, conn, offer_urls)
+        # Process offers and save to database (with browser restart for memory management)
+        processed_count, page = await process_offers(page, conn, offer_urls, browser, playwright)
         
         # Remove stale offers that are no longer on the website
         await purge_stale_offers(conn, set(offer_urls))
