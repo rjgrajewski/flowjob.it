@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Enables running the scraper package as a script:
-    python -m scraper
+Enables running the Scout package as a script:
+    python -m scout
     or
-    python scraper/__main__.py
+    python scout/__main__.py
 """
 import os
 import sys
@@ -13,7 +13,7 @@ import asyncio
 if __package__ is None:
     pkg_root = os.path.dirname(os.path.dirname(__file__))
     sys.path.insert(0, pkg_root)
-    from scraper.cli import main
+    from scout.cli import main
 else:
     from .cli import main
 

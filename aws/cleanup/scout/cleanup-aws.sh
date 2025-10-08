@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Cleanup AWS resources for Aligno Scraper (keeping RDS only)
+# Cleanup AWS resources for Aligno Scout (keeping RDS only)
 set -e
 
 AWS_REGION="eu-central-1"
-CLUSTER_NAME="aligno-scraper-cluster"
+CLUSTER_NAME="scout-cluster"
 
-echo "🧹 Cleaning up AWS resources for Aligno Scraper..."
+echo "🧹 Cleaning up AWS resources for Aligno Scout..."
 echo "⚠️  This will delete everything EXCEPT the RDS database"
 echo ""
 read -p "Are you sure you want to continue? (yes/no): " -r
@@ -80,7 +80,7 @@ echo ""
 echo "🗑️  Deleting EventBridge rules..."
 SCHEDULE_RULES=$(aws events list-rules \
     --region $AWS_REGION \
-    --query 'Rules[?contains(Name, `scraper`)].Name' \
+    --query 'Rules[?contains(Name, `scout`)].Name' \
     --output text 2>/dev/null || echo "")
 
 if [ ! -z "$SCHEDULE_RULES" ]; then
@@ -114,7 +114,7 @@ fi
 echo ""
 echo "🗑️  Deregistering task definitions..."
 TASK_DEFS=$(aws ecs list-task-definitions \
-    --family-prefix scraper \
+    --family-prefix scout \
     --region $AWS_REGION \
     --query 'taskDefinitionArns[]' \
     --output text 2>/dev/null || echo "")
@@ -135,7 +135,7 @@ fi
 echo ""
 echo "🗑️  Deleting ECR repository..."
 aws ecr delete-repository \
-    --repository-name aligno-scraper \
+    --repository-name aligno-scout \
     --force \
     --region $AWS_REGION >/dev/null 2>&1 && echo "✅ ECR repository deleted" || echo "   Repository not found or already deleted"
 
@@ -143,7 +143,7 @@ aws ecr delete-repository \
 echo ""
 echo "🗑️  Deleting CloudWatch log group..."
 aws logs delete-log-group \
-    --log-group-name /ecs/scraper \
+    --log-group-name /ecs/scout \
     --region $AWS_REGION 2>&1 && echo "✅ Log group deleted" || echo "   Log group not found or already deleted"
 
 # 8. Delete IAM role policies and roles
@@ -151,7 +151,7 @@ echo ""
 echo "🗑️  Deleting IAM roles and policies..."
 
 # Delete EventBridge role
-ROLE_NAME="scraper-eventbridge-role"
+ROLE_NAME="scout-eventbridge-role"
 POLICIES=$(aws iam list-role-policies \
     --role-name $ROLE_NAME \
     --region $AWS_REGION \
@@ -173,7 +173,7 @@ aws iam delete-role \
     --region $AWS_REGION 2>&1 >/dev/null && echo "✅ EventBridge role deleted" || true
 
 # Delete task role policies (try both old and new naming)
-for ROLE_NAME in "scraper-task-role" "aligno-scraper-task-role"; do
+for ROLE_NAME in "scout-task-role" "aligno-scout-task-role"; do
     POLICIES=$(aws iam list-role-policies \
         --role-name $ROLE_NAME \
         --region $AWS_REGION \
@@ -196,7 +196,7 @@ for ROLE_NAME in "scraper-task-role" "aligno-scraper-task-role"; do
 done
 
 # Delete execution role policies (try both old and new naming)
-for ROLE_NAME in "scraper-execution-role" "aligno-scraper-execution-role"; do
+for ROLE_NAME in "scout-execution-role" "aligno-scout-execution-role"; do
     POLICIES=$(aws iam list-role-policies \
         --role-name $ROLE_NAME \
         --region $AWS_REGION \
@@ -242,7 +242,7 @@ echo "🗑️  Deleting security groups..."
 # First, find all custom security groups (non-default)
 SECURITY_GROUPS=$(aws ec2 describe-security-groups \
     --region $AWS_REGION \
-    --query 'SecurityGroups[?GroupName!=`default` && (contains(GroupName, `scraper`) || contains(GroupName, `aligno`))].GroupId' \
+    --query 'SecurityGroups[?GroupName!=`default` && (contains(GroupName, `scout`) || contains(GroupName, `aligno`))].GroupId' \
     --output text 2>/dev/null || echo "")
 
 if [ ! -z "$SECURITY_GROUPS" ]; then

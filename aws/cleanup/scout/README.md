@@ -4,7 +4,7 @@ Skrypty do czyszczenia zasobów AWS dla projektu Aligno.
 
 ## 🧹 cleanup-aws.sh
 
-Usuwa wszystkie zasoby AWS związane ze scraperem, **zachowując bazę danych RDS**.
+Usuwa wszystkie zasoby AWS związane z modułem Scout, **zachowując bazę danych RDS**.
 
 ### Co usuwa:
 
@@ -24,7 +24,7 @@ Usuwa wszystkie zasoby AWS związane ze scraperem, **zachowując bazę danych RD
 ### Użycie:
 
 ```bash
-cd aws/cleanup/scraper
+cd aws/cleanup/scout
 ./cleanup-aws.sh
 ```
 
@@ -52,7 +52,7 @@ Are you sure you want to continue? (yes/no):
 ### Przykładowy output:
 
 ```
-🧹 Cleaning up AWS resources for Aligno Scraper...
+🧹 Cleaning up AWS resources for Aligno Scout...
 ⚠️  This will delete everything EXCEPT the RDS database
 
 🛑 Stopping ECS tasks...
@@ -73,9 +73,9 @@ Are you sure you want to continue? (yes/no):
 ### Po czyszczeniu:
 
 Po uruchomieniu skryptu:
-- Wszystkie zasoby związane ze scraperem zostaną usunięte
+- Wszystkie zasoby związane z modułem Scout zostaną usunięte
 - RDS database zostanie zachowana i dostępna
-- Możesz przeprowadzić świeży deployment używając `aws/deployment/scraper/quick-deploy.sh`
+- Możesz przeprowadzić świeży deployment używając `aws/deployment/scout/quick-deploy.sh`
 
 ### Koszty:
 

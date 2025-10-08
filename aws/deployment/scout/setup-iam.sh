@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Setup IAM roles and policies for Aligno Scraper
+# Setup IAM roles and policies for Aligno Scout
 set -e
 
 # Load environment variables from .env file
@@ -16,7 +16,7 @@ AWS_REGION="${AWS_REGION:-eu-central-1}"
 AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:?AWS_ACCOUNT_ID must be set in .env file}"
 SECRET_ARN="${SECRET_ARN:?SECRET_ARN must be set in .env file}"
 
-echo "🔐 Setting up IAM roles and policies for Aligno Scraper..."
+echo "🔐 Setting up IAM roles and policies for Aligno Scout..."
 echo "   AWS Account: ${AWS_ACCOUNT_ID}"
 echo "   Region: ${AWS_REGION}"
 
@@ -48,7 +48,7 @@ EOF
 # Create task role
 echo "📝 Creating task role..."
 aws iam create-role \
-    --role-name scraper-task-role \
+    --role-name scout-task-role \
     --assume-role-policy-document '{
         "Version": "2012-10-17",
         "Statement": [
@@ -66,8 +66,8 @@ aws iam create-role \
 # Attach policy to task role
 echo "📋 Attaching policy to task role..."
 aws iam put-role-policy \
-    --role-name scraper-task-role \
-    --policy-name ScraperSecretsPolicy \
+    --role-name scout-task-role \
+    --policy-name ScoutSecretsPolicy \
     --policy-document file://task-role-policy.json \
     --region $AWS_REGION
 
@@ -96,7 +96,7 @@ EOF
 # Create execution role
 echo "📝 Creating execution role..."
 aws iam create-role \
-    --role-name scraper-execution-role \
+    --role-name scout-execution-role \
     --assume-role-policy-document '{
         "Version": "2012-10-17",
         "Statement": [
@@ -114,8 +114,8 @@ aws iam create-role \
 # Attach policy to execution role
 echo "📋 Attaching policy to execution role..."
 aws iam put-role-policy \
-    --role-name scraper-execution-role \
-    --policy-name ScraperExecutionPolicy \
+    --role-name scout-execution-role \
+    --policy-name ScoutExecutionPolicy \
     --policy-document file://execution-role-policy.json \
     --region $AWS_REGION
 
@@ -124,5 +124,5 @@ rm -f task-role-policy.json execution-role-policy.json
 
 echo "✅ IAM roles and policies created successfully!"
 echo "📋 Created roles:"
-echo "   - scraper-task-role"
-echo "   - scraper-execution-role"
+echo "   - scout-task-role"
+echo "   - scout-execution-role"

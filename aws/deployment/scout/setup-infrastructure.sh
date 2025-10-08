@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Setup AWS infrastructure for Aligno Scraper
+# Setup AWS infrastructure for Aligno Scout
 set -e
 
 AWS_REGION="eu-central-1"
@@ -84,7 +84,7 @@ aws ec2 create-route \
 # Create security group
 echo "🔒 Creating security group..."
 SECURITY_GROUP_ID=$(aws ec2 create-security-group \
-    --group-name scraper-sg \
+    --group-name scout-sg \
     --description "Security group for Scraper" \
     --vpc-id $VPC_ID \
     --region $AWS_REGION \

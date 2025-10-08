@@ -1,6 +1,6 @@
-# Aligno Scraper - AWS Fargate Deployment
+# Aligno Scout - AWS Fargate Deployment
 
-Complete deployment guide for running Aligno scraper as a **scheduled task on AWS Fargate** (daily at 2 AM UTC).
+Complete deployment guide for running Aligno Scout (job scraper module) as a **scheduled task on AWS Fargate** (daily at 2 AM UTC).
 
 ---
 
@@ -26,7 +26,7 @@ Complete deployment guide for running Aligno scraper as a **scheduled task on AW
 
 **Update code:**
 ```bash
-cd aws/deployment/scraper
+cd aws/deployment/scout
 ./deploy.sh
 ```
 
@@ -39,7 +39,7 @@ cd aws/deployment/scraper
 
 **Full setup (infrastructure + app):**
 ```bash
-cd aws/deployment/scraper
+cd aws/deployment/scout
 ./quick-deploy.sh
 ```
 
@@ -117,7 +117,7 @@ Your AWS user/role needs permissions to create:
 ## 📁 File Structure
 
 ```
-aws/deployment/scraper/
+aws/deployment/scout/
 ├── Dockerfile                    # Docker image for scraper
 ├── .dockerignore                 # Files ignored by Docker build
 ├── ecs-task-definition.json.template  # ECS task definition template
@@ -143,7 +143,7 @@ aws/deployment/scraper/
 ### Step 2: Run Full Deployment
 
 ```bash
-cd aws/deployment/scraper
+cd aws/deployment/scout
 chmod +x *.sh
 ./quick-deploy.sh
 ```
@@ -155,7 +155,7 @@ This script will:
 4. ✅ Create ECR repository
 5. ✅ Build Docker image for **linux/amd64** platform
 6. ✅ Push image to ECR
-7. ✅ Create ECS cluster `scraper-cluster`
+7. ✅ Create ECS cluster `scout-cluster`
 8. ✅ Register task definition
 9. ✅ Create EventBridge scheduled rule (cron: `0 2 * * ? *` = 2 AM UTC daily)
 
@@ -176,10 +176,10 @@ This script will:
 
 ## 🔄 Updating Code
 
-After making code changes in `src/scraper/`, deploy the update:
+After making code changes in `src/scout/`, deploy the update:
 
 ```bash
-cd aws/deployment/scraper
+cd aws/deployment/scout
 ./deploy.sh
 ```
 
@@ -201,7 +201,7 @@ Use `management-commands.sh` for common operations:
 ```bash
 ./management-commands.sh logs
 ```
-Shows recent CloudWatch logs from the scraper.
+Shows recent CloudWatch logs from Scout.
 
 ### Check Schedule Status
 ```bash
@@ -213,13 +213,13 @@ Shows EventBridge rule state (ENABLED/DISABLED) and schedule.
 ```bash
 ./management-commands.sh run-now
 ```
-Triggers scraper immediately (outside of schedule).
+Triggers Scout immediately (outside of schedule).
 
 ### Stop Running Task
 ```bash
 ./management-commands.sh stop-running
 ```
-Stops currently running scraper task.
+Stops currently running Scout task.
 
 ### Enable/Disable Schedule
 ```bash
@@ -240,12 +240,12 @@ Change schedule (example: 3 AM UTC).
 
 ### Deployment Architecture
 
-The scraper runs as a **Fargate Scheduled Task**:
+Scout runs as a **Fargate Scheduled Task**:
 
 ```
 ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
 │  EventBridge │─────▶│   Fargate    │─────▶│   RDS DB     │
-│  (2 AM UTC)  │      │   Scraper    │      │  (offers)    │
+│  (2 AM UTC)  │      │     Scout    │      │  (offers)    │
 └──────────────┘      └──────┬───────┘      └──────────────┘
                              │
                              ▼
@@ -261,7 +261,7 @@ Scripts automatically handle networking:
 
 - **VPC**: Uses default VPC or first available
 - **Subnet**: Public subnet with internet access (auto-detected)
-- **Security Group**: `scraper-sg` with rules for:
+- **Security Group**: `scout-sg` with rules for:
   - ✅ HTTPS (443) outbound - for web scraping
   - ✅ HTTP (80) outbound - for redirects
   - ✅ PostgreSQL (5432) outbound - for RDS connection
@@ -270,7 +270,7 @@ Scripts automatically handle networking:
 
 ### Environment Variables
 
-The scraper uses a **hybrid configuration approach**:
+Scout uses a **hybrid configuration approach**:
 
 #### In ECS Task Definition
 ```json
@@ -311,11 +311,11 @@ Build command uses: `docker buildx build --platform linux/amd64`
 
 ### CloudWatch Logs
 
-Logs are sent to: `/ecs/scraper`
+Logs are sent to: `/ecs/scout`
 
 **View in real-time:**
 ```bash
-aws logs tail /ecs/scraper --follow --region eu-central-1
+aws logs tail /ecs/scout --follow --region eu-central-1
 ```
 
 Or use management command:
@@ -326,11 +326,11 @@ Or use management command:
 ### ECS Console
 
 Monitor task execution in AWS Console:
-- **Cluster**: `scraper-cluster`
-- **Task Definition**: `scraper`
-- **Scheduled Rule**: `scraper-daily-schedule`
+- **Cluster**: `scout-cluster`
+- **Task Definition**: `scout`
+- **Scheduled Rule**: `scout-daily-schedule`
 
-Navigate to: ECS → Clusters → scraper-cluster → Scheduled Tasks
+Navigate to: ECS → Clusters → scout-cluster → Scheduled Tasks
 
 ---
 
@@ -345,14 +345,14 @@ Navigate to: ECS → Clusters → scraper-cluster → Scheduled Tasks
 
 **Verify EventBridge rule:**
 ```bash
-aws events list-rules --name-prefix scraper --region eu-central-1
+aws events list-rules --name-prefix scout --region eu-central-1
 ```
 
 **Check for failed tasks:**
 ```bash
 aws ecs describe-tasks \
-  --cluster scraper-cluster \
-  --tasks $(aws ecs list-tasks --cluster scraper-cluster --query 'taskArns[0]' --output text) \
+  --cluster scout-cluster \
+  --tasks $(aws ecs list-tasks --cluster scout-cluster --query 'taskArns[0]' --output text) \
   --region eu-central-1
 ```
 
@@ -377,8 +377,8 @@ psql -h your-endpoint.rds.amazonaws.com -U your_user -d aligno_db
 ```
 
 **Check security group rules:**
-- RDS security group must allow inbound PostgreSQL (5432) from scraper security group
-- Scraper security group must allow outbound PostgreSQL (5432)
+- RDS security group must allow inbound PostgreSQL (5432) from Scout security group
+- Scout security group must allow outbound PostgreSQL (5432)
 
 ### Image Build Fails
 
@@ -396,8 +396,8 @@ docker buildx create --use
 cd ../../..  # Navigate to project root
 docker buildx build \
   --platform linux/amd64 \
-  -f aws/deployment/scraper/Dockerfile \
-  -t aligno-scraper-test \
+  -f aws/deployment/scout/Dockerfile \
+  -t aligno-scout-test \
   .
 ```
 
@@ -498,7 +498,7 @@ Running **once daily at 2 AM UTC** for ~15-30 minutes:
 ## 📚 Additional Resources
 
 - **Main Project README**: `../../../README.md`
-- **Cleanup Guide**: `../../cleanup/scraper/README.md`
+- **Cleanup Guide**: `../../cleanup/scout/README.md`
 - **AWS Documentation**: `../../README.md`
 
 ---
@@ -512,4 +512,4 @@ Running **once daily at 2 AM UTC** for ~15-30 minutes:
 
 ---
 
-**Last Updated**: Based on scraper version with Playwright 1.52.0, Python 3.9, asyncpg 0.29.0
+**Last Updated**: Based on Scout module with Playwright 1.52.0, Python 3.9, asyncpg 0.29.0

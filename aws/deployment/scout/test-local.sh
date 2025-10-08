@@ -3,7 +3,7 @@
 # Test script for local Docker build and execution
 set -e
 
-echo "🧪 Testing Aligno Scraper locally with Docker..."
+echo "🧪 Testing Aligno Scout locally with Docker..."
 echo ""
 
 # Detect platform
@@ -31,25 +31,25 @@ fi
 
 # Build Docker image
 echo "🔨 Building Docker image for linux/amd64 (AWS Fargate platform)..."
-docker build --platform linux/amd64 -t scraper-test -f Dockerfile ../../..
+docker build --platform linux/amd64 -t scout-test -f Dockerfile ../../..
 
 echo "✅ Docker image built successfully"
 echo ""
 
 # Test 1: Basic container startup
 echo "🚀 Test 1: Container startup..."
-docker run --rm scraper-test python --version
+docker run --rm scout-test python --version
 echo "✅ Python works in container"
 echo ""
 
 # Test 2: Check if dependencies are installed
 echo "📦 Test 2: Checking dependencies..."
-docker run --rm scraper-test python -c "import asyncpg, playwright, pydantic; print('✅ All main dependencies installed')"
+docker run --rm scout-test python -c "import asyncpg, playwright, pydantic; print('✅ All main dependencies installed')"
 echo ""
 
 if [ "$BASIC_TEST" = false ]; then
-    # Test 3: Full scraper run with real database
-    echo "🌐 Test 3: Running scraper with real database..."
+    # Test 3: Full Scout run with real database
+    echo "🌐 Test 3: Running Scout with real database..."
     echo "   This will actually scrape JustJoin.it and update your database!"
     echo ""
     read -p "   Do you want to continue? (y/N): " -n 1 -r
@@ -57,7 +57,7 @@ if [ "$BASIC_TEST" = false ]; then
     
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo ""
-        echo "🏃 Running scraper..."
+        echo "🏃 Running Scout..."
         
         docker run --rm \
             -e AWS_DB_ENDPOINT="$AWS_DB_ENDPOINT" \
@@ -66,13 +66,13 @@ if [ "$BASIC_TEST" = false ]; then
             -e AWS_DB_PASSWORD="$AWS_DB_PASSWORD" \
             -e AWS_REGION="$AWS_REGION" \
             -e SECRET_ARN="$SECRET_ARN" \
-            scraper-test
+            scout-test
         
         echo ""
-        echo "✅ Scraper completed successfully!"
+        echo "✅ Scout completed successfully!"
     else
         echo ""
-        echo "⏭️  Skipped full scraper run"
+        echo "⏭️  Skipped full Scout run"
     fi
 else
     echo "💡 To run full test with database:"
@@ -86,7 +86,7 @@ else
     echo "     -e AWS_DB_USERNAME=your-username \\"
     echo "     -e AWS_DB_PASSWORD=your-password \\"
     echo "     -e AWS_DB_NAME=your-db \\"
-    echo "     scraper-test"
+    echo "     scout-test"
 fi
 
 echo ""
@@ -99,19 +99,19 @@ if [ "$BASIC_TEST" = true ]; then
     echo "   ✅ Docker image builds successfully"
     echo "   ✅ Python environment works"
     echo "   ✅ Dependencies are installed"
-    echo "   ⏭️  Skipped: Full scraper run (no .env)"
+    echo "   ⏭️  Skipped: Full Scout run (no .env)"
 else
     echo "   ✅ Docker image builds successfully"
     echo "   ✅ Python environment works"
     echo "   ✅ Dependencies are installed"
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "   ✅ Full scraper run completed"
+        echo "   ✅ Full Scout run completed"
     else
-        echo "   ⏭️  Skipped: Full scraper run (user choice)"
+        echo "   ⏭️  Skipped: Full Scout run (user choice)"
     fi
 fi
 echo ""
 echo "🎯 Next steps:"
 echo "   - If test passed, you're ready to deploy: ./quick-deploy.sh"
-echo "   - To run locally again: docker run --env-file ../../../.env scraper-test"
+echo "   - To run locally again: docker run --env-file ../../../.env scout-test"
 echo ""

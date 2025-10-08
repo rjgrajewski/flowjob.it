@@ -1,20 +1,20 @@
 {
-  "family": "scraper",
+  "family": "scout",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "2048",
   "memory": "4096",
-  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/scraper-execution-role",
-  "taskRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/scraper-task-role",
+  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/scout-execution-role",
+  "taskRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/scout-task-role",
   "containerDefinitions": [
     {
-      "name": "scraper",
-          "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/scraper:latest",
+      "name": "scout",
+          "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/scout:latest",
       "essential": true,
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/scraper",
+          "awslogs-group": "/ecs/scout",
           "awslogs-region": "${AWS_REGION}",
           "awslogs-stream-prefix": "ecs",
           "awslogs-create-group": "true"

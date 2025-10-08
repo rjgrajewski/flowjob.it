@@ -3,15 +3,15 @@
 # Quick deploy script - runs all necessary steps
 set -e
 
-echo "🚀 Quick Deploy - Aligno Scraper to AWS Fargate"
+echo "🚀 Quick Deploy - Aligno Scout to AWS Fargate"
 echo "================================================"
 echo "Deployment Mode: Scheduled Task (daily at 2 AM UTC)"
 echo "Estimated cost: ~\$18/month (Fargate + RDS)"
 echo ""
 
-# Check if we're in the deployment/scraper directory
+# Check if we're in the deployment/scout directory
 if [ ! -f "Dockerfile" ]; then
-    echo "❌ Please run this script from the deployment/scraper directory"
+    echo "❌ Please run this script from the deployment/scout directory"
     exit 1
 fi
 

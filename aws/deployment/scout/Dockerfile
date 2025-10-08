@@ -18,9 +18,9 @@ ENV PYTHONPATH=/app/src
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 # Create non-root user for security
-RUN useradd --create-home --shell /bin/bash scraper
-RUN chown -R scraper:scraper /app
-USER scraper
+RUN useradd --create-home --shell /bin/bash scout
+RUN chown -R scout:scout /app
+USER scout
 
 # Set the default command (with unbuffered output for CloudWatch Logs)
-CMD ["python", "-u", "-m", "scraper"]
+CMD ["python", "-u", "-m", "scout"]

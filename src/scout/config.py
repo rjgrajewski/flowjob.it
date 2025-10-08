@@ -1,6 +1,6 @@
 # config.py
 """
-Configuration constants for the scraper.
+Configuration constants for Scout.
 This module contains all configurable parameters used throughout the scraping process.
 """
 

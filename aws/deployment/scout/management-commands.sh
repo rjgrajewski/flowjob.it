@@ -10,14 +10,14 @@ fi
 
 AWS_REGION="${AWS_REGION:-eu-central-1}"
 AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID}"
-ECS_CLUSTER="scraper-cluster"
-TASK_DEFINITION="scraper"
-SCHEDULE_RULE="scraper-daily-schedule"
+ECS_CLUSTER="scout-cluster"
+TASK_DEFINITION="scout"
+SCHEDULE_RULE="scout-daily-schedule"
 
 case "$1" in
     "logs")
         echo "📋 Showing recent logs..."
-        aws logs tail /ecs/scraper --follow --region $AWS_REGION
+        aws logs tail /ecs/scout --follow --region $AWS_REGION
         ;;
     "schedule-status")
         echo "📊 Schedule status..."
@@ -42,7 +42,7 @@ case "$1" in
         VPC_ID=$(aws ec2 describe-vpcs --filters "Name=is-default,Values=true" --region $AWS_REGION --query 'Vpcs[0].VpcId' --output text 2>/dev/null || \
                  aws ec2 describe-vpcs --region $AWS_REGION --query 'Vpcs[0].VpcId' --output text)
         SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" --region $AWS_REGION --query 'Subnets[0].SubnetId' --output text)
-        SECURITY_GROUP_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=scraper-sg" "Name=vpc-id,Values=$VPC_ID" --region $AWS_REGION --query 'SecurityGroups[0].GroupId' --output text)
+        SECURITY_GROUP_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=scout-sg" "Name=vpc-id,Values=$VPC_ID" --region $AWS_REGION --query 'SecurityGroups[0].GroupId' --output text)
         
         aws ecs run-task \
             --cluster $ECS_CLUSTER \

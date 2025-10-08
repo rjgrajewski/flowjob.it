@@ -14,14 +14,14 @@ fi
 # Configuration (use env vars or defaults)
 AWS_REGION="${AWS_REGION:-eu-central-1}"
 AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:?AWS_ACCOUNT_ID must be set in .env file}"
-ECR_REPOSITORY="scraper"
-ECS_CLUSTER="scraper-cluster"
-TASK_DEFINITION_FAMILY="scraper"
-SCHEDULE_RULE_NAME="scraper-daily-schedule"
+ECR_REPOSITORY="scout"
+ECS_CLUSTER="scout-cluster"
+TASK_DEFINITION_FAMILY="scout"
+SCHEDULE_RULE_NAME="scout-daily-schedule"
 # Cron: run daily at 2 AM UTC (4 AM CET in summer, 3 AM CET in winter)
 SCHEDULE_EXPRESSION="cron(0 2 * * ? *)"
 
-echo "🚀 Starting deployment of Aligno Scraper as Scheduled Task..."
+echo "🚀 Starting deployment of Aligno Scout as Scheduled Task..."
 echo "   AWS Account: ${AWS_ACCOUNT_ID}"
 echo "   Region: ${AWS_REGION}"
 echo "   Schedule: Daily at 2 AM UTC"
@@ -138,7 +138,7 @@ echo "Using subnet: $SUBNET_ID"
 
 # Find or create security group
 SECURITY_GROUP_ID=$(aws ec2 describe-security-groups \
-    --filters "Name=group-name,Values=scraper-sg" "Name=vpc-id,Values=$VPC_ID" \
+    --filters "Name=group-name,Values=scout-sg" "Name=vpc-id,Values=$VPC_ID" \
     --region $AWS_REGION \
     --query 'SecurityGroups[0].GroupId' \
     --output text 2>/dev/null)
@@ -146,7 +146,7 @@ SECURITY_GROUP_ID=$(aws ec2 describe-security-groups \
 if [ "$SECURITY_GROUP_ID" == "None" ] || [ -z "$SECURITY_GROUP_ID" ]; then
     echo "Creating security group..."
     SECURITY_GROUP_ID=$(aws ec2 create-security-group \
-        --group-name scraper-sg \
+        --group-name scout-sg \
         --description "Security group for Scraper" \
         --vpc-id $VPC_ID \
         --region $AWS_REGION \
@@ -262,7 +262,7 @@ echo "   View schedule: aws events describe-rule --name $SCHEDULE_RULE_NAME --re
 echo "   Disable schedule: aws events disable-rule --name $SCHEDULE_RULE_NAME --region $AWS_REGION"
 echo "   Enable schedule: aws events enable-rule --name $SCHEDULE_RULE_NAME --region $AWS_REGION"
 echo "   Run manually: aws ecs run-task --cluster $ECS_CLUSTER --task-definition $TASK_DEFINITION_FAMILY --launch-type FARGATE --network-configuration \"awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}\" --region $AWS_REGION"
-echo "   View logs: aws logs tail /ecs/scraper --follow --region $AWS_REGION"
+echo "   View logs: aws logs tail /ecs/scout --follow --region $AWS_REGION"
 echo ""
 echo "📊 Monitor in AWS Console:"
 echo "   https://$AWS_REGION.console.aws.amazon.com/ecs/v2/clusters/$ECS_CLUSTER"
