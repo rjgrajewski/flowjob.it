@@ -534,10 +534,6 @@ except Exception as e:
 - [ ] Parallel processing of offers
 - [ ] Machine learning for selector auto-update detection
 
-## 📄 License
-
-Part of the Aligno project. See main project README for licensing information.
-
 ## 🔗 Related Documentation
 
 - [Aligno Main README](../../README.md)
