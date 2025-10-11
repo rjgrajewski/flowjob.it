@@ -46,7 +46,7 @@ For each job offer, Scout extracts:
 
 ```
 scout/
-├── __main__.py          # Entry point for running as module
+├── __main__.py         # Entry point for running as module
 ├── cli.py              # Main orchestration and CLI interface
 ├── config.py           # Configuration constants
 ├── db.py               # Database connection and operations
@@ -54,17 +54,6 @@ scout/
 ├── selectors.py        # CSS/XPath selectors configuration
 └── aws_secrets.py      # AWS Secrets Manager integration
 ```
-
-### Component Overview
-
-| Component | Responsibility |
-|-----------|---------------|
-| `cli.py` | Orchestrates the scraping process, manages browser and database lifecycle |
-| `scrape_core.py` | Implements browser automation, page navigation, and data extraction |
-| `db.py` | Handles database connections, schema initialization, and data operations |
-| `selectors.py` | Centralizes all CSS/XPath selectors for maintainability |
-| `aws_secrets.py` | Integrates with AWS Secrets Manager for credential management |
-| `config.py` | Stores configuration constants for timeouts, limits, and behavior |
 
 ## 🚀 Installation
 
