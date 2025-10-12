@@ -12,6 +12,25 @@ Scout is an intelligent, asynchronous web scraper that automatically collects IT
 - 🔄 **Smart Synchronization**: Automatically detects new offers and removes stale ones
 - 🔒 **AWS Integration**: Supports direct connection with PostgreSQL/AWS RDS and AWS Secrets Manager for secure credential management
 
+## 🔍 How Scout Works
+
+### 1. Link Collection Phase
+
+Scrolling algorithm:
+
+- Scrolls down the page progressively
+- Collects unique job offer links after each scroll (the page performs dynamic loading)
+- Stops when no new links found for `MAX_IDLE_SCROLLS` consecutive scrolls
+- Prevents duplicates using set-based tracking
+
+### 2. Data Extraction Phase
+
+For each new offer URL, Scout navigates to the individual offer page and extracts structured data fields (such as job title, company, and location) by applying dedicated selectors for each data point. The extracted information is then saved into the database as a new entry in the `offers` table.
+
+### 3. Cleanup Phase
+
+After data extraction, Scout performs cleanup actions to maintain data quality. It detects and removes stale offers that are no longer listed on the website, cleans up any empty records resulting from failed extractions, and then gracefully closes all active connections and resources, including the database connection and browser instance.
+
 ## 🏗️ Architecture
 
 ```
@@ -45,28 +64,28 @@ Scout uses the following key dependencies:
 | `asyncpg` | 0.29.0 | Async PostgreSQL database driver |
 | `boto3` | 1.35.0 | AWS SDK for Secrets Manager integration |
 | `python-dotenv` | 1.0.0 | Environment variable management |
-| `pydantic` | 2.11.9 | Data validation and settings management |
 
 For the complete list, see `requirements.txt` in the project root.
 
-## 🔍 How Scout Works
+## ⚙️ Configuration
 
-### 1. Link Collection Phase
+Scout's behavior can be customized through `config.py`:
 
-Scrolling algorithm:
-
-- Scrolls down the page progressively
-- Collects unique job offer links after each scroll (the page performs dynamic loading)
-- Stops when no new links found for `MAX_IDLE_SCROLLS` consecutive scrolls
-- Prevents duplicates using set-based tracking
-
-### 2. Data Extraction Phase
-
-For each new offer URL, Scout navigates to the individual offer page and extracts structured data fields (such as job title, company, and location) by applying dedicated selectors for each data point. The extracted information is then saved into the database as a new entry in the `offers` table.
-
-### 3. Cleanup Phase
-
-After data extraction, Scout performs cleanup actions to maintain data quality. It detects and removes stale offers that are no longer listed on the website, cleans up any empty records resulting from failed extractions, and then gracefully closes all active connections and resources, including the database connection and browser instance.
+```python
+class ScrapingConfig:
+    # Browser settings
+    HEADLESS = True                    # Run browser in headless mode (set False for debugging)
+    RESTART_BROWSER_EVERY = 500        # Restart browser every N offers (memory management)
+    
+    # Scraping behavior
+    SCROLL_PAUSE_TIME = 0.05           # Pause between scrolls (seconds)
+    MAX_IDLE_SCROLLS = 100             # Stop after N scrolls without new links
+    
+    # Timeouts
+    LINK_TIMEOUT = 2000                # Timeout for link extraction (ms)
+    PAGE_LOAD_TIMEOUT = 60000          # Timeout for page loading (ms)
+    REQUEST_DELAY = 0.5                # Delay between processing offers (seconds)
+```
 
 ## 🚀 Installation
 
@@ -108,26 +127,6 @@ AWS_REGION=eu-central-1
 
 # Optional: AWS Secrets Manager (for production)
 SECRET_ARN=arn:aws:secretsmanager:region:account:secret:name
-```
-
-## ⚙️ Configuration
-
-Scout's behavior can be customized through `config.py`:
-
-```python
-class ScrapingConfig:
-    # Browser settings
-    HEADLESS = True                    # Run browser in headless mode (set False for debugging)
-    RESTART_BROWSER_EVERY = 500        # Restart browser every N offers (memory management)
-    
-    # Scraping behavior
-    SCROLL_PAUSE_TIME = 0.05           # Pause between scrolls (seconds)
-    MAX_IDLE_SCROLLS = 100             # Stop after N scrolls without new links
-    
-    # Timeouts
-    LINK_TIMEOUT = 2000                # Timeout for link extraction (ms)
-    PAGE_LOAD_TIMEOUT = 60000          # Timeout for page loading (ms)
-    REQUEST_DELAY = 0.5                # Delay between processing offers (seconds)
 ```
 
 ## 📖 Usage
