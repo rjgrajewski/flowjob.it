@@ -63,19 +63,6 @@ Scout uses **async/await syntax** required by Playwright for browser automation.
 - **RDS PostgreSQL** for data storage
 - **IAM Roles** for service authentication
 
-## 📦 Dependencies
-
-Scout uses the following key dependencies:
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `playwright` | 1.52.0 | Browser automation for web scraping |
-| `asyncpg` | 0.29.0 | Async PostgreSQL database driver |
-| `boto3` | 1.35.0 | AWS SDK for Secrets Manager integration |
-| `python-dotenv` | 1.0.0 | Environment variable management |
-
-For the complete list, see `requirements.txt` in the project root.
-
 ## ⚙️ Configuration
 
 Scout's behavior can be customized through `config.py`:
@@ -138,20 +125,26 @@ class JustJoinItSelectors:
 > **Note:**
 > For AWS deployment, skip local setup and use `quick-deploy.sh` (see Deployment section below).
 
-1. **Install dependencies:**
+1. **Dependencies**
 
-```bash
-# From project root
-pip install -r requirements.txt
-```
+Scout uses the following key dependencies:
 
-2. **Install Playwright browsers:**
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `playwright` | 1.52.0 | Browser automation for web scraping |
+| `asyncpg` | 0.29.0 | Async PostgreSQL database driver |
+| `boto3` | 1.35.0 | AWS SDK for Secrets Manager integration |
+| `python-dotenv` | 1.0.0 | Environment variable management |
+
+For the complete list, see `requirements.txt` in the project root.
+
+2. **Install Playwright browsers**
 
 ```bash
 playwright install chromium
 ```
 
-3. **Configure environment:**
+3. **Configure environment**
 
 Create a `.env` file in the project root:
 
