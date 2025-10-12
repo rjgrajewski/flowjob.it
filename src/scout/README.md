@@ -35,6 +35,20 @@ Scout uses **async/await syntax** required by Playwright for browser automation.
 - **Memory control** - predictable resource usage
 - **Error tracking** - easier debugging of sequential flow
 
+## 📦 Dependencies
+
+Scout uses the following key dependencies:
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `playwright` | 1.52.0 | Browser automation for web scraping |
+| `asyncpg` | 0.29.0 | Async PostgreSQL database driver |
+| `boto3` | 1.35.0 | AWS SDK for Secrets Manager integration |
+| `python-dotenv` | 1.0.0 | Environment variable management |
+| `pydantic` | 2.11.9 | Data validation and settings management |
+
+For the complete list, see `requirements.txt` in the project root.
+
 ## 🔍 How Scout Works
 
 ### 1. Initialization Phase
@@ -107,11 +121,6 @@ await playwright.stop()
 ```
 
 ## 🚀 Installation
-  
-### AWS
-
-If you want to deploy Scout on AWS, you don’t need to set it up locally – simply use the deployment script (`quick-deploy.sh`) as described in the AWS deployment guide.  
-The steps below are only needed if you wish to run Scout locally for development or testing. See [AWS Deployment Guide](../../aws/deployment/scout/README.md) for detailed deployment instructions.
 
 ### Prerequisites
 
@@ -120,6 +129,9 @@ The steps below are only needed if you wish to run Scout locally for development
 - pip and virtualenv
 
 ### Local Setup
+
+**Note:**
+>> For AWS deployment, skip local setup and use `quick-deploy.sh` (see Deployment section below).
 
 1. **Install dependencies:**
 
@@ -172,25 +184,7 @@ class ScrapingConfig:
 
 ## 📖 Usage
 
-### AWS Fargate Scheduled Task
-
-Scout is designed to run as a scheduled task on AWS Fargate:
-
-```bash
-# Deploy to AWS
-cd aws/deployment/scout
-./quick-deploy.sh
-
-# Run manually
-./management-commands.sh run-now
-
-# View logs
-./management-commands.sh logs
-```
-
-See [AWS Deployment Guide](../../aws/deployment/scout/README.md) for detailed deployment instructions.
-
-### Local
+### Local Execution
 
 **As a Python module (recommended):**
 
@@ -210,6 +204,10 @@ python -m scout
 ```bash
 python src/scout/__main__.py
 ```
+
+### AWS Management
+
+For AWS deployment and management commands, see the Deployment section below.
 
 ## 🗄️ Database Schema
 
@@ -325,15 +323,16 @@ logging.basicConfig(
 )
 ```
 
-**Log messages include:**
-- 🔄 Processing status
-- ✅ Success indicators
-- ⚠️ Warnings
-- ❌ Errors
-- 📊 Statistics
-- 🗑️ Cleanup operations
+See the Monitoring section below for example log output.
 
 ## 📊 Performance Considerations
+
+### Performance Metrics
+
+**Typical execution statistics:**
+- **Offers collected:** ~7.000 per run
+- **Execution time:** ~1 hour
+- **Database operations:** ~300 inserts (new offers), ~100 deletes (stale offers)
 
 ### Memory Management
 
@@ -347,99 +346,57 @@ if i > 1 and (i - 1) % ScrapingConfig.RESTART_BROWSER_EVERY == 0:
     page = await browser.new_page()
 ```
 
-### Rate Limiting
-
-Respectful delays between requests:
-
-```python
-# Wait between processing offers
-await asyncio.sleep(ScrapingConfig.REQUEST_DELAY)  # 0.5 seconds
-
-# Pause between scrolls
-await asyncio.sleep(ScrapingConfig.SCROLL_PAUSE_TIME)  # 0.05 seconds
-```
-
-### Database Optimization
-
-- Batch checking of existing URLs
-- Single-pass stale offer cleanup
-- Efficient UNIQUE constraint handling
-
 ## 🔧 Troubleshooting
-
-### Common Issues
-
-**1. Browser fails to start**
-```bash
-# Install Playwright browsers
-playwright install chromium
-```
-
-**2. Database connection fails**
-```bash
-# Check environment variables
-echo $AWS_DB_ENDPOINT
-echo $AWS_DB_NAME
-
-# Test connection
-psql -h $AWS_DB_ENDPOINT -U $AWS_DB_USERNAME -d $AWS_DB_NAME
-```
-
-**3. No offers found**
-- Check if JustJoin.it is accessible
-- Verify selectors haven't changed (website updates)
-- Enable `HEADLESS=False` to visually debug
-
-**4. Timeout errors**
-```python
-# In config.py, increase timeouts:
-PAGE_LOAD_TIMEOUT = 120000  # 2 minutes
-LINK_TIMEOUT = 5000         # 5 seconds
-```
-
-### Error Messages
-
-| Message | Cause | Solution |
-|---------|-------|----------|
-| `⚠️ Database connection lost` | Network issue or timeout | Automatic reconnection attempted |
-| `❌ Database 'X' not found` | Database doesn't exist | Create database in AWS RDS console |
-| `⚠️ No job offer links found` | Scraping failed or empty page | Check selectors and network |
 
 ## 🚀 Deployment
 
 ### AWS Fargate (Production)
 
-Scout is designed to run as a scheduled ECS task on AWS Fargate:
+Scout is designed to run as a scheduled ECS task on AWS Fargate.
 
 **Architecture:**
-- ECS Cluster with Fargate task
-- EventBridge rule for scheduling (daily at 2 AM UTC)
-- CloudWatch Logs for monitoring
-- Secrets Manager for credentials
-- RDS PostgreSQL for data storage
+- **ECS Cluster** with Fargate task (serverless container execution)
+- **EventBridge** rule for scheduling (daily at 2 AM UTC)
+- **CloudWatch Logs** for monitoring and debugging
+- **Secrets Manager** for secure credential storage
+- **RDS PostgreSQL** for data storage
+- **IAM Roles** for service authentication
 
-**Deployment:**
+**Quick Deployment:**
 ```bash
 cd aws/deployment/scout
 ./quick-deploy.sh
 ```
 
-See `aws/deployment/scout/README.md` for detailed instructions.
-
-### Local Development
-
+**Management Commands:**
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-playwright install chromium
+# Run task manually (outside schedule)
+./management-commands.sh run-now
 
-# Configure .env
-cp .env.example .env
-# Edit .env with your credentials
+# View recent logs
+./management-commands.sh logs
 
-# Run scout
-python -m scout
+# Enable scheduled scraping
+./management-commands.sh enable-schedule
+
+# Disable scheduled scraping
+./management-commands.sh disable-schedule
+
+# Check task status
+./management-commands.sh status
 ```
+
+**Required AWS Permissions:**
+The deployment requires the following IAM permissions:
+- `ecs:*` - ECS task management
+- `ecr:*` - Container registry operations
+- `events:*` - EventBridge scheduling
+- `logs:*` - CloudWatch Logs access
+- `secretsmanager:GetSecretValue` - Access to RDS credentials
+- `rds:DescribeDBInstances` - Database connection info
+- `iam:PassRole` - Service role assignment
+
+For detailed deployment instructions, see [AWS Deployment Guide](../../aws/deployment/scout/README.md).
 
 ## 📈 Monitoring
 
@@ -510,11 +467,12 @@ except Exception as e:
 
 ## 🔗 Related Documentation
 
-- [Aligno Main README](../../README.md)
-- [AWS Deployment Guide](../../aws/deployment/scout/README.md)
-- [Database Schema](../sql/tables/offers.sql)
+- [Aligno Main README](../../README.md) - Project overview and architecture
+- [AWS Deployment Guide](../../aws/deployment/scout/README.md) - Detailed AWS setup and deployment
+- [Database Schema - Offers](../sql/tables/offers.sql) - Main offers table structure
+- [Atlas Module](../atlas/README.md) - AI-powered skill categorization
 
 ---
 
-**Proudly built and maitained by Rafal Grajewski for the Aligno project**
+**Proudly built and maintained by Rafal Grajewski for the Aligno project**
 
