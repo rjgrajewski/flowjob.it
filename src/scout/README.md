@@ -164,41 +164,13 @@ SECRET_ARN=arn:aws:secretsmanager:region:account:secret:name
 
 ### AWS Fargate (Production)
 
-**Quick Deployment:**
-```bash
-cd aws/deployment/scout
-./quick-deploy.sh
-```
+When deploying Scout on AWS Fargate, the application is run as a scheduled ECS (Elastic Container Service) task. This setup allows jobs (containerized runs of Scout) to be executed automatically at regular intervals, such as daily or hourly, without manual intervention. The schedule is managed using AWS EventBridge, which triggers the ECS task as defined.
 
-**Management Commands:**
-```bash
-# Run task manually (outside schedule)
-./management-commands.sh run-now
+In addition to scheduled runs, you can also manually trigger the ECS task at any time through the AWS Console or CLI, allowing on-demand executions whenever needed.
 
-# View recent logs
-./management-commands.sh logs
+CloudWatch Logs are used for monitoring and troubleshooting task executions, making it easy to view output and diagnose issues.
 
-# Enable scheduled scraping
-./management-commands.sh enable-schedule
-
-# Disable scheduled scraping
-./management-commands.sh disable-schedule
-
-# Check task status
-./management-commands.sh status
-```
-
-**Required AWS Permissions:**
-The deployment requires the following IAM permissions:
-- `ecs:*` - ECS task management
-- `ecr:*` - Container registry operations
-- `events:*` - EventBridge scheduling
-- `logs:*` - CloudWatch Logs access
-- `secretsmanager:GetSecretValue` - Access to RDS credentials
-- `rds:DescribeDBInstances` - Database connection info
-- `iam:PassRole` - Service role assignment
-
-For detailed deployment instructions, see [AWS Deployment Guide](../../aws/deployment/scout/README.md).
+Manual and scheduled runs of Scout on Fargate use the same Docker image and environment configuration, ensuring consistent behavior across automated and ad-hoc executions.
 
 ### Local Execution
 
