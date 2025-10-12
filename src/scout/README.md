@@ -2,6 +2,28 @@
 
 ![Python 3.9](https://img.shields.io/badge/python-3.9-blue) ![Playwright](https://img.shields.io/badge/playwright-1.52.0-blue) ![asyncpg](https://img.shields.io/badge/asyncpg-0.29.0-blue) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.3-blue)
 
+## 📚 Table of Contents
+
+- [Overview](#-overview)
+- [How Scout Works](#-how-scout-works)
+  - [Link Collection Phase](#1-link-collection-phase)
+  - [Data Extraction Phase](#2-data-extraction-phase)
+  - [Cleanup Phase](#3-cleanup-phase)
+- [Architecture](#-architecture)
+  - [Async Architecture](#async-architecture)
+  - [AWS Fargate](#aws-fargate)
+- [Configuration](#-configuration)
+- [Installation](#-installation)
+- [Usage](#-usage)
+  - [AWS Fargate (Production)](#aws-fargate-production)
+  - [Local Execution](#local-execution)
+- [Performance Considerations](#-performance-considerations)
+- [Monitoring](#-monitoring)
+- [Database Schema](#-database-schema)
+- [Security Features](#-security-features)
+- [Future Improvements](#-future-improvements)
+- [Related Documentation](#-related-documentation)
+
 ## 🎯 Overview
 
 Scout is an intelligent, asynchronous web scraper that automatically collects IT job offers from JustJoin.it, one of Poland's leading IT job boards, extracting key details from each listing and storing them in a PostgreSQL database for up-to-date, structured job market analysis.
