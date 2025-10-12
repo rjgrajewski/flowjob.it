@@ -209,7 +209,7 @@ cd aws/deployment/scout
 ./management-commands.sh logs
 ```
 
-See `aws/deployment/scout/README.md` for detailed deployment instructions.
+See [AWS Deployment Guide](../../aws/deployment/scout/README.md) for detailed deployment instructions.
 
 ## 🗄️ Database Schema
 
@@ -523,7 +523,6 @@ except Exception as e:
 
 - [Aligno Main README](../../README.md)
 - [AWS Deployment Guide](../../aws/deployment/scout/README.md)
-- [AWS Cleanup Guide](../../aws/cleanup/scout/README.md)
 - [Database Schema](../sql/tables/offers.sql)
 
 ---
