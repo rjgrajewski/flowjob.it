@@ -2,45 +2,15 @@
 
 ![Python 3.9](https://img.shields.io/badge/python-3.9-blue) ![Playwright](https://img.shields.io/badge/playwright-1.52.0-blue) ![asyncpg](https://img.shields.io/badge/asyncpg-0.29.0-blue) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.3-blue)
 
-Scout is an intelligent web scraper designed to collect job offers from JustJoin.it and store them in a PostgreSQL database. Built with Playwright for robust browser automation and asyncpg for non-blocking database I/O.
-
 ## 🎯 Overview
 
-Scout automates the process of gathering job market data from JustJoin.it, one of Poland's leading IT job boards. It intelligently scrolls through job listings, extracts detailed information about each offer, and maintains a synchronized database of current job opportunities.
+Scout is an intelligent, asynchronous web scraper that automatically collects IT job offers from JustJoin.it, one of Poland's leading IT job boards, extracting key details from each listing and storing them in a PostgreSQL database for up-to-date, structured job market analysis.
 
 ### Key Features
 
-- 🤖 **Automated Scraping**: Fully automated collection of job offers with intelligent scrolling
+- 🤖 **Automated Scraping**: Fully automated collection of job offers
 - 🔄 **Smart Synchronization**: Automatically detects new offers and removes stale ones
-- 💾 **Database Integration**: Direct integration with PostgreSQL/AWS RDS
-- 🧹 **Memory Management**: Automatic browser restarts to prevent memory leaks
-- 🔒 **AWS Integration**: Supports AWS Secrets Manager for secure credential management
-- 📊 **Rich Data Extraction**: Collects comprehensive job details including tech stack, salary ranges, and more
-- ⚙️ **Configurable**: Extensive configuration options for scraping behavior
-
-### ⚡ Async Architecture
-
-Scout uses **async/await syntax** required by Playwright for browser automation. Database operations use `asyncpg` for **non-blocking I/O**.
-
-**Important:** Job offers are processed **sequentially,** not in parallel. This is intentional for:
-- **Rate limiting** - respectful scraping without overwhelming the target site
-- **Browser limitations** - single Playwright page instance
-- **Memory control** - predictable resource usage
-- **Error tracking** - easier debugging of sequential flow
-
-## 📦 What Scout Collects
-
-For each job offer, Scout extracts:
-
-- **Primary key:** job URL
-- **Basic information:** job title, company name, category
-- **Location**
-- **Operating mode** (remote/hybrid/office)
-- **Work schedule** (full-time/part-time/etc)
-- **Experience** (junior/mid/senior/etc)
-- **Employment type** (B2B/permanent/etc)
-- **Salary range** for multiple employment types (if available)
-- **Tech stack**: Required technologies with expected proficiency levels
+- 🔒 **AWS Integration**: Supports direct connection with PostgreSQL/AWS RDS and AWS Secrets Manager for secure credential management
 
 ## 🏗️ Architecture
 
@@ -54,6 +24,16 @@ scout/
 ├── selectors.py        # CSS/XPath selectors configuration
 └── aws_secrets.py      # AWS Secrets Manager integration
 ```
+
+### ⚡ Async Architecture
+
+Scout uses **async/await syntax** required by Playwright for browser automation. Database operations use `asyncpg` for **non-blocking I/O**.
+
+**Important:** Job offers are processed **sequentially,** not in parallel. This is intentional for:
+- **Rate limiting** - respectful scraping without overwhelming the target site
+- **Browser limitations** - single Playwright page instance
+- **Memory control** - predictable resource usage
+- **Error tracking** - easier debugging of sequential flow
 
 ## 🔍 How Scout Works
 
@@ -128,13 +108,19 @@ await playwright.stop()
 
 ## 🚀 Installation
 
+> **Note:**  
+> If you want to deploy Scout on AWS, you don’t need to set it up locally – simply use the deployment script (`quick-deploy.sh`) as described in the AWS deployment guide.  
+> The steps below are only needed if you wish to run Scout locally for development or testing.
+
+
+
+### Local Setup
+
 ### Prerequisites
 
 - Python 3.9+
 - PostgreSQL 15.3+ (or AWS RDS)
 - pip and virtualenv
-
-### Setup
 
 1. **Install dependencies:**
 
