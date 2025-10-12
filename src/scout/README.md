@@ -53,9 +53,8 @@ For the complete list, see `requirements.txt` in the project root.
 
 ### 1. Link Collection Phase
 
-Scout navigates to JustJoin.it and collects job offer links:
+Scrolling algorithm:
 
-**Scrolling algorithm:**
 - Scrolls down the page progressively
 - Collects unique job offer links after each scroll (the page performs dynamic loading)
 - Stops when no new links found for `MAX_IDLE_SCROLLS` consecutive scrolls
@@ -228,14 +227,6 @@ CREATE TABLE IF NOT EXISTS offers (
 );
 ```
 
-### Data Management
-
-Scout includes automatic data management features:
-
-- **Duplicate Prevention**: Checks for existing URLs before processing
-- **Stale Offer Removal**: Removes offers no longer on the website
-- **Empty Record Cleanup**: Removes failed extractions (records with only URL)
-
 ## 🔐 Security Features
 
 ### AWS Secrets Manager Integration
@@ -259,12 +250,6 @@ def sanitize_string(value, max_length=None):
         cleaned = cleaned[:max_length]
     return cleaned if cleaned else None
 ```
-
-### Connection Management
-
-- Automatic connection validation before processing
-- Reconnection handling for long-running jobs
-- Proper resource cleanup in finally blocks
 
 ### Memory Management
 
@@ -364,8 +349,6 @@ class JustJoinItSelectors:
 
 - [Aligno Main README](../../README.md) - Project overview and architecture
 - [AWS Deployment Guide](../../aws/deployment/scout/README.md) - Detailed AWS setup and deployment
-- [Database Schema - Offers](../sql/tables/offers.sql) - Main offers table structure
-- [Atlas Module](../atlas/README.md) - AI-powered skill categorization
 
 ---
 
