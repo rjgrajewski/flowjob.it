@@ -111,7 +111,7 @@ await playwright.stop()
 ### AWS
 
 If you want to deploy Scout on AWS, you don’t need to set it up locally – simply use the deployment script (`quick-deploy.sh`) as described in the AWS deployment guide.  
-The steps below are only needed if you wish to run Scout locally for development or testing.
+The steps below are only needed if you wish to run Scout locally for development or testing. See [AWS Deployment Guide](../../aws/deployment/scout/README.md) for detailed deployment instructions.
 
 ### Prerequisites
 
@@ -172,7 +172,25 @@ class ScrapingConfig:
 
 ## 📖 Usage
 
-### Running Scout
+### AWS Fargate Scheduled Task
+
+Scout is designed to run as a scheduled task on AWS Fargate:
+
+```bash
+# Deploy to AWS
+cd aws/deployment/scout
+./quick-deploy.sh
+
+# Run manually
+./management-commands.sh run-now
+
+# View logs
+./management-commands.sh logs
+```
+
+See [AWS Deployment Guide](../../aws/deployment/scout/README.md) for detailed deployment instructions.
+
+### Local
 
 **As a Python module (recommended):**
 
@@ -193,32 +211,13 @@ python -m scout
 python src/scout/__main__.py
 ```
 
-### AWS Fargate Scheduled Task
-
-Scout is designed to run as a scheduled task on AWS Fargate:
-
-```bash
-# Deploy to AWS
-cd aws/deployment/scout
-./quick-deploy.sh
-
-# Run manually
-./management-commands.sh run-now
-
-# View logs
-./management-commands.sh logs
-```
-
-See [AWS Deployment Guide](../../aws/deployment/scout/README.md) for detailed deployment instructions.
-
 ## 🗄️ Database Schema
 
 Scout automatically creates and manages the `offers` table:
 
 ```sql
 CREATE TABLE IF NOT EXISTS offers (
-    id SERIAL PRIMARY KEY,
-    job_url TEXT UNIQUE NOT NULL,
+    job_url TEXT PRIMARY KEY,
     job_title TEXT,
     category TEXT,
     company TEXT,
@@ -334,16 +333,6 @@ logging.basicConfig(
 - 📊 Statistics
 - 🗑️ Cleanup operations
 
-### Local Testing
-
-```bash
-# Run with local environment
-python -m scout
-
-# Check logs in console
-# Database updates visible in PostgreSQL
-```
-
 ## 📊 Performance Considerations
 
 ### Memory Management
@@ -415,7 +404,6 @@ LINK_TIMEOUT = 5000         # 5 seconds
 | `⚠️ Database connection lost` | Network issue or timeout | Automatic reconnection attempted |
 | `❌ Database 'X' not found` | Database doesn't exist | Create database in AWS RDS console |
 | `⚠️ No job offer links found` | Scraping failed or empty page | Check selectors and network |
-| `🛑 Stopping - no new links found` | Normal completion | Not an error - scraping finished |
 
 ## 🚀 Deployment
 
@@ -463,6 +451,7 @@ Scout provides detailed logging:
 2025-10-11 12:00:00 [INFO] ✅ Database connection established successfully
 2025-10-11 12:00:01 [INFO] 🔄 Starting to collect job offer links...
 2025-10-11 12:00:15 [INFO] 📊 Collected 1250 unique job offer links
+2025-10-11 12:00:16 [INFO] 🛑 Stopping - no new links found
 2025-10-11 12:00:16 [INFO] ⏭️ Already in database: 1100 offers
 2025-10-11 12:00:16 [INFO] 🆕 New offers to process: 150 offers
 2025-10-11 12:15:30 [INFO] ✅ Processed 150 new offers
