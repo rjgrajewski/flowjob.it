@@ -96,6 +96,35 @@ class ScrapingConfig:
     REQUEST_DELAY = 0.5                # Delay between processing offers (seconds)
 ```
 
+### Selectors
+
+Scout uses centralized selector management through `selectors.py`:
+
+```python
+class JustJoinItSelectors:
+    JOB_OFFER_LINKS = SelectorConfig(
+        primary='a[href*="/job-offer/"]',
+        description="Links to individual job offers"
+    )
+    
+    JOB_TITLE = SelectorConfig(
+        primary='h1',
+        description="Main job title heading"
+    )
+    
+    COMPANY = SelectorConfig(
+        primary='a:has(svg[data-testid="ApartmentRoundedIcon"]) p',
+        description="Company name from link with apartment icon"
+    )
+    
+    # ... more selectors
+```
+
+**Selector types:**
+- CSS selectors for simple elements
+- XPath expressions for complex DOM navigation
+- Text-based selectors for dynamic content
+
 ## 🚀 Installation
 
 ### Prerequisites
@@ -297,45 +326,6 @@ Scout provides detailed logging:
 # Stream logs in real-time
 aws logs tail /aws/ecs/scout-scraper --follow
 ```
-
-## 🤝 Contributing
-
-### Selectors Configuration
-
-Scout uses centralized selector management through `selectors.py`:
-
-```python
-class JustJoinItSelectors:
-    JOB_OFFER_LINKS = SelectorConfig(
-        primary='a[href*="/job-offer/"]',
-        description="Links to individual job offers"
-    )
-    
-    JOB_TITLE = SelectorConfig(
-        primary='h1',
-        description="Main job title heading"
-    )
-    
-    COMPANY = SelectorConfig(
-        primary='a:has(svg[data-testid="ApartmentRoundedIcon"]) p',
-        description="Company name from link with apartment icon"
-    )
-    
-    # ... more selectors
-```
-
-**Selector types:**
-- CSS selectors for simple elements
-- XPath expressions for complex DOM navigation
-- Text-based selectors for dynamic content
-
-### Code Style
-
-- Use async/await for I/O operations
-- Include comprehensive error handling
-- Add logging for important operations
-- Follow PEP 8 style guidelines
-- Add type hints where possible
 
 ## 📝 Future Improvements
 
