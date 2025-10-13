@@ -19,7 +19,7 @@ Aligno is a web application for collecting, processing and analyzing job offers 
    - Playwright-based scraper that automatically collects job-offer links and detailed information from JustJoin.it.
    - Supports automated task scheduling and execution in AWS Fargate, enabling continuous collection of new offers, and removal of expired or stale offers without manual intervention.
    - Handles three phases: efficient link collection, detailed data extraction, and cleanup.
-   - [See full Scout documentation](./src/scout/README.md)
+   - [Documentation](./src/scout/README.md)
 
 3. 🛠️ **Atlas** *(In Progress)*
    - Backend service powered by AI to automatically analyze and categorize skills, technologies, and other details within job offers.
@@ -49,7 +49,7 @@ Aligno/
 ├─ src/                                # Source code directory
 │  ├─ atlas/                           # Atlas module (AI based processing)
 │  │  ├─ placeholder
-│  │  └─ placeholder
+│  │  └─ README.md                     # Documentation for the Atlas module
 │  ├─ scout/                           # Web scraping module for automatic job offer collection from JustJoin.it
 │  │  ├─ __main__.py                   # Main entry point for launching the Scout
 │  │  ├─ aws_secrets.py                # Integration with AWS Secrets Manager for credentials management
@@ -59,13 +59,11 @@ Aligno/
 │  │  ├─ scrape_core.py                # Core scraper logic: link collection, data extraction, cleanup
 │  │  ├─ selectors.py                  # Centralized selectors configuration for scraping
 │  │  └─ README.md                     # Documentation for the Scout module
-│  └─ sql/                             # Scout module (web scraper)
+│  └─ sql/                             # Database schema
 │     ├─ tables/                       # Table definitions
-│     │  └─ offers.sql                 # Job offers table
+│     │  └─ offers.sql
 │     └─ views/                        # View definitions
-│        └─ offers_parsed.sql          # Parsed offers view
-├─ venv/                               # Virtual environment (included)
-├─ .cursorignore                       # Cursor ignore rules
+│        └─ offers_parsed.sql
 ├─ .dockerignore                       # Docker ignore rules
 ├─ .env.example                        # Environment variables template
 ├─ .gitignore                          # Git ignore rules
@@ -73,12 +71,6 @@ Aligno/
 ├─ mypy.ini                            # Mypy configuration
 └─ README.md                           # Project documentation
 ```
-
----
-
-## 🔗 Related Documentation
-
-- [Scout](./src/scout/README.md) - Scout documentation
 
 ---
 
