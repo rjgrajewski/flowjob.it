@@ -77,7 +77,7 @@ Aligno/
 
 ## 🔗 Related Documentation
 
-- [Scout]((./src/scout/README.md)) - Scout documentation
+- [Scout](./src/scout/README.md) - Scout documentation
 
 ---
 
