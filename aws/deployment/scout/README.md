@@ -188,7 +188,7 @@ Change schedule (example: 3 AM UTC).
 ## 🔗 Related Documentation
 
 - [Aligno README](../../../README.md)
-- [Scout README](../scout/README.md)
+- [Scout README](../../../src/scout/README.md)
 
 ---
 
