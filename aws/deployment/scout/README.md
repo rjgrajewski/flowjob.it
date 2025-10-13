@@ -424,10 +424,6 @@ Should include:
 
 ## 💰 Cost Estimation
 
-### Scheduled Task Mode (Current Configuration)
-
-Running **once daily at 2 AM UTC** for ~15-30 minutes:
-
 | Service | Configuration | Monthly Cost |
 |---------|--------------|--------------|
 | **RDS** | db.t4g.micro, 20 GB storage | ~$14.80 |
@@ -437,27 +433,6 @@ Running **once daily at 2 AM UTC** for ~15-30 minutes:
 | **EventBridge** | Scheduled rules | $0.00 |
 | **Secrets Manager** | 1 secret | ~$0.40 |
 | **TOTAL** | | **~$18.15/month** |
-
-### Cost Savings vs 24/7 Service
-
-- 24/7 Service: ~$74/month (Fargate: ~$59, RDS: ~$15)
-- Scheduled Task: ~$18/month
-- **Savings: ~$56/month (76% reduction!)**
-
-### Cost Optimization Tips
-
-1. **Reduce task resources** if scraping is fast:
-   - Current: 1 vCPU, 2 GB RAM
-   - Minimum: 0.25 vCPU, 0.5 GB RAM (~$0.60/month for Fargate)
-
-2. **Use RDS snapshots** for development:
-   - Delete RDS instance when not needed
-   - Restore from snapshot when needed
-   - Snapshot storage: ~$0.095/GB/month
-
-3. **CloudWatch Logs retention**:
-   - Set retention to 7 days (default: indefinite)
-   - Reduces storage costs
 
 ---
 
@@ -497,9 +472,7 @@ Running **once daily at 2 AM UTC** for ~15-30 minutes:
 
 ## 📚 Additional Resources
 
-- **Main Project README**: `../../../README.md`
-- **Cleanup Guide**: `../../cleanup/scout/README.md`
-- **AWS Documentation**: `../../README.md`
+- [Aligno README](../../../../README.md)
 
 ---
 
@@ -512,4 +485,4 @@ Running **once daily at 2 AM UTC** for ~15-30 minutes:
 
 ---
 
-**Last Updated**: Based on Scout module with Playwright 1.52.0, Python 3.9, asyncpg 0.29.0
+**Proudly built and maintained by Rafal Grajewski for the Aligno project**
