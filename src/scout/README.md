@@ -53,7 +53,7 @@ For each new offer URL, Scout navigates to the individual offer page and extract
 
 After data extraction, Scout performs cleanup actions to maintain data quality. It detects and removes stale offers that are no longer listed on the website, cleans up any empty records resulting from failed extractions, and then gracefully closes all active connections and resources, including the database connection and browser instance.
 
-## 🏗️ Architecture
+## 📁 Architecture
 
 ```
 scout/

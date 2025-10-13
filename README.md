@@ -41,7 +41,7 @@ Aligno is a web application for collecting, processing and analyzing job offers 
      - Most popular technologies and skills.
      - Relationships between salary and technology.
 
-## 📁 Repository Structure
+## 📁 Architecture
 
 ```
 Aligno/
