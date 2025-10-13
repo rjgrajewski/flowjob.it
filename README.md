@@ -11,30 +11,33 @@ Aligno is a web application for collecting, processing and analyzing job offers 
 
 ## 🔧 Key Features
 
-1. ✅ **Data management** is built using PostgreSQL as the primary database, providing reliable and scalable storage for all job offers and analytics data. For secure and managed cloud infrastructure, the database is hosted on AWS RDS (Relational Database Service).
+1. ✅ **Data Management**
+   - Uses PostgreSQL as the primary database for reliable and scalable storage of job offers and analytics data.
+   - Database is hosted on AWS RDS (Relational Database Service) for secure and managed cloud infrastructure.
 
-1. ✅ **Scout**
-   Playwright-based scraper collecting job-offer links and details from JustJoin.it.
+2. ✅ **Scout**
+   - Playwright-based scraper that collects job-offer links and detailed information from JustJoin.it.
 
-2. 🛠️ **Atlas** (In progress)
-   - A backend service that uses AI to automatically analyze and categorize the skills, technologies, and other details in job offers stored in the database, reducing duplication and standardizing tech stack entries to make it easier for users to filter offers based on specific technologies.
+3. 🛠️ **Atlas** *(In Progress)*
+   - Backend service powered by AI to automatically analyze and categorize skills, technologies, and other details in job offers.
+   - Reduces duplication and standardizes tech stack entries, enabling easier filtering of offers based on specific technologies.
 
-3. ⏳ **Job search** (Planned)
+4. ⏳ **Job Search** *(Planned)*
    - Allows users to search for job offers based on their skills and preferences.
    - Provides a personalized job search experience.
-   - Displays job offers sorted by match to the user's skills and preferences.
+   - Displays job offers sorted by the degree of match to the user's skills and preferences.
 
-4. ⏳ **CV generation** (Planned)
-   - Generates a personalized CV for a specific job posting.
-   - Allows users to customize their CV based on the job offer.
-   - Provides an option to download the CV in various formats (PDF, DOCX, etc.).
+5. ⏳ **CV Generation** *(Planned)*
+   - Generates a personalized CV tailored to a specific job posting.
+   - Lets users customize their CV based on the job offer.
+   - Offers options to download the CV in multiple formats (PDF, DOCX, etc.).
 
-5. ⏳ **Market overview** (Planned)
-   - Presents market statistics via a dashboard.
-   - Displays insights such as:
-     - Number of job offers per month, technology, location etc.
+6. ⏳ **Market Overview** *(Planned)*
+   - Presents market statistics via an interactive dashboard.
+   - Shows insights such as:
+     - Number of job offers per month, by technology, and by location.
      - Most popular technologies and skills.
-     - Dependencies between salary and technology.
+     - Relationship between salary and technology.
 
 ## 📁 Repository Structure
 
