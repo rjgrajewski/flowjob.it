@@ -312,7 +312,7 @@ if i > 1 and (i - 1) % ScrapingConfig.RESTART_BROWSER_EVERY == 0:
 
 ## 🔗 Related Documentation
 
-- [Aligno Main README](../../README.md) - Project overview and architecture
+- [Aligno README](../../README.md) - Project overview and architecture
 - [AWS Deployment Guide](../../aws/deployment/scout/README.md) - Detailed AWS setup and deployment
 
 ---
