@@ -16,7 +16,7 @@ Aligno is a web application for collecting, processing and analyzing job offers 
    - The database is securely managed in the cloud using AWS RDS (Relational Database Service).
 
 2. ✅ **Scout**
-   - Playwright-based scraper that automatically collects job-offer links and detailed information from JustJoin.it.
+   - [**Scout**](./src/scout/README.md): Playwright-based scraper that automatically collects job-offer links and detailed information from JustJoin.it.
    - Supports automated task scheduling and execution in AWS Fargate, enabling continuous collection of new offers, and removal of expired or stale offers without manual intervention.
    - Handles three phases: efficient link collection, detailed data extraction, and cleanup.
 
