@@ -1,5 +1,10 @@
 # Aligno: IT Job Search Engine
-![Python 3.9](https://img.shields.io/badge/python-3.9-blue) ![asyncpg](https://img.shields.io/badge/asyncpg-0.29.0-blue) ![Playwright](https://img.shields.io/badge/playwright-1.52.0-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.3-blue) ![AWS](https://img.shields.io/badge/AWS-RDS-orange) ![OpenAI](https://img.shields.io/badge/OpenAI-1.3.0-purple) ![Pydantic](https://img.shields.io/badge/Pydantic-2.11.9-green)
+![Python 3.9](https://img.shields.io/badge/python-3.9-blue) ![asyncpg](https://img.shields.io/badge/asyncpg-0.29.0-blue) ![Playwright](https://img.shields.io/badge/playwright-1.52.0-blue) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.3-blue) ![AWS](https://img.shields.io/badge/AWS-RDS-orange)
+
+## 📚 Table of Contents
+
+[Overview](#-overview)
+[Current Status](#-current-status)
 
 ## 🚀 Overview
 
@@ -11,40 +16,20 @@ Aligno is a web application for collecting, processing and analyzing job offers 
 
 ## 📊 Current Status
 
-- ✅ **Scout (Job Scraper)**: Fully implemented with Playwright
-- ✅ **Database Schema**: Complete with offers table and processed view
-- ✅ **AWS RDS Support**: Ready for production deployment
-- ✅ **AWS Fargate Deployment**: Complete deployment setup in `aws/deployment/scout/` folder
-- ✅ **Dependency Management**: All dependencies pinned to specific versions for reproducible builds
-- ✅ **Environment Configuration**: Simplified AWS RDS-focused configuration
-- ⏳ **Market Dashboard**: Planned
+- ✅ **Database**: Uses AWS RDS for secure, cloud-hosted PostgreSQL storage.
+- ✅ **Scout**: Automated Playwright based web scraper deployed as an AWS Fargate task, running once daily to keep job data up-to-date.
+- 🛠️ **Atlas**: In progress – building out an engine to organize, classify, and enable deeper querying of the collected job offer data.
 - ⏳ **Job Search API**: Planned
 - ⏳ **CV Generation**: Planned
-
-## 📦 Dependencies
-
-The project uses the following key dependencies with pinned versions for reproducible builds:
-
-- **Database**: `asyncpg==0.29.0` for async PostgreSQL connections
-- **Web Scraping**: `playwright==1.52.0` for browser automation
-- **Web Framework**: `fastapi==0.104.1` with `uvicorn==0.24.0` for API development
-- **AI Integration**: `openai==1.3.0` for future AI-powered features
-- **Data Validation**: `pydantic==2.11.9` for data modeling and validation
-- **Environment**: `python-dotenv==1.0.0` for environment variable management
-- **Type Checking**: `mypy==1.7.0` for static type checking
-- **HTTP Client**: `httpx==0.28.1` for async HTTP requests
+- ⏳ **Market Dashboard**: Planned
 
 ## 🔧 Key Features
 
 1. **Scout**
    - Playwright-based scraper collecting job-offer links and details from JustJoin.it.
 
-2. **Market overview** (To do)
-   - Presents market statistics via a dashboard.
-   - Displays insights such as:
-     - Number of job offers per month, technology, location etc.
-     - Most popular technologies and skills.
-     - Dependencies between salary and technology.
+2. **Atlas**
+   - A backend service that uses AI to automatically analyze and categorize the skills, technologies, and other details in job offers stored in the database, reducing duplication and standardizing tech stack entries to make it easier for users to filter offers based on specific technologies.
 
 3. **Job search** (To do)
    - Allows users to search for job offers based on their skills and preferences.
@@ -56,25 +41,40 @@ The project uses the following key dependencies with pinned versions for reprodu
    - Allows users to customize their CV based on the job offer.
    - Provides an option to download the CV in various formats (PDF, DOCX, etc.).
 
+5. **Market overview** (To do)
+   - Presents market statistics via a dashboard.
+   - Displays insights such as:
+     - Number of job offers per month, technology, location etc.
+     - Most popular technologies and skills.
+     - Dependencies between salary and technology.
+
 ## 📁 Repository Structure
 
 ```
 Aligno/
 ├─ src/                                # Source code directory
-│  ├─ sql/                             # SQL scripts directory
-│  │  ├─ tables/                       # Table definitions
-│  │  │  └─ offers.sql                 # Job offers table with auto-parsing
-│  │  └─ views/                        # View definitions
-│  │     └─ offers_parsed.sql          # Parsed offers view
-│  └─ scout/                           # Scout module (job scraper)
-│     ├─ __main__.py                   # Package API
-│     ├─ cli.py                        # CLI module with argument parsing and orchestration
-│     ├─ db.py                         # Database connection and schema management
-│     └─ scrape_core.py                # Playwright browser init and scraping logic
+│  ├─ atlas/                           # Atlas module (AI based processing)
+│  │  ├─ placeholder
+│  │  └─ placeholder
+│  ├─ scout/                           # Web scraping module for automatic job offer collection from JustJoin.it
+│  │  ├─ __main__.py                   # Main entry point for launching the Scout
+│  │  ├─ aws_secrets.py                # Integration with AWS Secrets Manager for credentials management
+│  │  ├─ cli.py                        # Command-line interface for running the scraper and utility tasks
+│  │  ├─ config.py                     # Configuration parameters for the scraper (limits, timeouts, etc.)
+│  │  ├─ db.py                         # Database operations (connections, inserts, cleanup)
+│  │  ├─ scrape_core.py                # Core scraper logic: link collection, data extraction, cleanup
+│  │  ├─ selectors.py                  # Centralized selectors configuration for scraping
+│  │  └─ README.md                     # Documentation for the Scout module
+│  └─ sql/                             # Scout module (web scraper)
+│     ├─ tables/                       # Table definitions
+│     │  └─ offers.sql                 # Job offers table
+│     └─ views/                        # View definitions
+│        └─ offers_parsed.sql          # Parsed offers view
 ├─ venv/                               # Virtual environment (included)
+├─ .cursorignore                       # Cursor ignore rules
+├─ .dockerignore                       # Docker ignore rules
 ├─ .env.example                        # Environment variables template
 ├─ .gitignore                          # Git ignore rules
-├─ .cursorignore                       # Cursor ignore rules
 ├─ requirements.txt                    # Python dependencies
 ├─ mypy.ini                            # Mypy configuration
 └─ README.md                           # Project documentation
@@ -99,53 +99,13 @@ AWS_DB_PASSWORD=your_db_password
 
 **Note:** The project is optimized for AWS RDS deployment. For local development, you can also use a local PostgreSQL instance by setting the `DATABASE_URL` environment variable, but AWS RDS is the recommended approach.
 
-### 🎛️ **Scout Configuration:**
-```bash
-HEADLESS=true  # Set to false for debugging (shows browser window)
-BATCH_SIZE=500  # Batch size for database operations
-SCROLL_PAUSE=0.512  # Pause between scrolls in seconds
-MAX_IDLE=5  # Maximum idle scrolls before stopping
-SCRAPER_TIMEOUT=30000  # Timeout for page operations in milliseconds
-MAX_OFFERS=100  # Limit number of offers for debugging (None = no limit)
-```
-
-### 🔒 Security Features
-
-The application includes basic security measures:
-
-- **SQL Injection Protection**: Database names are validated
-- **Data Sanitization**: String inputs are cleaned before processing
-- **Error Handling**: Robust error handling with proper logging
-- **AWS RDS Integration**: Secure connection to cloud databases
-
-### 🐛 Debugging & Development
-
-For development and debugging purposes, you can limit the number of offers scraped:
-
-```bash
-# Limit to 10 offers for quick testing
-MAX_OFFERS=10
-
-# Or disable limit for full scraping
-MAX_OFFERS=
-```
-
-**Debug Tips:**
-- Set `HEADLESS=false` to see the browser window during scraping
-- Use `MAX_OFFERS=10` for very quick testing
 
 
 ## 📑 Code Highlights
 
-- **src/scout/** -  web scraper package:
-   - `__main__.py`: Package API
-   - `cli.py`: CLI wrapper with environment checking and error handling
-   - `db.py`: Handles asyncpg connection, inserts and purges with AWS RDS support
-   - `scrape_core.py`: Contains browser initialization, scrolling, link collection, and offer processing
-
-- **src/sql/** - database schema:
-   - `tables/offers.sql`: Job offers table
-   - `views/offers_parsed.sql`: Parsed offers view
+- **src/scout/** - Web scraper package for automated job offer collection
+- **src/atlas/** - AI-powered skills extraction and categorization module
+- **src/sql/** - Database schema and views for job offers and skills
 
 
 ## 📝 Future Improvements
@@ -188,32 +148,9 @@ MAX_OFFERS=
 
 The project uses **AWS Fargate Scheduled Task** - runs daily at 2 AM UTC and automatically stops after completion.
 
-
-### Quick Deploy
-```bash
-cd aws/deployment/scout
-./quick-deploy.sh
-```
-
-### Update Code
-```bash
-cd aws/deployment/scout
-./deploy.sh
-```
-
-### Management
-```bash
-cd aws/deployment/scout
-./management-commands.sh logs              # View logs
-./management-commands.sh run-now           # Run manually
-./management-commands.sh disable-schedule  # Disable daily runs
-```
-
-### Cleanup AWS Resources
-```bash
-cd aws/cleanup/scout
-./cleanup-aws.sh
-```
-
 See `aws/deployment/scout/README.md` for detailed deployment instructions.
 See `aws/cleanup/scout/README.md` for cleanup instructions.
+
+---
+
+**Proudly built and maintained by Rafal Grajewski for the Aligno project**
