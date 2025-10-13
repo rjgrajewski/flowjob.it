@@ -11,7 +11,7 @@ Aligno is a web application for collecting, processing and analyzing job offers 
 
 ## 🔧 Key Features
 
-1. ✅ **Data Management**
+1. ✅ **[Data Management](../Aligno/src/sql/)**
    - Uses PostgreSQL as the primary database for reliable and scalable storage of all job offers and analytics data.
    - The database is securely managed in the cloud using AWS RDS (Relational Database Service).
 
