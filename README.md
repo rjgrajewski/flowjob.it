@@ -1,47 +1,35 @@
 # Aligno: IT Job Search Engine
 ![Python 3.9](https://img.shields.io/badge/python-3.9-blue) ![asyncpg](https://img.shields.io/badge/asyncpg-0.29.0-blue) ![Playwright](https://img.shields.io/badge/playwright-1.52.0-blue) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.3-blue) ![AWS](https://img.shields.io/badge/AWS-RDS-orange)
 
-## 📚 Table of Contents
-
-[Overview](#-overview)
-[Current Status](#-current-status)
-
 ## 🚀 Overview
 
 Aligno is a web application for collecting, processing and analyzing job offers from JustJoin.it. The main goals are:
 1. Automatic retrieval and updating of the job offers database.
-2. Presentation of market statistics via a dashboard.
-3. Interactive job search based on user preferences and skills.
-4. Generation of a personalized CV for a specific job posting.
-
-## 📊 Current Status
-
-- ✅ **Database**: Uses AWS RDS for secure, cloud-hosted PostgreSQL storage.
-- ✅ **Scout**: Automated Playwright based web scraper deployed as an AWS Fargate task, running once daily to keep job data up-to-date.
-- 🛠️ **Atlas**: In progress – building out an engine to organize, classify, and enable deeper querying of the collected job offer data.
-- ⏳ **Job Search API**: Planned
-- ⏳ **CV Generation**: Planned
-- ⏳ **Market Dashboard**: Planned
+2. Interactive job search based on user preferences and skills.
+3. Generation of a personalized CV for a specific job posting.
+4. Presentation of market statistics via a dashboard.
 
 ## 🔧 Key Features
 
-1. **Scout**
-   - Playwright-based scraper collecting job-offer links and details from JustJoin.it.
+1. ✅ **Data management** is built using PostgreSQL as the primary database, providing reliable and scalable storage for all job offers and analytics data. For secure and managed cloud infrastructure, the database is hosted on AWS RDS (Relational Database Service).
 
-2. **Atlas**
+1. ✅ **Scout**
+   Playwright-based scraper collecting job-offer links and details from JustJoin.it.
+
+2. 🛠️ **Atlas** (In progress)
    - A backend service that uses AI to automatically analyze and categorize the skills, technologies, and other details in job offers stored in the database, reducing duplication and standardizing tech stack entries to make it easier for users to filter offers based on specific technologies.
 
-3. **Job search** (To do)
+3. ⏳ **Job search** (Planned)
    - Allows users to search for job offers based on their skills and preferences.
    - Provides a personalized job search experience.
    - Displays job offers sorted by match to the user's skills and preferences.
 
-4. **CV generation** (To do)
+4. ⏳ **CV generation** (Planned)
    - Generates a personalized CV for a specific job posting.
    - Allows users to customize their CV based on the job offer.
    - Provides an option to download the CV in various formats (PDF, DOCX, etc.).
 
-5. **Market overview** (To do)
+5. ⏳ **Market overview** (Planned)
    - Presents market statistics via a dashboard.
    - Displays insights such as:
      - Number of job offers per month, technology, location etc.
@@ -79,25 +67,6 @@ Aligno/
 ├─ mypy.ini                            # Mypy configuration
 └─ README.md                           # Project documentation
 ```
-
-
-## ⚙️ Configuration
-
-Create a `.env` file in the root directory by copying from `.env.example` and updating with your actual values:
-
-### 🏗️ **Database Configuration**
-
-The project is configured to use AWS RDS PostgreSQL for production deployment. Configure your database connection by setting the following variables in your `.env` file:
-
-```bash
-# AWS RDS Configuration (Required)
-AWS_DB_ENDPOINT=your-rds-endpoint.amazonaws.com
-AWS_DB_NAME=aligno-db
-AWS_DB_USERNAME=your_db_username
-AWS_DB_PASSWORD=your_db_password
-```
-
-**Note:** The project is optimized for AWS RDS deployment. For local development, you can also use a local PostgreSQL instance by setting the `DATABASE_URL` environment variable, but AWS RDS is the recommended approach.
 
 ---
 
