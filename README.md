@@ -99,58 +99,6 @@ AWS_DB_PASSWORD=your_db_password
 
 **Note:** The project is optimized for AWS RDS deployment. For local development, you can also use a local PostgreSQL instance by setting the `DATABASE_URL` environment variable, but AWS RDS is the recommended approach.
 
-
-
-## 📑 Code Highlights
-
-- **src/scout/** - Web scraper package for automated job offer collection
-- **src/atlas/** - AI-powered skills extraction and categorization module
-- **src/sql/** - Database schema and views for job offers and skills
-
-
-## 📝 Future Improvements
-
-**Market overview:**
-   * To choose frontend stack (React, Vue, Angular)
-   * To choose chart library (Chart.js, Recharts, D3)
-   * Components:
-     * MVP
-       * Total number of job offers
-       * Top technologies
-       * Salary statistics
-       * Global filtering (by locations, operating modes, experience, categories etc.)
-     * Future
-       * Alerts
-       * Trends
-     * Nice to have
-       * Top companies
-       * Heatmaps
-
-**Job search:**
-   * API (Flask/Django, FastAPI, Node/Express)
-   * To choose frontend stack (React, Vue, Angular)
-
-**CV generation:**
-   * Template (HTML/CSS, Markdown or other)
-   * Optional: template engine (Jinja2, Handlebars, etc.)
-   * Optional: AI generated sections (About me etc.)
-
-**Scout (Scraper Module):**
-   * To consider: Support for other job portals
-
-**Database:**
-   * Consider implementing skills normalization system
-   * Consider implementing skill matching algorithms for job recommendations
-   * Database migration scripts for production deployments
-   * Multi-region AWS RDS setup for high availability
-
-## 🚀 AWS Deployment
-
-The project uses **AWS Fargate Scheduled Task** - runs daily at 2 AM UTC and automatically stops after completion.
-
-See `aws/deployment/scout/README.md` for detailed deployment instructions.
-See `aws/cleanup/scout/README.md` for cleanup instructions.
-
 ---
 
 **Proudly built and maintained by Rafal Grajewski for the Aligno project**
