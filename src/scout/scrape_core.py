@@ -163,12 +163,19 @@ async def process_offers(page: Page, conn, offer_urls: list[str], browser=None, 
                 logging.error(f"❌ Error in job title extraction: {e}")
                 pass
             
-            # Location - use the specific XPath selector
+            # Location - try Pin Icon (Container) first, then Breadcrumb Fallback
             location = None
             try:
+                # Primary: Pin Icon Container
                 location_element = page.locator(get_selector(SELECTORS.LOCATION)).first
                 if await location_element.count() > 0:
                     location = await location_element.inner_text()
+                
+                # Fallback: Breadcrumb
+                if not location:
+                    location_element = page.locator(SELECTORS.LOCATION.fallback).first
+                    if await location_element.count() > 0:
+                        location = await location_element.inner_text()
             except Exception as e:
                 logging.error(f"❌ Error in location extraction: {e}")
                 pass
@@ -183,17 +190,24 @@ async def process_offers(page: Page, conn, offer_urls: list[str], browser=None, 
                 logging.error(f"❌ Error in company extraction: {e}")
                 pass
             
-            # Category - use the specific XPath selector
+            # Category - try Pill first (Red), then Breadcrumb (Yellow)
             category = None
             try:
-                category_element = page.locator(get_selector(SELECTORS.CATEGORY)).first
+                # Try Pill
+                category_element = page.locator(get_selector(SELECTORS.CATEGORY_PILL)).first
                 if await category_element.count() > 0:
                     category = await category_element.inner_text()
+                
+                # Fallback to Breadcrumb if Pill failed or empty
+                if not category:
+                    category_element = page.locator(get_selector(SELECTORS.CATEGORY_BREADCRUMB)).first
+                    if await category_element.count() > 0:
+                        category = await category_element.inner_text()
             except Exception as e:
                 logging.error(f"❌ Error in category extraction: {e}")
                 pass
             
-            # Work schedule - use the specific XPath selector
+            # Work schedule
             work_schedule = None
             try:
                 work_schedule_element = page.locator(get_selector(SELECTORS.WORK_SCHEDULE)).first
@@ -203,17 +217,18 @@ async def process_offers(page: Page, conn, offer_urls: list[str], browser=None, 
                 logging.error(f"❌ Error in work schedule extraction: {e}")
                 pass
             
-            # Employment type - use the specific XPath selector
+            # Employment type
             employment_type = None
             try:
                 employment_element = page.locator(get_selector(SELECTORS.EMPLOYMENT_TYPE)).first
                 if await employment_element.count() > 0:
                     employment_type = await employment_element.inner_text()
+                    # Note: inner text of the container usually lists all types e.g. "B2B, Permanent, Mandate"
             except Exception as e:
                 logging.error(f"❌ Error in employment type extraction: {e}")
                 pass
             
-            # Experience - use the specific XPath selector
+            # Experience
             experience = None
             try:
                 experience_element = page.locator(get_selector(SELECTORS.EXPERIENCE)).first
@@ -223,7 +238,7 @@ async def process_offers(page: Page, conn, offer_urls: list[str], browser=None, 
                 logging.error(f"❌ Error in experience extraction: {e}")
                 pass
             
-            # Operating mode - already determined in location
+            # Operating mode
             operating_mode = None
             try:
                 operating_mode_element = page.locator(get_selector(SELECTORS.OPERATING_MODE)).first

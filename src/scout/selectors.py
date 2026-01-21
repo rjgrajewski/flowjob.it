@@ -13,6 +13,7 @@ class SelectorConfig:
     """Configuration class for selectors."""
     primary: str
     description: str = ""
+    fallback: str = ""
 
 
 class JustJoinItSelectors:
@@ -28,45 +29,56 @@ class JustJoinItSelectors:
         description="Main job title heading"
     )
     
-    CATEGORY = SelectorConfig(
-        primary='xpath=/html/body/div[2]/div/div[1]/div[4]/div/div[3]/div[1]/div[1]/div[2]/div[1]/div',
-        description="Job category information"
+    CATEGORY_PILL = SelectorConfig(
+        primary='h1 + div', # Sibling of Job Title
+        description="Category pill in header (Red frame)"
+    )
+
+    CATEGORY_BREADCRUMB = SelectorConfig(
+        primary='a[href*="/job-offers/all-locations/"]:not([href="/job-offers/all-locations"])',
+        description="Job category from breadcrumbs (Yellow frame)"
     )
     
     COMPANY = SelectorConfig(
-        primary='a:has(svg[data-testid="ApartmentRoundedIcon"]) p',
-        description="Company name from link with apartment icon"
+        primary='a[href*="companies="] h2',
+        description="Company name from link to company profile"
+    )
+
+    # Info Grid Selectors (using unique icons)
+    LOCATION = SelectorConfig(
+        primary='a[href^="/job-offers/"]:not([href*="all-locations"])', # City link from breadcrumb
+        fallback='div.MuiBox-root:has(> svg path[d^="M12 2C16.2 2 20 5.22 20 10.2"])', # Pin Icon container
+        description="Location from breadcrumb or pin icon"
     )
     
-    LOCATION = SelectorConfig(
-        primary='xpath=/html/body/div[2]/div/div[1]/div[4]/div/div[2]/div/div/nav/ol/li[3]/a',
-        description="Job location from breadcrumb navigation"
+    WORK_SCHEDULE = SelectorConfig(
+        primary='.MuiStack-root:has(> .MuiStack-root > svg path[d^="M21 19C21 19.552"])', # Suitcase Icon
+        description="Work schedule (Full-time, etc.)"
     )
+    
+    EMPLOYMENT_TYPE = SelectorConfig(
+        primary='.MuiStack-root:has(> .MuiStack-root > svg path[d^="M6 22.625"])', # Document Icon
+        description="Employment type (B2B, Permanent, etc.)"
+    )
+    
+    EXPERIENCE = SelectorConfig(
+        primary='.MuiStack-root:has(> .MuiStack-root > svg[data-testid="SchoolOutlinedIcon"])', # School Icon
+        description="Experience level (Junior, Mid, Senior)"
+    )
+    
+    OPERATING_MODE = SelectorConfig(
+        primary='.MuiStack-root:has(> .MuiStack-root > svg path[d^="M16.065 24.2315"])', # Globe/Network Icon
+        description="Operating mode (Remote, Hybrid, Office)"
+    )
+    
+
     
     SALARY_SPANS = SelectorConfig(
         primary='span:has-text(" per ")',
         description="Spans containing salary information with 'per' text"
     )
 
-    OPERATING_MODE = SelectorConfig(
-        primary='xpath=/html/body/div[2]/div/div[1]/div[4]/div/div[3]/div[1]/div[1]/div[3]/div[4]/div[2]',
-        description="Operating mode information"
-    )
-    
-    WORK_SCHEDULE = SelectorConfig(
-        primary='xpath=/html/body/div[2]/div/div[1]/div[4]/div/div[3]/div[1]/div[1]/div[3]/div[1]/div[2]',
-        description="Work schedule (full-time, part-time)"
-    )
-    
-    EXPERIENCE = SelectorConfig(
-        primary='xpath=/html/body/div[2]/div/div[1]/div[4]/div/div[3]/div[1]/div[1]/div[3]/div[3]/div[2]',
-        description="Required experience level"
-    )
-    
-    EMPLOYMENT_TYPE = SelectorConfig(
-        primary='xpath=/html/body/div[2]/div/div[1]/div[4]/div/div[3]/div[1]/div[1]/div[3]/div[2]/div[2]',
-        description="Employment type (B2B, UoP, etc.)"
-    )
+
     
     TECH_NAMES = SelectorConfig(
         primary='h4',
