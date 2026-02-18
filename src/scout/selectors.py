@@ -28,6 +28,12 @@ class JustJoinItSelectors:
         primary='h1',
         description="Main job title heading"
     )
+
+    JOB_DESCRIPTION = SelectorConfig(
+        primary=':is(h1, h2, h3, h4, h5, h6):has-text("Job description") + div',
+        fallback='xpath=//*[contains(translate(text(), "JOB DESCRIPTION", "job description"), "job description")]/following-sibling::div[1]',
+        description="Full job description container"
+    )
     
     CATEGORY_PILL = SelectorConfig(
         primary='h1 + div', # Sibling of Job Title

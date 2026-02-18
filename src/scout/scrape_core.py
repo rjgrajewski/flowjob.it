@@ -21,7 +21,8 @@ SCROLL_PAUSE = ScrapingConfig.SCROLL_PAUSE_TIME
 async def init_browser(headless: bool = True):
     playwright = await async_playwright().start()
     browser = await playwright.chromium.launch(headless=headless)
-    page = await browser.new_page()
+    context = await browser.new_context(locale='pl-PL')
+    page = await context.new_page()
     return playwright, browser, page
 
 async def collect_offer_links(page: Page) -> list[str]:
@@ -140,7 +141,8 @@ async def process_offers(page: Page, conn, offer_urls: list[str], browser=None, 
                     await page.close()
                     await browser.close()
                     browser = await playwright.chromium.launch(headless=True)
-                    page = await browser.new_page()
+                    context = await browser.new_context(locale='pl-PL')
+                    page = await context.new_page()
                     logging.info("✅ Browser restarted successfully")
                 except Exception as e:
                     logging.warning(f"⚠️  Browser restart failed: {e}, continuing with existing browser")
@@ -246,6 +248,22 @@ async def process_offers(page: Page, conn, offer_urls: list[str], browser=None, 
                     operating_mode = await operating_mode_element.inner_text()
             except Exception as e:
                 logging.error(f"❌ Error in operating mode extraction: {e}")
+                pass
+
+            # Job Description
+            description = None
+            try:
+                description_element = page.locator(get_selector(SELECTORS.JOB_DESCRIPTION)).first
+                if await description_element.count() > 0:
+                    description = await description_element.inner_text()
+                
+                # Fallback if primary fails
+                if not description and SELECTORS.JOB_DESCRIPTION.fallback:
+                    description_element = page.locator(SELECTORS.JOB_DESCRIPTION.fallback).first
+                    if await description_element.count() > 0:
+                        description = await description_element.inner_text()
+            except Exception as e:
+                logging.error(f"❌ Error in description extraction: {e}")
                 pass
             
             # Tech stack - try multiple approaches to find tech items
@@ -357,22 +375,26 @@ async def process_offers(page: Page, conn, offer_urls: list[str], browser=None, 
                 "experience": sanitize_string(experience),
                 "employment_type": sanitize_string(employment_type),
                 "operating_mode": sanitize_string(operating_mode),
-                "tech_stack": sanitize_string(tech_stack_formatted)
+                "experience": sanitize_string(experience),
+                "employment_type": sanitize_string(employment_type),
+                "operating_mode": sanitize_string(operating_mode),
+                "tech_stack": sanitize_string(tech_stack_formatted),
+                "description": sanitize_string(description)
             }
             
             # Save to database (we already filtered out existing offers at the start)
             try:
                 await conn.execute(
                     """
-                    INSERT INTO offers (job_url, job_title, category, company, location, salary_any, salary_b2b, salary_internship, salary_mandate, salary_permanent, salary_specific_task, work_schedule, experience, employment_type, operating_mode, tech_stack, created_at)
-                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16, CURRENT_TIMESTAMP)
+                    INSERT INTO offers (job_url, job_title, category, company, location, salary_any, salary_b2b, salary_internship, salary_mandate, salary_permanent, salary_specific_task, work_schedule, experience, employment_type, operating_mode, tech_stack, description, created_at)
+                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17, CURRENT_TIMESTAMP)
                     """,
                     offer_data["job_url"], offer_data["job_title"], offer_data["category"], 
                     offer_data["company"], offer_data["location"], offer_data["salary_any"], 
                     offer_data["salary_b2b"], offer_data["salary_internship"], offer_data["salary_mandate"], 
                     offer_data["salary_permanent"], offer_data["salary_specific_task"], offer_data["work_schedule"], 
                     offer_data["experience"], offer_data["employment_type"], offer_data["operating_mode"], 
-                    offer_data["tech_stack"]
+                    offer_data["tech_stack"], offer_data["description"]
                 )
                 processed_count += 1
             except Exception as db_error:
