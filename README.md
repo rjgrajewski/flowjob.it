@@ -23,7 +23,8 @@ Aligno is a web application for collecting, processing and analyzing job offers 
 
 3. 🛠️ **Atlas** *(In Progress)*
    - Backend service powered by AI to automatically analyze and categorize skills, technologies, and other details within job offers.
-   - Standardizes and deduplicates tech stack entries for better filtering and consistency.
+   - uses AWS Bedrock (Claude) to normalize and deduplicate technical skills.
+   - Standardizes disparate skill names (e.g. "React.js", "ReactJS" -> "React") and deduplicates them semantically.
 
 4. ⏳ **Job Search** *(Planned)*
    - Lets users search for job offers based on their skills and preferences.
@@ -50,8 +51,7 @@ Aligno/
 │  ├─ atlas/                           # Atlas module (AI based processing)
 │  ├─ atlas/                           # Atlas module (AI based processing)
 │  │  ├─ __main__.py                   # Entry point for Atlas
-│  │  ├─ categorize_skills.py          # Logic for categorizing extracted skills
-│  │  ├─ extract_skills.py             # Logic for extracting skills from descriptions
+│  │  ├─ normalize_skills.py           # Core logic for normalizing and deduping skills using AWS Bedrock
 │  │  └─ README.md                     # Documentation for the Atlas module
 │  ├─ scout/                           # Web scraping module for automatic job offer collection from JustJoin.it
 │  │  ├─ __main__.py                   # Main entry point for launching the Scout

@@ -1,7 +1,9 @@
 CREATE TABLE IF NOT EXISTS skills (
-    id SERIAL PRIMARY KEY,
+    sortkey UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     original_skill_name TEXT UNIQUE NOT NULL,
+    canonical_skill_name TEXT,
     category TEXT,
+    subcategory TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -10,5 +12,3 @@ CREATE INDEX IF NOT EXISTS idx_skills_original_skill_name ON skills(original_ski
 
 -- Index for filtering by category
 CREATE INDEX IF NOT EXISTS idx_skills_category ON skills(category);
-
-
