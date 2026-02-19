@@ -1,0 +1,142 @@
+/* Bubble Skill Selector */
+.bubble-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    min-height: 200px;
+    background-color: var(--surface-color);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.skill-bubble {
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 10px;
+    user-select: none;
+    box-shadow: var(--shadow-sm);
+    color: white;
+    /* Default size base */
+    width: 60px;
+    height: 60px;
+    font-size: 0.8rem;
+}
+
+.skill-bubble:hover {
+    transform: scale(1.1);
+    z-index: 10;
+    box-shadow: var(--shadow-md);
+}
+
+.skill-bubble.selected {
+    /* Visual indicator for "I have this skill" */
+    border: 4px solid var(--primary-color);
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(37, 99, 235, 0.5);
+}
+
+.skill-bubble.anti-selected {
+    /* Visual indicator for "I hate this skill" */
+    border: 4px solid var(--danger-color);
+    transform: scale(0.9);
+    filter: grayscale(0.8);
+    opacity: 0.7;
+}
+
+/* Dynamic colors for bubbles based on hash/random */
+.bubble-color-0 {
+    background: linear-gradient(135deg, #FF9966 0%, #FF5E62 100%);
+}
+
+.bubble-color-1 {
+    background: linear-gradient(135deg, #0cebeb 0%, #20e3b2 100%);
+    color: #1e293b;
+}
+
+.bubble-color-2 {
+    background: linear-gradient(135deg, #36D1DC 0%, #5B86E5 100%);
+}
+
+.bubble-color-3 {
+    background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%);
+}
+
+.bubble-color-4 {
+    background: linear-gradient(135deg, #b92b27 0%, #1565C0 100%);
+}
+
+.bubble-color-5 {
+    background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);
+}
+
+.bubble-color-6 {
+    background: linear-gradient(135deg, #654ea3 0%, #eaafc8 100%);
+}
+
+.bubble-color-7 {
+    background: linear-gradient(135deg, #00B4DB 0%, #0083B0 100%);
+}
+
+.bubble-color-8 {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.bubble-color-9 {
+    background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+}
+
+.search-container {
+    position: relative;
+    max-width: 400px;
+    margin: 0 auto 2rem;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 20px 12px 40px;
+    /* Space for icon */
+    border-radius: 50px;
+    border: 1px solid var(--border-color);
+    background-color: var(--surface-color);
+    font-size: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}

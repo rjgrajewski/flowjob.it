@@ -20,6 +20,7 @@ import os
 import json
 from pathlib import Path
 from typing import List, Dict, Set, Tuple
+import re
 from dotenv import load_dotenv
 import boto3
 
@@ -37,6 +38,32 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
+
+# Separators used to join multiple skills in a single tech_stack entry.
+# We normalise first, then split — handles patterns like "A, B, or C" or "A/B or C".
+_OR_PATTERN = re.compile(r',?\s+or\s+', re.IGNORECASE)
+_DELIM_PATTERN = re.compile(r'\s*/\s*|,\s*')
+
+def split_multi_skill_string(raw: str) -> List[str]:
+    """
+    Split a raw skill string that may contain multiple skills joined by
+    separators like '/', ', ', ' OR ', ' or ', or combinations thereof.
+
+    Examples:
+        'Python/TypeScript/C#'       -> ['Python', 'TypeScript', 'C#']
+        'Node.js OR Python OR Go'    -> ['Node.js', 'Python', 'Go']
+        'Python, TypeScript, or C#'  -> ['Python', 'TypeScript', 'C#']
+        'Python or R'                -> ['Python', 'R']
+        'Python'                     -> ['Python']
+    Returns a list of stripped, non-empty individual skill names.
+    """
+    # Step 1: normalise " or " / ", or " -> ","  (handles trailing Oxford comma too)
+    normalised = _OR_PATTERN.sub(',', raw)
+    # Step 2: split on "/" and ","
+    parts = _DELIM_PATTERN.split(normalised)
+    return [p.strip() for p in parts if p.strip()]
+
+
 
 async def init_tables(conn: asyncpg.Connection):
     """Initialize necessary tables."""
@@ -118,21 +145,24 @@ async def extract_distinct_skills(conn: asyncpg.Connection):
 
             for skill in skills_list:
                 skill_clean = str(skill).strip()
-                if skill_clean and len(skill_clean) < 100: # Basic sanity check
-                    distinct_skills.add(skill_clean)
-                    if skill_clean not in skill_category_map:
-                         skill_category_map[skill_clean] = category
+                if not skill_clean or len(skill_clean) >= 100:
+                    continue
+                # Store raw skill name UNCHANGED — AI will decide how to normalize
+                distinct_skills.add(skill_clean)
+                if skill_clean not in skill_category_map:
+                    skill_category_map[skill_clean] = category
                          
         except Exception as e:
             logging.warning(f"Failed to parse tech_stack for {row['job_url']}: {e}")
 
     logging.info(f"👉 Found {len(distinct_skills)} distinct raw skills.")
     
-    # Bulk insert (ignoring duplicates)
+    # Bulk insert (ignoring duplicates).
+    # Uses the partial unique index: unique on original_skill_name WHERE canonical_skill_name IS NULL.
     insert_query = """
         INSERT INTO skills (original_skill_name, category)
         VALUES ($1, $2)
-        ON CONFLICT (original_skill_name) DO NOTHING
+        ON CONFLICT DO NOTHING
     """
     
     # Prepare batch
@@ -151,16 +181,17 @@ async def get_unnormalized_skills(conn: asyncpg.Connection, limit: int = 50) -> 
     query = """
         SELECT original_skill_name, category
         FROM skills
-        WHERE ai_normalized_name IS NULL
+        WHERE canonical_skill_name IS NULL
         LIMIT $1
     """
     rows = await conn.fetch(query, limit)
     return [dict(row) for row in rows]
 
-def normalize_batch_with_ai(skills_data: List[Dict], bedrock_client) -> Dict[str, str]:
+def normalize_batch_with_ai(skills_data: List[Dict], bedrock_client) -> Dict[str, object]:
     """
     Step 3: Normalize a batch of skills using Bedrock.
     Returns: { "raw_skill": "Canonical Name" }
+            OR { "raw_skill": ["Name1", "Name2", ...] }  (when AI splits a multi-skill string)
     """
     if not skills_data:
         return {}
@@ -169,22 +200,27 @@ def normalize_batch_with_ai(skills_data: List[Dict], bedrock_client) -> Dict[str
     input_map = {s['original_skill_name']: s['category'] for s in skills_data}
     input_json = json.dumps(input_map, indent=2)
     
-    prompt = f"""You are a technical data cleaner. Normalize these raw technical skills to their Canonical Names.
+    prompt = f"""You are a technical data cleaner. Normalize raw technical skills scraped from job postings.
 
-Input is a JSON object: {{ "Raw Name": "Category Constraints" }}
-Output must be a JSON object: {{ "Raw Name": "Canonical Name" }}
+Input is a JSON object: {{ "Raw Name": "Category" }}
+Output must be a JSON object where each value is either a STRING or a LIST OF STRINGS:
+  {{ "Raw Name": "Canonical Name" }}         -- single canonical name
+  {{ "Raw Name": ["Name1", "Name2", ...] }}  -- multiple canonical names (when splitting)
 
-Rules for Canonical Names:
-1. **Granularity**: PRESERVE distinct technologies. 
-   - "AWS" != "Azure" != "GCP". Do NOT merge them into "Cloud Platforms".
-   - "React" != "Angular" != "Vue".
-   - "Manual Testing" != "Automated Testing".
-2. **Synonyms Only**: Merge ONLY when items are semantically IDENTICAL.
+Rules:
+1. **Single skills**: Return a single string.
    - "React.js" -> "React"
-   - "Amazon Web Services" -> "AWS"
    - "NodeJS" -> "Node.js"
-3. **Context**: Use Category to disambiguate (e.g. "Go" in "Game" -> "Go", "Go" in "Backend" -> "Go").
-4. **Formatting**: Use standard capitalization (e.g. "iOS", "PostgreSQL").
+   - "Amazon Web Services" -> "AWS"
+2. **Multi-skill strings** (joined by `/`, `OR`, `or`, `,`):
+   - If they are DISTINCT technologies -> return a LIST of individual canonical names.
+     e.g. "Python/TypeScript/C#" -> ["Python", "TypeScript", "C#"]
+     e.g. "Go/Ruby/Python" -> ["Go", "Ruby", "Python"]
+   - If they are SYNONYMS of ONE concept -> return a SINGLE generalized name.
+     e.g. "AWS/Azure/Google Cloud" -> "Cloud Platforms"
+     e.g. "MySQL/PostgreSQL/Oracle" -> "SQL Databases"
+3. **Formatting**: Standard capitalization (e.g. "iOS", "PostgreSQL", "Node.js").
+4. **Context**: Use Category to disambiguate when needed.
 
 Input:
 {input_json}
@@ -228,18 +264,61 @@ Input:
         logging.error(f"❌ AI Normalization failed: {e}")
         return {}
 
-async def update_canonical_names(conn: asyncpg.Connection, mapping: Dict[str, str]):
-    """Update the skills table with normalized names."""
-    if not mapping: return
-    
-    query = """
-        UPDATE skills 
-        SET ai_normalized_name = $2
-        WHERE original_skill_name = $1
+async def update_canonical_names(conn: asyncpg.Connection, mapping: Dict[str, object]):
     """
-    batch = list(mapping.items())
-    await conn.executemany(query, batch)
-    logging.info(f"✅ Updated {len(batch)} skills with canonical names.")
+    Update the skills table with normalized names.
+    Handles both single names (str) and multi-canonical lists (list).
+    When AI returns a list, the first name updates the existing row;
+    additional names create new rows with the same original_skill_name.
+    """
+    if not mapping:
+        return
+
+    single_updates = []   # (original, canonical)
+    multi_inserts = []    # rows to INSERT for extra canonical names
+
+    for original, canonical in mapping.items():
+        if isinstance(canonical, list):
+            if not canonical:
+                continue
+            # First element updates the existing pending row
+            single_updates.append((original, canonical[0]))
+            # Remaining elements become new rows
+            for extra_name in canonical[1:]:
+                multi_inserts.append((original, extra_name))
+        else:
+            single_updates.append((original, str(canonical)))
+
+    # 1. Update existing pending rows
+    if single_updates:
+        await conn.executemany("""
+            UPDATE skills
+            SET canonical_skill_name = $2
+            WHERE original_skill_name = $1
+              AND canonical_skill_name IS NULL
+        """, single_updates)
+        logging.info(f"✅ Updated {len(single_updates)} skills with canonical names.")
+
+    # 2. Insert extra rows for multi-canonical skills
+    if multi_inserts:
+        # Fetch category for each original skill to carry over to new rows
+        originals = list({orig for orig, _ in multi_inserts})
+        cat_rows = await conn.fetch(
+            "SELECT original_skill_name, category FROM skills WHERE original_skill_name = ANY($1)",
+            originals
+        )
+        cat_map = {r['original_skill_name']: r['category'] for r in cat_rows}
+
+        insert_data = [
+            (orig, canon, cat_map.get(orig))
+            for orig, canon in multi_inserts
+        ]
+        await conn.executemany("""
+            INSERT INTO skills (original_skill_name, canonical_skill_name, category)
+            VALUES ($1, $2, $3)
+            ON CONFLICT DO NOTHING
+        """, insert_data)
+        logging.info(f"✅ Inserted {len(multi_inserts)} extra canonical rows for multi-skill strings.")
 
 async def deduplicate_canonical_skills(conn: asyncpg.Connection, bedrock_client):
     """
@@ -249,8 +328,8 @@ async def deduplicate_canonical_skills(conn: asyncpg.Connection, bedrock_client)
     logging.info("🧠 Starting Semantic Deduplication...")
     
     # 1. Fetch all DISTINCT canonical names
-    rows = await conn.fetch("SELECT DISTINCT ai_normalized_name FROM skills WHERE ai_normalized_name IS NOT NULL")
-    canonicals = [r['ai_normalized_name'] for r in rows]
+    rows = await conn.fetch("SELECT DISTINCT canonical_skill_name FROM skills WHERE canonical_skill_name IS NOT NULL")
+    canonicals = [r['canonical_skill_name'] for r in rows]
     
     if not canonicals:
         logging.info("No canonical skills found to deduplicate.")
@@ -327,12 +406,12 @@ Example Output:
         
         # We need to update existing rows to point to the new canonical name
         # BUT wait, multiple raw skills might map to the same OLD canonical.
-        # We just need to update `ai_normalized_name` where it matches the old one.
+        # We just need to update `canonical_skill_name` where it matches the old one.
         
         update_query = """
             UPDATE skills 
-            SET ai_normalized_name = $1 
-            WHERE ai_normalized_name = $2
+            SET canonical_skill_name = $1 
+            WHERE canonical_skill_name = $2
         """
         
         batch = [(new, old) for old, new in updates.items()]
@@ -342,56 +421,50 @@ Example Output:
 async def link_offers_to_skills(conn: asyncpg.Connection):
     """
     Step 4: Link offers to skills based on text match.
-    This replaces the 'extraction' phase for every offer. We just match what we have.
+    One original_skill_name may map to MULTIPLE skill rows (multi-canonical),
+    so we link the offer to ALL of them.
     """
     logging.info("🔗 Linking offers to skills...")
-    
-    # This might be heavy if done in one go. 
-    # Let's process offers in batches.
-    
-    # First, load ALL skills into memory map: raw_name -> skill_id
-    # Assuming distinct skills count is manageable (e.g. < 5000)
+
+    # Build skill_map: original_skill_name -> list of UUIDs
+    # (one raw string may have been split into several canonical rows)
+    from collections import defaultdict
     skill_rows = await conn.fetch("SELECT original_skill_name, uuid FROM skills")
-    skill_map = {row['original_skill_name']: row['uuid'] for row in skill_rows}
-    
-    logging.info(f"Loaded {len(skill_map)} skills for linking.")
-    
-    # Process offers
-    # We select offers that don't have links yet? Or just all?
-    # To be safe/idempotent, we can select all.
+    skill_map: Dict[str, List] = defaultdict(list)
+    for row in skill_rows:
+        skill_map[row['original_skill_name']].append(row['uuid'])
+
+    logging.info(f"Loaded {len(skill_map)} distinct raw skills for linking.")
+
     query = "SELECT job_url, tech_stack FROM offers WHERE tech_stack IS NOT NULL"
-    
-    # Cursor for memory efficiency
+
     async with conn.transaction():
         async for row in conn.cursor(query):
             job_url = row['job_url']
             tech_stack = row['tech_stack']
-            
+
             # Parse stack
             try:
                 if isinstance(tech_stack, str):
                     try:
                         skills_list = json.loads(tech_stack)
-                    except:
+                    except Exception:
                         skills_list = [s.strip() for s in tech_stack.split(',')]
                 elif isinstance(tech_stack, list):
                     skills_list = tech_stack
                 else:
                     skills_list = []
-            except:
+            except Exception:
                 skills_list = []
-                
-            # Find IDs
+
+            # Link offer to ALL canonical rows for each raw skill
             to_link = []
             for s in skills_list:
                 s_clean = s.strip() if isinstance(s, str) else str(s)
-                if s_clean in skill_map:
-                    to_link.append((job_url, skill_map[s_clean]))
-            
-            # Insert links
+                for uid in skill_map.get(s_clean, []):
+                    to_link.append((job_url, uid))
+
             if to_link:
-                # We can't use executemany inside async cursor loop easily without breaking cursor?
-                # Actually we can.
                 try:
                     await conn.executemany("""
                         INSERT INTO offer_skills (job_url, skill_id)
@@ -399,7 +472,7 @@ async def link_offers_to_skills(conn: asyncpg.Connection):
                         ON CONFLICT (job_url, skill_id) DO NOTHING
                     """, to_link)
                 except Exception as e:
-                     logging.error(f"Link error {job_url}: {e}")
+                    logging.error(f"Link error {job_url}: {e}")
                      
     logging.info("✅ Linking completed.")
 

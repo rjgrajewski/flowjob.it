@@ -1,80 +1,118 @@
-# Aligno: IT Job Search Engine
-![Python 3.9](https://img.shields.io/badge/python-3.9-blue) ![Playwright](https://img.shields.io/badge/playwright-1.52.0-blue) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.3-blue) ![AWS](https://img.shields.io/badge/AWS-RDS-orange) ![AWS](https://img.shields.io/badge/AWS-Fargate-orange)
+# flowjob: IT Job Search Engine
+
+![Python 3.9](https://img.shields.io/badge/python-3.9-blue) ![React](https://img.shields.io/badge/React-18-61dafb) ![Vite](https://img.shields.io/badge/Vite-5-646cff) ![Playwright](https://img.shields.io/badge/playwright-1.52.0-blue) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.3-blue) ![AWS](https://img.shields.io/badge/AWS-RDS-orange) ![AWS](https://img.shields.io/badge/AWS-Fargate-orange)
 
 ## 🚀 Overview
 
-Aligno is a web application for collecting, processing and analyzing job offers from JustJoin.it. The main goals are:
+**flowjob** is a web application for collecting, processing and analyzing IT job offers from JustJoin.it. Users can build a skill profile (selecting skills they know and blocking ones they don't want) and instantly get ranked, personalized job matches.
+
 1. Automatic retrieval and updating of the job offers database.
-2. Interactive job search based on user preferences and skills.
+2. Interactive job search based on user skill profile.
 3. Generation of a personalized CV for a specific job posting.
 4. Presentation of market statistics via a dashboard.
 
-## 🔧 Key Features
+---
 
-1. ✅ **Data Management**
-   - Uses PostgreSQL as the primary database for reliable and scalable storage of all job offers and analytics data.
-   - The database is securely managed in the cloud using AWS RDS (Relational Database Service).
+## 🖥️ Frontend (flowjob UI)
 
-2. ✅ **Scout** *[(Documentation)](./src/scout/README.md)*
-   - Playwright-based scraper that automatically collects job-offer links and detailed information from JustJoin.it.
-   - Supports automated task scheduling and execution in AWS Fargate, enabling continuous collection of new offers, and removal of expired or stale offers without manual intervention.
-   - Opens each offer page to extract full job description, ensuring comprehensive data collection for analysis.
-   - Handles three phases: efficient link collection, detailed data extraction (including descriptions), and cleanup.
+The frontend is a **Vite + React** SPA with a dark "Terminal Nights" aesthetic.
 
-3. 🛠️ **Atlas** *(In Progress)*
-   - Backend service powered by AI to automatically analyze and categorize skills, technologies, and other details within job offers.
-   - uses AWS Bedrock (Claude) to normalize and deduplicate technical skills.
-   - Standardizes disparate skill names (e.g. "React.js", "ReactJS" -> "React") and deduplicates them semantically.
+**Stack:** React 18 · Framer Motion · React Router v6 · Sora font
 
-4. ⏳ **Job Search** *(Planned)*
-   - Lets users search for job offers based on their skills and preferences.
-   - Provides a personalized job search experience.
-   - Sorts job offers by match to a user's profile and requirements.
+**Directory:** `frontend-react/`
 
-5. ⏳ **CV Generation** *(Planned)*
-   - Generates a personalized CV tailored to a chosen job posting.
-   - Enables users to customize their CV using data from the job offer.
-   - Supports downloading the CV in multiple formats (PDF, DOCX, etc.).
+### Running locally
 
-6. ⏳ **Market Overview** *(Planned)*
-   - Presents market statistics via an interactive dashboard.
-   - Offers insights including:
-     - Number of job offers by month, technology, or location.
-     - Most popular technologies and skills.
-     - Relationships between salary and technology.
+> Node.js is required. If not installed: [nodejs.org/en/download](https://nodejs.org/en/download)
 
-## 📁 Architecture
+```bash
+cd frontend-react
+npm install
+npm run dev
+# → http://localhost:5173
+```
+
+The Vite dev server proxies all `/api` requests to the FastAPI backend on `:8000`.
+
+### Pages
+
+| Route | Page | Description |
+|---|---|---|
+| `/` | Home | Hero, feature grid, split sections |
+| `/register` | Register / Login | Split-layout with tab toggle |
+| `/cv` | CV Builder | Bubble cloud skill selector with sidebar |
+| `/jobs` | Job Board | Filtered job cards with match scores |
+
+### Design System — "Terminal Nights"
+
+| Token | Value | Usage |
+|---|---|---|
+| `--bg-deep` | `#0d1117` | App background |
+| `--bg-surface` | `#161b22` | Cards, panels |
+| `--accent-cyan` | `#00e5ff` | Primary CTA, 90%+ match |
+| `--accent-amber` | `#ffd740` | 70–89% match |
+| `--accent-red` | `#ff5370` | Anti-skills |
+
+---
+
+## ⚙️ Backend (FastAPI)
+
+```bash
+python3 -m uvicorn backend.main:app --reload --port 8000
+```
+
+**Endpoints used by the frontend:**
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/skills` | Returns all normalized skills with frequency |
+| `GET` | `/api/jobs` | Returns job offers with requiredSkills |
+
+---
+
+## 🔧 Key Modules
+
+### ✅ Scout *[(docs)](./src/scout/README.md)*
+Playwright-based scraper that collects job offers from JustJoin.it and stores them in PostgreSQL. Runs automatically in AWS Fargate.
+
+### 🛠️ Atlas *(In Progress)*
+AI-powered service (AWS Bedrock / Claude) that normalizes and deduplicates skill names across job offers (e.g. `"React.js"`, `"ReactJS"` → `"React"`).
+
+### ⏳ Job Search *(Active)*
+React frontend + FastAPI backend that matches user skill profiles against job offers and ranks them by compatibility score.
+
+### ⏳ CV Generation *(Planned)*
+Generates a personalized CV tailored to a selected job posting, downloadable as PDF/DOCX.
+
+### ⏳ Market Overview *(Planned)*
+Dashboard with market analytics: most popular skills, salary vs. technology, job volume over time.
+
+---
+
+## 📁 Project Structure
 
 ```
-Aligno/
-├─ src/                                # Source code directory
-│  ├─ atlas/                           # Atlas module (AI based processing)
-│  ├─ atlas/                           # Atlas module (AI based processing)
-│  │  ├─ __main__.py                   # Entry point for Atlas
-│  │  ├─ normalize_skills.py           # Core logic for normalizing and deduping skills using AWS Bedrock
-│  │  └─ README.md                     # Documentation for the Atlas module
-│  ├─ scout/                           # Web scraping module for automatic job offer collection from JustJoin.it
-│  │  ├─ __main__.py                   # Main entry point for launching the Scout
-│  │  ├─ aws_secrets.py                # Integration with AWS Secrets Manager for credentials management
-│  │  ├─ cli.py                        # Command-line interface for running the scraper and utility tasks
-│  │  ├─ config.py                     # Configuration parameters for the scraper (limits, timeouts, etc.)
-│  │  ├─ db.py                         # Database operations (connections, inserts, cleanup)
-│  │  ├─ scrape_core.py                # Core scraper logic: link collection, data extraction, cleanup
-│  │  ├─ selectors.py                  # Centralized selectors configuration for scraping
-│  │  └─ README.md                     # Documentation for the Scout module
-│  └─ sql/                             # Database schema
-│     ├─ tables/                       # Table definitions
-│     │  └─ offers.sql
-│     └─ views/                        # View definitions
-│        └─ offers_parsed.sql
-├─ .dockerignore                       # Docker ignore rules
-├─ .env.example                        # Environment variables template
-├─ .gitignore                          # Git ignore rules
-├─ requirements.txt                    # Python dependencies
-├─ mypy.ini                            # Mypy configuration
-└─ README.md                           # Project documentation
+flowjob/
+├─ frontend-react/              # Vite + React frontend
+│  ├─ src/
+│  │  ├─ pages/                 # Home, Register, CVBuilder, JobBoard
+│  │  ├─ components/            # Navbar, JobCard, FilterBar, Sparkles
+│  │  ├─ services/              # api.js (fetch + localStorage auth)
+│  │  └─ index.css              # Design system tokens + globals
+│  ├─ vite.config.js            # Proxy /api → localhost:8000
+│  └─ package.json
+├─ frontend/                    # Legacy vanilla JS SPA (backup)
+├─ backend/                     # FastAPI backend
+├─ src/
+│  ├─ scout/                    # Web scraper (Playwright)
+│  ├─ atlas/                    # Skill normalization (AWS Bedrock)
+│  └─ sql/                      # Database schema
+├─ tests/                       # SQL test queries
+├─ .env.example                 # Environment variables template
+├─ requirements.txt             # Python dependencies
+└─ README.md
 ```
 
 ---
 
-**Proudly built and maintained by Rafal Grajewski for the Aligno project**
+*Built by Rafał Grajewski*
