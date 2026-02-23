@@ -1,11 +1,14 @@
 {
   "name": "flowjob",
   "private": true,
+  "workspaces": [
+    "frontend-react"
+  ],
   "scripts": {
-    "dev": "concurrently -n backend,frontend -c blue,green \"python3 -m uvicorn backend.main:app --reload --port 8000\" \"npm run dev --prefix frontend-react\"",
-    "dev:frontend": "npm run dev --prefix frontend-react",
+    "dev": "concurrently -n backend,frontend -c blue,green \"python3 -m uvicorn backend.main:app --reload --port 8000\" \"npm run dev --workspace=flowjob-frontend\"",
+    "dev:frontend": "npm run dev --workspace=flowjob-frontend",
     "dev:backend": "python3 -m uvicorn backend.main:app --reload --port 8000",
-    "build": "cd frontend-react && npm install && npm run build"
+    "build": "npm run build --workspace=flowjob-frontend"
   },
   "engines": {
     "node": "20.x"
