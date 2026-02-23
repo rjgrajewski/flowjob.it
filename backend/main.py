@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from backend.database import init_db_pool, close_db_pool
-from backend.api.routers import auth, skills, offers
+from backend.api.routers import auth, skills, offers, users
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,6 +25,11 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(skills.router)
 app.include_router(offers.router)
+app.include_router(users.router)
+
+import os
 
 # Mount the static files directory to serve the frontend
-app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+frontend_dist = "frontend-react/dist"
+if os.path.exists(frontend_dist):
+    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="static")

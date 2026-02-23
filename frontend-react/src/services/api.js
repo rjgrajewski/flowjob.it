@@ -109,4 +109,9 @@ export const auth = {
     },
     logout: () => localStorage.removeItem('flowjob_user'),
     getUser: () => JSON.parse(localStorage.getItem('flowjob_user')),
+    hasCompletedOnboarding: () => localStorage.getItem('flowjob_onboarding_done') === 'true',
+    completeOnboarding: (profileData) => {
+        localStorage.setItem('flowjob_profile', JSON.stringify(profileData));
+        localStorage.setItem('flowjob_onboarding_done', 'true');
+    },
 };

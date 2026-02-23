@@ -1,18 +1,85 @@
-export default function FilterBar({ titleFilter, setTitleFilter, minMatch, setMinMatch }) {
+export default function FilterBar({
+    titleFilter, setTitleFilter,
+    minMatch, setMinMatch,
+    locationFilter, setLocationFilter,
+    operatingModeFilter, setOperatingModeFilter,
+    employmentTypeFilter, setEmploymentTypeFilter,
+    experienceFilter, setExperienceFilter,
+    locationOptions, operatingModeOptions, employmentTypeOptions, experienceOptions,
+}) {
     return (
         <div style={styles.wrapper}>
+            {/* Title search */}
             <div style={styles.field}>
                 <label style={styles.label}>Stanowisko</label>
                 <input
                     className="form-input"
-                    placeholder="Stanowisko"
+                    placeholder="Wyszukaj stanowisko..."
                     value={titleFilter}
                     onChange={e => setTitleFilter(e.target.value)}
                     style={styles.input}
                 />
             </div>
+
+            {/* Lokalizacja */}
             <div style={styles.field}>
-                <label style={styles.label}>Minimalne dopasowanie %</label>
+                <label style={styles.label}>Lokalizacja</label>
+                <select
+                    className="form-input"
+                    value={locationFilter}
+                    onChange={e => setLocationFilter(e.target.value)}
+                    style={styles.input}
+                >
+                    <option value="">Wszystkie</option>
+                    {locationOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+            </div>
+
+            {/* Tryb pracy */}
+            <div style={styles.field}>
+                <label style={styles.label}>Tryb pracy</label>
+                <select
+                    className="form-input"
+                    value={operatingModeFilter}
+                    onChange={e => setOperatingModeFilter(e.target.value)}
+                    style={styles.input}
+                >
+                    <option value="">Wszystkie</option>
+                    {operatingModeOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+            </div>
+
+            {/* Rodzaj zatrudnienia */}
+            <div style={styles.field}>
+                <label style={styles.label}>Rodzaj zatrudnienia</label>
+                <select
+                    className="form-input"
+                    value={employmentTypeFilter}
+                    onChange={e => setEmploymentTypeFilter(e.target.value)}
+                    style={styles.input}
+                >
+                    <option value="">Wszystkie</option>
+                    {employmentTypeOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+            </div>
+
+            {/* Poziom */}
+            <div style={styles.field}>
+                <label style={styles.label}>Poziom</label>
+                <select
+                    className="form-input"
+                    value={experienceFilter}
+                    onChange={e => setExperienceFilter(e.target.value)}
+                    style={styles.input}
+                >
+                    <option value="">Wszystkie</option>
+                    {experienceOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+            </div>
+
+            {/* Min match */}
+            <div style={{ ...styles.field, flex: '0 0 auto' }}>
+                <label style={styles.label}>Min. dopasowanie %</label>
                 <input
                     className="form-input"
                     type="number"
@@ -20,7 +87,7 @@ export default function FilterBar({ titleFilter, setTitleFilter, minMatch, setMi
                     max={100}
                     value={minMatch}
                     onChange={e => setMinMatch(Number(e.target.value))}
-                    style={{ ...styles.input, width: '120px' }}
+                    style={{ ...styles.input, width: '100px' }}
                 />
             </div>
         </div>
@@ -30,7 +97,7 @@ export default function FilterBar({ titleFilter, setTitleFilter, minMatch, setMi
 const styles = {
     wrapper: {
         display: 'flex',
-        gap: '1rem',
+        gap: '0.75rem',
         alignItems: 'flex-end',
         flexWrap: 'wrap',
         background: 'var(--bg-surface)',
@@ -42,14 +109,16 @@ const styles = {
     field: {
         display: 'flex',
         flexDirection: 'column',
-        flex: '1 1 200px',
+        flex: '1 1 160px',
+        minWidth: 0,
     },
     label: {
-        fontSize: '0.78rem',
+        fontSize: '0.75rem',
         fontWeight: 500,
         color: 'var(--text-secondary)',
-        marginBottom: '0.35rem',
+        marginBottom: '0.3rem',
         letterSpacing: '0.02em',
+        textTransform: 'uppercase',
     },
     input: {
         minWidth: 0,

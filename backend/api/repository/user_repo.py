@@ -58,12 +58,12 @@ class UserRepository:
                 )
                 
                 # Map names to their UUIDs. Prefer canonical if it matches.
-                name_to_uuid = {}
+                name_to_uuids = {name: [] for name in all_names}
                 for record in skill_records:
                     if record["canonical_skill_name"] in all_names:
-                        name_to_uuid[record["canonical_skill_name"]] = record["uuid"]
+                        name_to_uuids[record["canonical_skill_name"]].append(record["uuid"])
                     if record["original_skill_name"] in all_names:
-                        name_to_uuid[record["original_skill_name"]] = record["uuid"]
+                        name_to_uuids[record["original_skill_name"]].append(record["uuid"])
                 
                 # Prepare inserts
                 # Use a set to prevent duplicate inserts if the user provided duplicate strings
@@ -74,15 +74,13 @@ class UserRepository:
                 added = set()
                 
                 for s in set(skills):
-                    if s in name_to_uuid:
-                        uid = name_to_uuid[s]
+                    for uid in name_to_uuids.get(s, []):
                         if uid not in added:
                             inserts.append((user_id, uid, 'HAS'))
                             added.add(uid)
                             
                 for a in set(anti_skills):
-                    if a in name_to_uuid:
-                        uid = name_to_uuid[a]
+                    for uid in name_to_uuids.get(a, []):
                         # Don't add to anti if already in HAS
                         if uid not in added:
                             inserts.append((user_id, uid, 'AVOIDS'))
@@ -93,6 +91,7 @@ class UserRepository:
                         """
                         INSERT INTO user_skills (user_id, skill_id, skill_type)
                         VALUES ($1, $2, $3)
+                        ON CONFLICT (user_id, skill_id, skill_type) DO NOTHING
                         """,
                         inserts
                     )

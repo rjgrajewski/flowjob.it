@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { api } from '../services/api.js';
+import { api, auth } from '../services/api.js';
 import { useOffers } from '../hooks/useOffers.js';
 import JobCard from '../components/JobCard.jsx';
 import FilterBar from '../components/FilterBar.jsx';
@@ -10,14 +10,37 @@ export default function JobBoard() {
     const { offers: jobs, loading } = useOffers();
     const [userSkills, setUserSkills] = useState([]);
     const [antiSkills, setAntiSkills] = useState([]);
+
+    // Filters
     const [titleFilter, setTitleFilter] = useState('');
-    const [minMatch, setMinMatch] = useState(30);
+    const [minMatch, setMinMatch] = useState(0);
+    const [locationFilter, setLocationFilter] = useState('');
+    const [operatingModeFilter, setOperatingModeFilter] = useState('');
+    const [employmentTypeFilter, setEmploymentTypeFilter] = useState('');
+    const [experienceFilter, setExperienceFilter] = useState('');
 
     useEffect(() => {
-        const cv = api.getUserCV();
-        setUserSkills(cv.skills || []);
-        setAntiSkills(cv.antiSkills || []);
+        const loadUserSkills = async () => {
+            const user = auth.getUser();
+            if (user) {
+                const cv = await api.getUserCV(user.id);
+                setUserSkills(cv.skills || []);
+                setAntiSkills(cv.antiSkills || []);
+            }
+        };
+        loadUserSkills();
     }, []);
+
+    // Derive unique filter options from loaded data
+    const filterOptions = useMemo(() => {
+        const unique = (key) => [...new Set(jobs.map(j => j[key]).filter(Boolean))].sort();
+        return {
+            location: unique('location'),
+            operatingMode: unique('operatingMode'),
+            employmentType: unique('employmentType'),
+            experience: unique('experience'),
+        };
+    }, [jobs]);
 
     const processedJobs = useMemo(() => {
         const skillSet = new Set(userSkills);
@@ -40,13 +63,17 @@ export default function JobBoard() {
 
     const filteredJobs = useMemo(() => {
         return processedJobs.filter(job => {
-            const titleOk = titleFilter === '' || job.title?.toLowerCase().includes(titleFilter.toLowerCase());
-            const matchOk = job.score >= minMatch;
-            return titleOk && matchOk;
+            if (minMatch > 0 && job.score < minMatch) return false;
+            if (titleFilter && !job.title?.toLowerCase().includes(titleFilter.toLowerCase())) return false;
+            if (locationFilter && job.location !== locationFilter) return false;
+            if (operatingModeFilter && job.operatingMode !== operatingModeFilter) return false;
+            if (employmentTypeFilter && job.employmentType !== employmentTypeFilter) return false;
+            if (experienceFilter && job.experience !== experienceFilter) return false;
+            return true;
         });
-    }, [processedJobs, titleFilter, minMatch]);
+    }, [processedJobs, minMatch, titleFilter, locationFilter, operatingModeFilter, employmentTypeFilter, experienceFilter]);
 
-    const hiddenCount = processedJobs.length - filteredJobs.length;
+    const blockedCount = jobs.length - processedJobs.length;
 
     return (
         <div style={{ position: 'relative' }}>
@@ -57,14 +84,11 @@ export default function JobBoard() {
                     <div>
                         <h1 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '0.25rem' }}>Job Offers</h1>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                            {loading ? 'Loading...' : (
+                            {loading ? 'Ładowanie...' : (
                                 <>
-                                    Showing <strong style={{ color: 'var(--text-primary)' }}>{filteredJobs.length}</strong> jobs
-                                    {hiddenCount > 0 && (
-                                        <> · <span style={{ color: 'var(--accent-red)' }}>{hiddenCount} hidden</span> by your filters</>
-                                    )}
-                                    {antiSkills.length > 0 && (
-                                        <> · <span style={{ color: 'var(--accent-red)' }}>{jobs.length - processedJobs.length} blocked</span> by anti-skills</>
+                                    Znaleziono <strong style={{ color: 'var(--text-primary)' }}>{filteredJobs.length}</strong> ofert
+                                    {antiSkills.length > 0 && blockedCount > 0 && (
+                                        <> · <span style={{ color: 'var(--accent-red)' }}>{blockedCount} zablokowane</span> przez anti-skills</>
                                     )}
                                 </>
                             )}
@@ -72,12 +96,18 @@ export default function JobBoard() {
                     </div>
                 </div>
 
-                {/* Filters */}
+                {/* Filter bar */}
                 <FilterBar
-                    titleFilter={titleFilter}
-                    setTitleFilter={setTitleFilter}
-                    minMatch={minMatch}
-                    setMinMatch={setMinMatch}
+                    titleFilter={titleFilter} setTitleFilter={setTitleFilter}
+                    minMatch={minMatch} setMinMatch={setMinMatch}
+                    locationFilter={locationFilter} setLocationFilter={setLocationFilter}
+                    operatingModeFilter={operatingModeFilter} setOperatingModeFilter={setOperatingModeFilter}
+                    employmentTypeFilter={employmentTypeFilter} setEmploymentTypeFilter={setEmploymentTypeFilter}
+                    experienceFilter={experienceFilter} setExperienceFilter={setExperienceFilter}
+                    locationOptions={filterOptions.location}
+                    operatingModeOptions={filterOptions.operatingMode}
+                    employmentTypeOptions={filterOptions.employmentType}
+                    experienceOptions={filterOptions.experience}
                 />
 
                 {/* Job list */}
@@ -90,9 +120,9 @@ export default function JobBoard() {
                 ) : filteredJobs.length === 0 ? (
                     <div style={styles.emptyState}>
                         <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔍</p>
-                        <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>No jobs found</p>
+                        <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Brak ofert</p>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                            Try lowering the minimum match % or changing your search.
+                            Spróbuj zmienić filtry lub obniżyć minimalne dopasowanie.
                         </p>
                     </div>
                 ) : (

@@ -41,8 +41,34 @@ logging.basicConfig(
 
 # Separators used to join multiple skills in a single tech_stack entry.
 # We normalise first, then split — handles patterns like "A, B, or C" or "A/B or C".
-_OR_PATTERN = re.compile(r',?\s+or\s+', re.IGNORECASE)
+_OR_PATTERN = re.compile(r',?\s+(or|lub|and|i|&)\s+', re.IGNORECASE)
 _DELIM_PATTERN = re.compile(r'\s*/\s*|,\s*')
+
+# Hardcoded normalization rules applied BEFORE AI normalization.
+# Keys are matched case-insensitively; values are the canonical names to use.
+_HARDCODED_RULES: Dict[str, str] = {
+    # Language skills
+    "polish": "Polish",
+    "polski": "Polish",
+    # Known semantic duplicates (acronym == full name)
+    "enterprise resource planning": "ERP",
+    "continuous integration": "CI/CD",
+    "continuous deployment": "CI/CD",
+    "continuous integration/continuous deployment": "CI/CD",
+    # Cloud terminology unification (Cloud Platforms is the chosen canonical)
+    "cloud computing": "Cloud Platforms",
+    # Testing terminology unification
+    "software testing": "Testing",
+    "software quality assurance": "QA",
+    # Specific tool unifications
+    "q": "KDB+/Q",
+    "kdb": "KDB+/Q",
+    "kdb+": "KDB+/Q",
+    "kdb+/q": "KDB+/Q",
+    "kdb/q": "KDB+/Q",
+    "episerver": "Optimizely CMS",
+    "zarządzanie": "Management",
+}
 
 def split_multi_skill_string(raw: str) -> List[str]:
     """
@@ -196,9 +222,24 @@ def normalize_batch_with_ai(skills_data: List[Dict], bedrock_client) -> Dict[str
     """
     if not skills_data:
         return {}
-        
+
+    # Apply hardcoded rules first — these bypass AI entirely.
+    result: Dict[str, object] = {}
+    remaining = []
+    for skill in skills_data:
+        raw = skill['original_skill_name']
+        canonical = _HARDCODED_RULES.get(raw.lower())
+        if canonical is not None:
+            logging.info(f"📌 Hardcoded rule applied: '{raw}' -> '{canonical}'")
+            result[raw] = canonical
+        else:
+            remaining.append(skill)
+
+    if not remaining:
+        return result
+
     # Input map: Raw -> Category (Context)
-    input_map = {s['original_skill_name']: s['category'] for s in skills_data}
+    input_map = {s['original_skill_name']: s['category'] for s in remaining}
     input_json = json.dumps(input_map, indent=2)
     
     prompt = f"""You are a technical data cleaner. Normalize raw technical skills scraped from job postings.
@@ -222,6 +263,17 @@ Rules:
      e.g. "MySQL/PostgreSQL/Oracle" -> "SQL Databases"
 3. **Formatting**: Standard capitalization (e.g. "iOS", "PostgreSQL", "Node.js").
 4. **Context**: Use Category to disambiguate when needed.
+5. **DO NOT over-generalize specific tools into broad categories**:
+   - "YAML" -> "YAML"  (NOT "Infrastructure as Code")
+   - "OpenSearch" -> "OpenSearch"  (NOT "Search")
+   - "Elasticsearch" -> "Elasticsearch"  (NOT "Search")
+   - "ModelSim" -> "ModelSim"  (NOT "Hardware Design")
+   - "Prometheus" -> "Prometheus"  (NOT "Monitoring")
+   - Only generalize when the raw input is ALREADY a category description, not a specific tool name.
+6. **Ambiguous acronyms must map to exactly ONE consistent canonical name**:
+   - "OT" -> "Operational Technology"
+   - "IaC" -> "Infrastructure as Code"
+   - Do NOT invent a new canonical for a known acronym.
 
 Input:
 {input_json}
@@ -277,11 +329,12 @@ Input:
         if missing or extra:
             logging.warning(f"⚠️ Key Mismatch in batch! Missing: {len(missing)}, Extra: {len(extra)}")
             
-        return result_map
-        
+        result.update(result_map)
+        return result
+
     except Exception as e:
         logging.error(f"❌ AI Normalization failed: {e}")
-        return {}
+        return result
 
 async def update_canonical_names(conn: asyncpg.Connection, mapping: Dict[str, object]):
     """
@@ -379,8 +432,15 @@ async def deduplicate_canonical_skills(conn: asyncpg.Connection, bedrock_client)
     """
     logging.info("🧠 Starting Semantic Deduplication...")
     
-    # 1. Fetch all DISTINCT canonical names
-    rows = await conn.fetch("SELECT DISTINCT canonical_skill_name FROM skills WHERE canonical_skill_name IS NOT NULL")
+    # 1. Fetch all DISTINCT canonical names and sort them alphabetically
+    # Sorting is critical! It ensures that similar names (e.g. "Adonis", "Adonis.js", "AdonisJS")
+    # end up in the same chunk when we split the list for the AI prompt.
+    rows = await conn.fetch("""
+        SELECT DISTINCT canonical_skill_name 
+        FROM skills 
+        WHERE canonical_skill_name IS NOT NULL
+        ORDER BY canonical_skill_name ASC
+    """)
     canonicals = [r['canonical_skill_name'] for r in rows]
     
     if not canonicals:
@@ -388,6 +448,55 @@ async def deduplicate_canonical_skills(conn: asyncpg.Connection, bedrock_client)
         return
 
     logging.info(f"Found {len(canonicals)} unique canonical skills to analyze.")
+
+    # 1b. Programmatic Pre-Deduplication (Exact match after stripping casing/spaces/dots)
+    # This saves AI tokens and enforces absolute consistency for trivial differences.
+    pre_updates = {}
+    normalized_map = {} # Maps simplified string to the FIRST seen canonical name (which is alphabetically first, usually shortest)
+    
+    def simplify_string(s: str) -> str:
+        return re.sub(r'[\s\.\-]', '', s).lower()
+        
+    for name in canonicals:
+        simplified = simplify_string(name)
+        if simplified in normalized_map:
+            best_name = normalized_map[simplified]
+            if name != best_name:
+                pre_updates[name] = best_name
+        else:
+            normalized_map[simplified] = name
+            
+    if pre_updates:
+        logging.info(f"Programmatic pre-deduplication found {len(pre_updates)} trivial merges.")
+        # Apply programmatic updates first
+        for old_canon, new_canon in pre_updates.items():
+            try:
+                # We need to tell asyncpg exactly what type the parameters are, or use a simpler query.
+                await conn.execute("""
+                    UPDATE skills s1
+                    SET canonical_skill_name = $1
+                    WHERE s1.canonical_skill_name = $2
+                      AND NOT (
+                          EXISTS (
+                              SELECT 1 FROM skills s2 
+                              WHERE s2.original_skill_name = s1.original_skill_name 
+                                AND s2.canonical_skill_name = $1
+                          )
+                      )
+                """, str(new_canon), str(old_canon))
+                await conn.execute("DELETE FROM skills WHERE canonical_skill_name = $1", str(old_canon))
+            except Exception as e:
+                logging.error(f"Error in pre-deduplication '{old_canon}' -> '{new_canon}': {e}")
+                
+        # Re-fetch the updated list of canonicals after programmatic merge
+        rows = await conn.fetch("""
+            SELECT DISTINCT canonical_skill_name 
+            FROM skills 
+            WHERE canonical_skill_name IS NOT NULL
+            ORDER BY canonical_skill_name ASC
+        """)
+        canonicals = [r['canonical_skill_name'] for r in rows]
+        logging.info(f"After pre-deduplication, {len(canonicals)} unique canonical skills remain for AI analysis.")
 
     # 2. Process in chunks
     chunk_size = 200
@@ -416,12 +525,21 @@ Rules:
   - "AWS" != "Azure" (Keep separate)
   - "Manual Testing" != "QA" (Keep separate)
   - "React" != "React Native" (Keep separate)
+- **DO merge acronym + full name pairs** (prefer the shorter/well-known form):
+  - "Enterprise Resource Planning" == "ERP"  -> use "ERP"
+  - "Continuous Integration/Deployment" == "CI/CD"  -> use "CI/CD"
+  - "Artificial Intelligence" == "AI"  -> use "AI"
+- **DO merge spelling variants and typos**:
+  - "Machine Learining" == "Machine Learning"  -> use "Machine Learning"
+  - "Tenserflow" == "TensorFlow"  -> use "TensorFlow"
+- **Cloud terminology**: use "Cloud Platforms" (NOT "Cloud Computing") for general cloud.
 
 Example Output:
 {{
   "AI Assistant": "AI Code Assistants",
   "ReactJS": "React",
-  "aws-lambda": "AWS Lambda"
+  "Enterprise Resource Planning": "ERP",
+  "Cloud Computing": "Cloud Platforms"
 }}
 """
 
@@ -479,6 +597,33 @@ Example Output:
                 logging.error(f"❌ Error merging '{old_canon}' into '{new_canon}': {e}")
 
         logging.info("✅ Semantic deduplication applied.")
+
+async def detect_and_report_collisions(conn: asyncpg.Connection) -> int:
+    """
+    Detects original skill names mapped to more than one canonical name.
+    This indicates an inconsistency introduced by AI non-determinism.
+    Returns the count of collisions found and logs each one.
+    """
+    rows = await conn.fetch("""
+        SELECT original_skill_name,
+               COUNT(DISTINCT canonical_skill_name) AS canonical_count,
+               STRING_AGG(DISTINCT canonical_skill_name, ' | ' ORDER BY canonical_skill_name) AS canonicals
+        FROM skills
+        WHERE canonical_skill_name IS NOT NULL
+        GROUP BY original_skill_name
+        HAVING COUNT(DISTINCT canonical_skill_name) > 1
+        ORDER BY canonical_count DESC, original_skill_name
+    """)
+
+    if rows:
+        logging.warning(f"⚠️  Found {len(rows)} collision(s) — same original maps to multiple canonical names:")
+        for r in rows:
+            logging.warning(f"    '{r['original_skill_name']}' -> {r['canonicals']}")
+    else:
+        logging.info("✅ No canonical name collisions found.")
+
+    return len(rows)
+
 
 async def link_offers_to_skills(conn: asyncpg.Connection):
     """
@@ -589,6 +734,8 @@ async def run_normalization_process(stage: str = 'all', clear_first: bool = Fals
         if stage in ['all', 'deduplicate']:
             # 5. Semantic Deduplication
             await deduplicate_canonical_skills(conn, bedrock)
+            # 5b. Collision report (diagnostic — does not modify data)
+            await detect_and_report_collisions(conn)
                  
         if stage in ['all', 'link']:
             # 4. Link
@@ -598,7 +745,15 @@ async def run_normalization_process(stage: str = 'all', clear_first: bool = Fals
         await conn.close()
 
 def main(stage: str = 'all', clear_first: bool = False):
-    return run_normalization_process(stage=stage, clear_first=clear_first)
+    import asyncio
+    asyncio.run(run_normalization_process(stage=stage, clear_first=clear_first))
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('stage', nargs='?', default='all', help='Stage to run')
+    parser.add_argument('--clear', action='store_true', help='Clear tables first')
+    args = parser.add_argument
+    args = parser.parse_args()
+    
+    main(stage=args.stage, clear_first=args.clear)

@@ -45,10 +45,11 @@ export default function Register() {
                 }
                 const { passwordConfirm: _, ...registerData } = form;
                 await auth.register(registerData);
+                navigate('/onboarding');
             } else {
                 await auth.login(form.email, form.password);
+                navigate(auth.hasCompletedOnboarding() ? '/cv' : '/onboarding');
             }
-            navigate('/cv');
         } catch (err) {
             setError(err?.message || 'Coś poszło nie tak. Spróbuj ponownie.');
         } finally {
