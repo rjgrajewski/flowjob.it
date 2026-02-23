@@ -4,7 +4,11 @@
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"python3 -m uvicorn backend.main:app --reload --port 8000\" \"npm run dev --prefix frontend-react\"",
     "dev:frontend": "npm run dev --prefix frontend-react",
-    "dev:backend": "python3 -m uvicorn backend.main:app --reload --port 8000"
+    "dev:backend": "python3 -m uvicorn backend.main:app --reload --port 8000",
+    "build": "cd frontend-react && npm install && npm run build"
+  },
+  "engines": {
+    "node": "20.x"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
