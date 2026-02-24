@@ -68,6 +68,7 @@ _HARDCODED_RULES: Dict[str, str] = {
     "kdb/q": "KDB+/Q",
     "episerver": "Optimizely CMS",
     "zarządzanie": "Management",
+    "lamp": "LAMP",
 }
 
 def split_multi_skill_string(raw: str) -> List[str]:

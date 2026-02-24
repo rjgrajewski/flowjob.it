@@ -12,12 +12,9 @@ export default function JobBoard() {
     const [antiSkills, setAntiSkills] = useState([]);
 
     // Filters
-    const [titleFilter, setTitleFilter] = useState('');
-    const [minMatch, setMinMatch] = useState(0);
     const [locationFilter, setLocationFilter] = useState('');
     const [operatingModeFilter, setOperatingModeFilter] = useState('');
     const [employmentTypeFilter, setEmploymentTypeFilter] = useState('');
-    const [experienceFilter, setExperienceFilter] = useState('');
 
     useEffect(() => {
         const loadUserSkills = async () => {
@@ -38,7 +35,6 @@ export default function JobBoard() {
             location: unique('location'),
             operatingMode: unique('operatingMode'),
             employmentType: unique('employmentType'),
-            experience: unique('experience'),
         };
     }, [jobs]);
 
@@ -63,15 +59,12 @@ export default function JobBoard() {
 
     const filteredJobs = useMemo(() => {
         return processedJobs.filter(job => {
-            if (minMatch > 0 && job.score < minMatch) return false;
-            if (titleFilter && !job.title?.toLowerCase().includes(titleFilter.toLowerCase())) return false;
             if (locationFilter && job.location !== locationFilter) return false;
             if (operatingModeFilter && job.operatingMode !== operatingModeFilter) return false;
             if (employmentTypeFilter && job.employmentType !== employmentTypeFilter) return false;
-            if (experienceFilter && job.experience !== experienceFilter) return false;
             return true;
         });
-    }, [processedJobs, minMatch, titleFilter, locationFilter, operatingModeFilter, employmentTypeFilter, experienceFilter]);
+    }, [processedJobs, locationFilter, operatingModeFilter, employmentTypeFilter]);
 
     const blockedCount = jobs.length - processedJobs.length;
 
@@ -98,16 +91,12 @@ export default function JobBoard() {
 
                 {/* Filter bar */}
                 <FilterBar
-                    titleFilter={titleFilter} setTitleFilter={setTitleFilter}
-                    minMatch={minMatch} setMinMatch={setMinMatch}
                     locationFilter={locationFilter} setLocationFilter={setLocationFilter}
                     operatingModeFilter={operatingModeFilter} setOperatingModeFilter={setOperatingModeFilter}
                     employmentTypeFilter={employmentTypeFilter} setEmploymentTypeFilter={setEmploymentTypeFilter}
-                    experienceFilter={experienceFilter} setExperienceFilter={setExperienceFilter}
                     locationOptions={filterOptions.location}
                     operatingModeOptions={filterOptions.operatingMode}
                     employmentTypeOptions={filterOptions.employmentType}
-                    experienceOptions={filterOptions.experience}
                 />
 
                 {/* Job list */}
