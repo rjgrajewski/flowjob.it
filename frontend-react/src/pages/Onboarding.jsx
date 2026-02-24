@@ -104,6 +104,14 @@ export default function Onboarding() {
     const [tempEdu, setTempEdu] = useState({ school_name: '', field_of_study: '', specialization: '', graduation_year: null });
     const [tempExp, setTempExp] = useState({ job_title: '', company_name: '', description: '', start_date: '', end_date: '', is_current: false });
 
+    const [phoneData, setPhoneData] = useState({ areaCode: '+48', number: '' });
+
+    const handlePhoneChange = (e) => {
+        const val = e.target.value.replace(/\D/g, '');
+        const formatted = val.match(/.{1,3}/g)?.join(' ') || '';
+        setPhoneData(prev => ({ ...prev, number: formatted }));
+    };
+
     // University autocomplete logic
     const [uniQuery, setUniQuery] = useState('');
     const [uniSuggestions, setUniSuggestions] = useState([]);
@@ -159,8 +167,12 @@ export default function Onboarding() {
                 ...exp,
                 end_date: exp.end_date === "" ? null : exp.end_date
             }));
+            const finalProfile = {
+                ...profile,
+                phone_number: phoneData.number ? `${phoneData.areaCode}${phoneData.number.replace(/\s/g, '')}` : ''
+            };
             await auth.completeOnboarding({
-                profile,
+                profile: finalProfile,
                 education,
                 experience: cleanExperience
             });
@@ -234,12 +246,31 @@ export default function Onboarding() {
             </div>
             <div style={styles.inputGroup}>
                 <label style={styles.label}>Phone Number</label>
-                <input
-                    style={styles.input}
-                    value={profile.phone_number}
-                    onChange={e => setProfile({ ...profile, phone_number: e.target.value })}
-                    placeholder="+1 234 567 890"
-                />
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <select
+                        style={{ ...styles.input, width: '160px', flexShrink: 0 }}
+                        value={phoneData.areaCode}
+                        onChange={e => setPhoneData({ ...phoneData, areaCode: e.target.value })}
+                    >
+                        <option value="+48">+48 (Poland)</option>
+                        <option value="+1">+1 (USA/Canada)</option>
+                        <option value="+44">+44 (UK)</option>
+                        <option value="+49">+49 (Germany)</option>
+                        <option value="+33">+33 (France)</option>
+                        <option value="+34">+34 (Spain)</option>
+                        <option value="+39">+39 (Italy)</option>
+                        <option value="+420">+420 (Czechia)</option>
+                        <option value="+421">+421 (Slovakia)</option>
+                        <option value="+380">+380 (Ukraine)</option>
+                    </select>
+                    <input
+                        style={{ ...styles.input, flex: 1 }}
+                        value={phoneData.number}
+                        onChange={handlePhoneChange}
+                        placeholder="123 456 789"
+                        maxLength={17}
+                    />
+                </div>
             </div>
             <div style={styles.inputGroup}>
                 <label style={styles.label}>Location</label>
