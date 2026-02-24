@@ -452,8 +452,9 @@ export default function CVBuilder() {
                     <p style={styles.sidebarLabel}>✅ Selected Skills <span style={styles.count}>{selected.size}</span></p>
                     <div ref={selectedTagsRef} style={styles.sidebarTags}>
                         <AnimatePresence>
-                            {[...selected].map(s => (
+                            {[...selected].sort((a, b) => a.localeCompare(b)).map(s => (
                                 <motion.span
+                                    layout
                                     key={s}
                                     initial={{ opacity: 0, scale: 0.5, x: -10 }}
                                     animate={{ opacity: 1, scale: 1, x: 0 }}
@@ -475,8 +476,9 @@ export default function CVBuilder() {
                     <p style={styles.sidebarLabel}>🚫 Anti-Skills <span style={styles.count}>{anti.size}</span></p>
                     <div ref={antiTagsRef} style={styles.sidebarTags}>
                         <AnimatePresence>
-                            {[...anti].map(s => (
+                            {[...anti].sort((a, b) => a.localeCompare(b)).map(s => (
                                 <motion.span
+                                    layout
                                     key={s}
                                     initial={{ opacity: 0, scale: 0.5, x: -10 }}
                                     animate={{ opacity: 1, scale: 1, x: 0 }}
