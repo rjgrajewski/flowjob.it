@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auth } from '../services/api.js';
 
-// Zwraca listę spełnionych i niespełnionych warunków hasła
+// Returns a list of met and unmet password requirements
 function getPasswordRequirements(password) {
     if (!password) password = '';
     return [
-        { id: 'length', label: 'Minimum 8 znaków', met: password.length >= 8 },
-        { id: 'upper', label: 'Wielka litera', met: /[A-Z]/.test(password) },
-        { id: 'lower', label: 'Mała litera', met: /[a-z]/.test(password) },
-        { id: 'number', label: 'Cyfra', met: /\d/.test(password) },
-        { id: 'special', label: 'Znak specjalny', met: /[^a-zA-Z0-9]/.test(password) },
+        { id: 'length', label: 'Minimum 8 characters', met: password.length >= 8 },
+        { id: 'upper', label: 'Uppercase letter', met: /[A-Z]/.test(password) },
+        { id: 'lower', label: 'Lowercase letter', met: /[a-z]/.test(password) },
+        { id: 'number', label: 'Number', met: /\d/.test(password) },
+        { id: 'special', label: 'Special character', met: /[^a-zA-Z0-9]/.test(password) },
     ];
 }
 
@@ -36,11 +36,11 @@ export default function Register() {
         try {
             if (tab === 'register') {
                 if (!allRequirementsMet) {
-                    setError('Hasło nie spełnia wszystkich wymagań');
+                    setError('Password does not meet all requirements');
                     return;
                 }
                 if (!passwordsMatch) {
-                    setError('Hasła muszą być identyczne');
+                    setError('Passwords must match');
                     return;
                 }
                 const { passwordConfirm: _, ...registerData } = form;
@@ -51,7 +51,7 @@ export default function Register() {
                 navigate(auth.hasCompletedOnboarding() ? '/cv' : '/onboarding');
             }
         } catch (err) {
-            setError(err?.message || 'Coś poszło nie tak. Spróbuj ponownie.');
+            setError(err?.message || 'Something went wrong. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -143,7 +143,7 @@ export default function Register() {
 
                             {tab === 'register' && (
                                 <div className="form-group">
-                                    <label className="form-label">Potwierdź hasło</label>
+                                    <label className="form-label">Confirm Password</label>
                                     <input
                                         className="form-input"
                                         type="password"
@@ -156,7 +156,7 @@ export default function Register() {
                                     />
                                     {showPasswordMismatch && (
                                         <p style={{ color: 'var(--accent-red)', fontSize: '0.8rem', marginTop: '0.35rem' }}>
-                                            Hasła nie są identyczne
+                                            Passwords do not match
                                         </p>
                                     )}
                                 </div>

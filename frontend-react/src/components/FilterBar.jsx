@@ -11,10 +11,10 @@ export default function FilterBar({
         <div style={styles.wrapper}>
             {/* Title search */}
             <div style={styles.field}>
-                <label style={styles.label}>Stanowisko</label>
+                <label style={styles.label}>Job Title</label>
                 <input
                     className="form-input"
-                    placeholder="Wyszukaj stanowisko..."
+                    placeholder="Search by title..."
                     value={titleFilter}
                     onChange={e => setTitleFilter(e.target.value)}
                     style={styles.input}
@@ -23,63 +23,63 @@ export default function FilterBar({
 
             {/* Lokalizacja */}
             <div style={styles.field}>
-                <label style={styles.label}>Lokalizacja</label>
+                <label style={styles.label}>Location</label>
                 <select
                     className="form-input"
                     value={locationFilter}
                     onChange={e => setLocationFilter(e.target.value)}
                     style={styles.input}
                 >
-                    <option value="">Wszystkie</option>
+                    <option value="">All</option>
                     {locationOptions.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
             </div>
 
             {/* Tryb pracy */}
             <div style={styles.field}>
-                <label style={styles.label}>Tryb pracy</label>
+                <label style={styles.label}>Operating Mode</label>
                 <select
                     className="form-input"
                     value={operatingModeFilter}
                     onChange={e => setOperatingModeFilter(e.target.value)}
                     style={styles.input}
                 >
-                    <option value="">Wszystkie</option>
+                    <option value="">All</option>
                     {operatingModeOptions.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
             </div>
 
             {/* Rodzaj zatrudnienia */}
             <div style={styles.field}>
-                <label style={styles.label}>Rodzaj zatrudnienia</label>
+                <label style={styles.label}>Employment Type</label>
                 <select
                     className="form-input"
                     value={employmentTypeFilter}
                     onChange={e => setEmploymentTypeFilter(e.target.value)}
                     style={styles.input}
                 >
-                    <option value="">Wszystkie</option>
+                    <option value="">All</option>
                     {employmentTypeOptions.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
             </div>
 
             {/* Poziom */}
             <div style={styles.field}>
-                <label style={styles.label}>Poziom</label>
+                <label style={styles.label}>Experience Level</label>
                 <select
                     className="form-input"
                     value={experienceFilter}
                     onChange={e => setExperienceFilter(e.target.value)}
                     style={styles.input}
                 >
-                    <option value="">Wszystkie</option>
+                    <option value="">All</option>
                     {experienceOptions.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
             </div>
 
             {/* Min match */}
             <div style={{ ...styles.field, flex: '0 0 auto' }}>
-                <label style={styles.label}>Min. dopasowanie %</label>
+                <label style={styles.label}>Min Match %</label>
                 <input
                     className="form-input"
                     type="number"

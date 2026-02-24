@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { auth } from '../services/api.js';
 
 const STEPS = [
-    { id: 'personal', title: 'Dane osobowe', icon: '👤' },
-    { id: 'contact', title: 'Dane kontaktowe', icon: '📞' },
-    { id: 'education', title: 'Wykształcenie', icon: '🎓' },
-    { id: 'experience', title: 'Doświadczenie', icon: '💼' },
-    { id: 'bio', title: 'O Tobie', icon: '🚀' },
+    { id: 'personal', title: 'Personal details', icon: '👤' },
+    { id: 'contact', title: 'Contact info', icon: '📞' },
+    { id: 'education', title: 'Education', icon: '🎓' },
+    { id: 'experience', title: 'Experience', icon: '💼' },
+    { id: 'bio', title: 'About you', icon: '🚀' },
 ];
 
 const TOTAL = STEPS.length;
@@ -20,7 +20,7 @@ const slideVariants = {
 };
 
 const MonthYearPicker = ({ label, value, onChange, disabled }) => {
-    const months = ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze', 'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 40 }, (_, i) => currentYear - i);
 
@@ -44,7 +44,7 @@ const MonthYearPicker = ({ label, value, onChange, disabled }) => {
                 style={{ ...styles.input, cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1 }}
                 onClick={() => !disabled && setIsOpen(!isOpen)}
             >
-                {value ? `${months[parseInt(value.split('-')[1]) - 1]} ${value.split('-')[0]}` : 'Wybierz...'}
+                {value ? `${months[parseInt(value.split('-')[1]) - 1]} ${value.split('-')[0]}` : 'Select...'}
             </div>
 
             {isOpen && (
@@ -122,7 +122,7 @@ export default function Onboarding() {
                     setUniSuggestions(data.results.map(u => u.name));
                 }
             } catch (e) {
-                console.error('Błąd pobierania uczelni:', e);
+                console.error('Error fetching universities:', e);
                 // Fallback to Hipolabs if RAD-on fails
                 try {
                     const res = await fetch(`http://universities.hipolabs.com/search?name=${uniQuery}&country=Poland`);
@@ -201,21 +201,21 @@ export default function Onboarding() {
     const renderPersonal = () => (
         <div style={styles.stepContainer}>
             <div style={styles.inputGroup}>
-                <label style={styles.label}>Imię</label>
+                <label style={styles.label}>First Name</label>
                 <input
                     style={styles.input}
                     value={profile.first_name}
                     onChange={e => setProfile({ ...profile, first_name: e.target.value })}
-                    placeholder="Jan"
+                    placeholder="John"
                 />
             </div>
             <div style={styles.inputGroup}>
-                <label style={styles.label}>Nazwisko</label>
+                <label style={styles.label}>Last Name</label>
                 <input
                     style={styles.input}
                     value={profile.last_name}
                     onChange={e => setProfile({ ...profile, last_name: e.target.value })}
-                    placeholder="Kowalski"
+                    placeholder="Doe"
                 />
             </div>
         </div>
@@ -224,30 +224,30 @@ export default function Onboarding() {
     const renderContact = () => (
         <div style={styles.stepContainer}>
             <div style={styles.inputGroup}>
-                <label style={styles.label}>Email do kontaktu (na CV)</label>
+                <label style={styles.label}>Contact Email (for CV)</label>
                 <input
                     style={styles.input}
                     value={profile.contact_email}
                     onChange={e => setProfile({ ...profile, contact_email: e.target.value })}
-                    placeholder="jan.kowalski@example.com"
+                    placeholder="john.doe@example.com"
                 />
             </div>
             <div style={styles.inputGroup}>
-                <label style={styles.label}>Numer telefonu</label>
+                <label style={styles.label}>Phone Number</label>
                 <input
                     style={styles.input}
                     value={profile.phone_number}
                     onChange={e => setProfile({ ...profile, phone_number: e.target.value })}
-                    placeholder="+48 123 456 789"
+                    placeholder="+1 234 567 890"
                 />
             </div>
             <div style={styles.inputGroup}>
-                <label style={styles.label}>Lokalizacja</label>
+                <label style={styles.label}>Location</label>
                 <input
                     style={styles.input}
                     value={profile.location}
                     onChange={e => setProfile({ ...profile, location: e.target.value })}
-                    placeholder="Warszawa / Remote"
+                    placeholder="New York / Remote"
                 />
             </div>
         </div>
@@ -267,9 +267,9 @@ export default function Onboarding() {
                 ))}
             </div>
             <div style={styles.formCard}>
-                <p style={{ marginBottom: '1rem', fontWeight: 600 }}>Dodaj wykształcenie</p>
+                <p style={{ marginBottom: '1rem', fontWeight: 600 }}>Add Education</p>
                 <div style={styles.inputGroup}>
-                    <label style={styles.label}>Uczelnia</label>
+                    <label style={styles.label}>University / School</label>
                     <input
                         style={styles.input}
                         value={uniQuery}
@@ -277,7 +277,7 @@ export default function Onboarding() {
                             setUniQuery(e.target.value);
                             setTempEdu({ ...tempEdu, school_name: e.target.value });
                         }}
-                        placeholder="Zacznij wpisywać nazwę..."
+                        placeholder="Start typing name..."
                     />
                     {uniSuggestions.length > 0 && (
                         <div style={styles.suggestions}>
@@ -293,29 +293,29 @@ export default function Onboarding() {
                 </div>
                 <div style={styles.row}>
                     <div style={{ flex: 1 }}>
-                        <label style={styles.label}>Kierunek</label>
+                        <label style={styles.label}>Field of Study</label>
                         <input
                             style={styles.input}
                             value={tempEdu.field_of_study}
                             onChange={e => setTempEdu({ ...tempEdu, field_of_study: e.target.value })}
-                            placeholder="Informatyka"
+                            placeholder="Computer Science"
                         />
                     </div>
                     <div style={{ width: '120px' }}>
-                        <label style={styles.label}>Rok ukończenia</label>
+                        <label style={styles.label}>Graduation Year</label>
                         <select
                             style={styles.input}
                             value={tempEdu.graduation_year || ''}
                             onChange={e => setTempEdu({ ...tempEdu, graduation_year: e.target.value ? parseInt(e.target.value) : null })}
                         >
-                            <option value="">Wybierz...</option>
+                            <option value="">Select...</option>
                             {Array.from({ length: 30 }, (_, i) => new Date().getFullYear() + 5 - i).map(y => (
                                 <option key={y} value={y}>{y}</option>
                             ))}
                         </select>
                     </div>
                 </div>
-                <button onClick={addEducation} className="btn btn-secondary" style={{ marginTop: '1rem', width: '100%' }}>Dodaj do listy</button>
+                <button onClick={addEducation} className="btn btn-secondary" style={{ marginTop: '1rem', width: '100%' }}>Add to list</button>
             </div>
         </div>
     );
@@ -327,17 +327,17 @@ export default function Onboarding() {
                     <div key={i} style={styles.listItem}>
                         <div>
                             <strong>{exp.job_title}</strong> at <strong>{exp.company_name}</strong><br />
-                            <small>{exp.start_date} - {exp.is_current ? 'Obecnie' : exp.end_date}</small>
+                            <small>{exp.start_date} - {exp.is_current ? 'Present' : exp.end_date}</small>
                         </div>
                         <button onClick={() => removeExperience(i)} style={styles.removeBtn}>×</button>
                     </div>
                 ))}
             </div>
             <div style={styles.formCard}>
-                <p style={{ marginBottom: '1rem', fontWeight: 600 }}>Dodaj doświadczenie</p>
+                <p style={{ marginBottom: '1rem', fontWeight: 600 }}>Add Experience</p>
                 <div style={styles.row}>
                     <div style={{ flex: 1 }}>
-                        <label style={styles.label}>Stanowisko</label>
+                        <label style={styles.label}>Job Title</label>
                         <input
                             style={styles.input}
                             value={tempExp.job_title}
@@ -346,7 +346,7 @@ export default function Onboarding() {
                         />
                     </div>
                     <div style={{ flex: 1 }}>
-                        <label style={styles.label}>Firma</label>
+                        <label style={styles.label}>Company</label>
                         <input
                             style={styles.input}
                             value={tempExp.company_name}
@@ -357,12 +357,12 @@ export default function Onboarding() {
                 </div>
                 <div style={styles.row}>
                     <MonthYearPicker
-                        label="Od kiedy"
+                        label="From"
                         value={tempExp.start_date}
                         onChange={val => setTempExp({ ...tempExp, start_date: val })}
                     />
                     <MonthYearPicker
-                        label="Do kiedy"
+                        label="To"
                         disabled={tempExp.is_current}
                         value={tempExp.end_date}
                         onChange={val => setTempExp({ ...tempExp, end_date: val })}
@@ -374,18 +374,18 @@ export default function Onboarding() {
                         checked={tempExp.is_current}
                         onChange={e => setTempExp({ ...tempExp, is_current: e.target.checked })}
                     />
-                    <label style={{ fontSize: '0.85rem' }}>Nadal pracuję w tej firmie</label>
+                    <label style={{ fontSize: '0.85rem' }}>I currently work here</label>
                 </div>
                 <div style={{ marginTop: '1rem' }}>
-                    <label style={styles.label}>Opis</label>
+                    <label style={styles.label}>Description</label>
                     <textarea
                         style={{ ...styles.input, height: '80px', resize: 'none' }}
                         value={tempExp.description}
                         onChange={e => setTempExp({ ...tempExp, description: e.target.value })}
-                        placeholder="Krótki opis obowiązków..."
+                        placeholder="Briefly describe your responsibilities..."
                     />
                 </div>
-                <button onClick={addExperience} className="btn btn-secondary" style={{ marginTop: '1rem', width: '100%' }}>Dodaj do listy</button>
+                <button onClick={addExperience} className="btn btn-secondary" style={{ marginTop: '1rem', width: '100%' }}>Add to list</button>
             </div>
         </div>
     );
@@ -393,12 +393,12 @@ export default function Onboarding() {
     const renderBio = () => (
         <div style={styles.stepContainer}>
             <div style={styles.inputGroup}>
-                <label style={styles.label}>Krótkie bio / podsumowanie zawodowe</label>
+                <label style={styles.label}>Short bio / Professional summary</label>
                 <textarea
                     style={{ ...styles.input, height: '160px', resize: 'none' }}
                     value={profile.bio}
                     onChange={e => setProfile({ ...profile, bio: e.target.value })}
-                    placeholder="Opisz skrótowo swoje największe atuty..."
+                    placeholder="Briefly format your greatest strengths..."
                 />
             </div>
         </div>
@@ -448,9 +448,9 @@ export default function Onboarding() {
                 {error && <p style={{ color: '#ff4d4d', fontSize: '0.9rem', marginTop: '1rem' }}>{error}</p>}
 
                 <div style={styles.footer}>
-                    <button className="btn btn-secondary" onClick={goBack} disabled={currentStepIdx === 0}>Wstecz</button>
+                    <button className="btn btn-secondary" onClick={goBack} disabled={currentStepIdx === 0}>Back</button>
                     <button className="btn btn-primary" onClick={goNext} disabled={saving}>
-                        {saving ? 'Zapisywanie...' : currentStepIdx === TOTAL - 1 ? 'Zakończ' : 'Dalej'}
+                        {saving ? 'Saving...' : currentStepIdx === TOTAL - 1 ? 'Finish' : 'Next'}
                     </button>
                 </div>
             </div>

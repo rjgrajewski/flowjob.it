@@ -84,11 +84,11 @@ export default function JobBoard() {
                     <div>
                         <h1 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '0.25rem' }}>Job Offers</h1>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                            {loading ? 'Ładowanie...' : (
+                            {loading ? 'Loading...' : (
                                 <>
-                                    Znaleziono <strong style={{ color: 'var(--text-primary)' }}>{filteredJobs.length}</strong> ofert
+                                    Found <strong style={{ color: 'var(--text-primary)' }}>{filteredJobs.length}</strong> offers
                                     {antiSkills.length > 0 && blockedCount > 0 && (
-                                        <> · <span style={{ color: 'var(--accent-red)' }}>{blockedCount} zablokowane</span> przez anti-skills</>
+                                        <> · <span style={{ color: 'var(--accent-red)' }}>{blockedCount} blocked</span> by anti-skills</>
                                     )}
                                 </>
                             )}
@@ -120,9 +120,9 @@ export default function JobBoard() {
                 ) : filteredJobs.length === 0 ? (
                     <div style={styles.emptyState}>
                         <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔍</p>
-                        <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Brak ofert</p>
+                        <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>No offers found</p>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                            Spróbuj zmienić filtry lub obniżyć minimalne dopasowanie.
+                            Try changing your filters or lowering the minimum match percentage.
                         </p>
                     </div>
                 ) : (

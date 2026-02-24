@@ -94,7 +94,7 @@ export default function JobCard({ job, userSkills = [] }) {
                     className="btn btn-ghost"
                     style={{ fontSize: '0.85rem', padding: '0.4rem 1rem', textDecoration: 'none' }}
                 >
-                    Zobacz szczegóły
+                    View Details
                 </a>
             </div>
         </motion.div>
