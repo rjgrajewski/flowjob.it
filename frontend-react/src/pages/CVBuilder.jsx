@@ -291,9 +291,23 @@ export default function CVBuilder() {
 
         if (search) {
             const lowerSearch = search.toLowerCase();
-            return availableSkills
-                .filter(s => s.name.toLowerCase().includes(lowerSearch))
-                .slice(0, 150);
+
+            const exactMatches = [];
+            const startsWithMatches = [];
+            const containsMatches = [];
+
+            availableSkills.forEach(s => {
+                const lowerName = s.name.toLowerCase();
+                if (lowerName === lowerSearch) {
+                    exactMatches.push(s);
+                } else if (lowerName.startsWith(lowerSearch)) {
+                    startsWithMatches.push(s);
+                } else if (lowerName.includes(lowerSearch)) {
+                    containsMatches.push(s);
+                }
+            });
+
+            return [...exactMatches, ...startsWithMatches, ...containsMatches].slice(0, 75);
         }
 
         return availableSkills.slice(0, 75);
