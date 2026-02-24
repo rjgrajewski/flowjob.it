@@ -449,7 +449,21 @@ export default function CVBuilder() {
                 <h3 style={styles.sidebarTitle}>Your Profile</h3>
 
                 <div style={styles.sidebarSection}>
-                    <p style={styles.sidebarLabel}>✅ Selected Skills <span style={styles.count}>{selected.size}</span></p>
+                    <div style={styles.sidebarLabel}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            ✅ Selected Skills <span style={styles.count}>{selected.size}</span>
+                        </span>
+                        {selected.size > 0 && (
+                            <motion.button
+                                whileHover={{ scale: 1.05, color: 'var(--accent-red)' }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setSelected(new Set())}
+                                style={styles.clearButton}
+                            >
+                                Clear
+                            </motion.button>
+                        )}
+                    </div>
                     <div ref={selectedTagsRef} style={styles.sidebarTags}>
                         <AnimatePresence>
                             {[...selected].sort((a, b) => a.localeCompare(b)).map(s => (
@@ -473,7 +487,21 @@ export default function CVBuilder() {
                 </div>
 
                 <div style={styles.sidebarSection}>
-                    <p style={styles.sidebarLabel}>🚫 Anti-Skills <span style={styles.count}>{anti.size}</span></p>
+                    <div style={styles.sidebarLabel}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            🚫 Anti-Skills <span style={styles.count}>{anti.size}</span>
+                        </span>
+                        {anti.size > 0 && (
+                            <motion.button
+                                whileHover={{ scale: 1.05, color: 'var(--accent-red)' }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setAnti(new Set())}
+                                style={styles.clearButton}
+                            >
+                                Clear
+                            </motion.button>
+                        )}
+                    </div>
                     <div ref={antiTagsRef} style={styles.sidebarTags}>
                         <AnimatePresence>
                             {[...anti].sort((a, b) => a.localeCompare(b)).map(s => (
@@ -618,7 +646,19 @@ const styles = {
         marginBottom: '0.5rem',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'space-between',
         gap: '0.4rem',
+    },
+    clearButton: {
+        background: 'transparent',
+        border: 'none',
+        color: 'var(--text-secondary)',
+        fontSize: '0.7rem',
+        fontWeight: 600,
+        cursor: 'pointer',
+        padding: '2px 6px',
+        borderRadius: '4px',
+        transition: 'color 0.2s',
     },
     count: {
         background: 'var(--bg-elevated)',
