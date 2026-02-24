@@ -144,6 +144,24 @@ export default function Onboarding() {
         return () => clearTimeout(timer);
     }, [uniQuery]);
 
+    const isNextDisabled = () => {
+        const step = STEPS[currentStepIdx];
+        if (step.id === 'personal') {
+            return !profile.first_name.trim() || !profile.last_name.trim();
+        }
+        return false;
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            if (e.target.tagName.toLowerCase() === 'textarea') return;
+            e.preventDefault();
+            if (!isNextDisabled() && !saving) {
+                goNext();
+            }
+        }
+    };
+
     const goNext = async () => {
         if (currentStepIdx === TOTAL - 1) {
             handleSubmit();
@@ -213,7 +231,7 @@ export default function Onboarding() {
     const renderPersonal = () => (
         <div style={styles.stepContainer}>
             <div style={styles.inputGroup}>
-                <label style={styles.label}>First Name</label>
+                <label style={styles.label}>First Name *</label>
                 <input
                     style={styles.input}
                     value={profile.first_name}
@@ -222,7 +240,7 @@ export default function Onboarding() {
                 />
             </div>
             <div style={styles.inputGroup}>
-                <label style={styles.label}>Last Name</label>
+                <label style={styles.label}>Last Name *</label>
                 <input
                     style={styles.input}
                     value={profile.last_name}
@@ -448,7 +466,7 @@ export default function Onboarding() {
     };
 
     return (
-        <div style={styles.wrapper}>
+        <div style={styles.wrapper} onKeyDown={handleKeyDown}>
             <div style={styles.card}>
                 <div style={styles.header}>
                     <div style={styles.progress}>
@@ -480,7 +498,7 @@ export default function Onboarding() {
 
                 <div style={styles.footer}>
                     <button className="btn btn-secondary" onClick={goBack} disabled={currentStepIdx === 0}>Back</button>
-                    <button className="btn btn-primary" onClick={goNext} disabled={saving}>
+                    <button className="btn btn-primary" onClick={goNext} disabled={saving || isNextDisabled()}>
                         {saving ? 'Saving...' : currentStepIdx === TOTAL - 1 ? 'Finish' : 'Next'}
                     </button>
                 </div>
