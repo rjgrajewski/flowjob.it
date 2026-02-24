@@ -53,13 +53,23 @@ export default function Onboarding() {
         }
         const timer = setTimeout(async () => {
             try {
-                // Using Hipolabs as a broad fallback source for demo
-                const res = await fetch(`http://universities.hipolabs.com/search?name=${uniQuery}&country=Poland`);
+                // Using RAD-on (OPI PIB) - official Polish source
+                const res = await fetch(`https://radon.nauka.gov.pl/opendata/polon/institutions?name=${uniQuery}&resultLevel=1`);
                 if (res.ok) {
                     const data = await res.json();
-                    setUniSuggestions(data.map(u => u.name));
+                    setUniSuggestions(data.results.map(u => u.name));
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error('Błąd pobierania uczelni:', e);
+                // Fallback to Hipolabs if RAD-on fails
+                try {
+                    const res = await fetch(`http://universities.hipolabs.com/search?name=${uniQuery}&country=Poland`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setUniSuggestions(data.map(u => u.name));
+                    }
+                } catch (err) { console.error(err); }
+            }
         }, 500);
         return () => clearTimeout(timer);
     }, [uniQuery]);
