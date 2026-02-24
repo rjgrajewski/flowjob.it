@@ -155,11 +155,14 @@ export default function Onboarding() {
         setSaving(true);
         setError(null);
         try {
-            console.log('Submitting onboarding:', { profile, education, experience });
+            const cleanExperience = experience.map(exp => ({
+                ...exp,
+                end_date: exp.end_date === "" ? null : exp.end_date
+            }));
             await auth.completeOnboarding({
                 profile,
                 education,
-                experience
+                experience: cleanExperience
             });
             navigate('/cv');
         } catch (e) {
@@ -171,9 +174,7 @@ export default function Onboarding() {
 
     const addEducation = () => {
         const cleanEdu = { ...tempEdu, graduation_year: isNaN(tempEdu.graduation_year) ? null : tempEdu.graduation_year };
-        console.log('Adding education:', cleanEdu);
         if (!cleanEdu.school_name || !cleanEdu.field_of_study) {
-            console.warn('Missing school name or field of study');
             return;
         }
         setEducation([...education, cleanEdu]);
@@ -186,9 +187,7 @@ export default function Onboarding() {
     };
 
     const addExperience = () => {
-        console.log('Adding experience:', tempExp);
         if (!tempExp.job_title || !tempExp.company_name || !tempExp.start_date) {
-            console.warn('Missing job title, company name or start date');
             return;
         }
         setExperience([...experience, { ...tempExp }]);
