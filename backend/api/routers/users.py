@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from backend.database import get_db_pool
 from backend.api.repository.user_repo import UserRepository
-from backend.models import UserSkillsRequest, UserSkillsResponse
+from backend.models import UserSkillsRequest, UserSkillsResponse, OnboardingRequest
 import asyncpg
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -26,4 +26,17 @@ async def save_skills(
     try:
         return await repo.save_user_skills(user_id, body.skills, body.antiSkills)
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/{user_id}/onboarding")
+async def save_onboarding(
+    user_id: str,
+    body: OnboardingRequest,
+    repo: UserRepository = Depends(get_user_repo)
+):
+    try:
+        await repo.save_onboarding_full(user_id, body)
+        return {"status": "success"}
+    except Exception as e:
+        print(f"Error saving onboarding: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -97,3 +97,65 @@ class UserRepository:
                     )
         
         return await self.get_user_skills(user_id)
+    async def save_onboarding_full(self, user_id: str, data: 'OnboardingRequest') -> bool:
+        async with self.pool.acquire() as conn:
+            async with conn.transaction():
+                # 1. Update/Insert Profile
+                await conn.execute(
+                    """
+                    INSERT INTO user_profiles (user_id, first_name, last_name, phone_number, contact_email, location, bio)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7)
+                    ON CONFLICT (user_id) DO UPDATE SET
+                        first_name = EXCLUDED.first_name,
+                        last_name = EXCLUDED.last_name,
+                        phone_number = EXCLUDED.phone_number,
+                        contact_email = EXCLUDED.contact_email,
+                        location = EXCLUDED.location,
+                        bio = EXCLUDED.bio,
+                        updated_at = CURRENT_TIMESTAMP
+                    """,
+                    user_id,
+                    data.profile.first_name,
+                    data.profile.last_name,
+                    data.profile.phone_number,
+                    data.profile.contact_email,
+                    data.profile.location,
+                    data.profile.bio
+                )
+
+                # 2. Update Education (Delete old, insert new)
+                await conn.execute("DELETE FROM user_education WHERE user_id = $1", user_id)
+                education_inserts = [
+                    (user_id, e.school_name, e.field_of_study, e.specialization, e.graduation_year)
+                    for e in data.education
+                ]
+                if education_inserts:
+                    await conn.executemany(
+                        """
+                        INSERT INTO user_education (user_id, school_name, field_of_study, specialization, graduation_year)
+                        VALUES ($1, $2, $3, $4, $5)
+                        """,
+                        education_inserts
+                    )
+
+                # 3. Update Experience (Delete old, insert new)
+                await conn.execute("DELETE FROM user_experience WHERE user_id = $1", user_id)
+                experience_inserts = [
+                    (user_id, ex.job_title, ex.company_name, ex.description, ex.start_date, ex.end_date, ex.is_current)
+                    for ex in data.experience
+                ]
+                if experience_inserts:
+                    await conn.executemany(
+                        """
+                        INSERT INTO user_experience (user_id, job_title, company_name, description, start_date, end_date, is_current)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7)
+                        """,
+                        experience_inserts
+                    )
+
+                # 4. Mark onboarding as completed
+                await conn.execute(
+                    "UPDATE users SET onboarding_completed = TRUE WHERE id = $1",
+                    user_id
+                )
+        return True

@@ -19,19 +19,20 @@ class AuthRepository:
                 password_hash,
             )
             row = await conn.fetchrow(
-                "SELECT id, email, full_name FROM users WHERE email = $1",
+                "SELECT id, email, full_name, onboarding_completed FROM users WHERE email = $1",
                 email.strip().lower(),
             )
             return {
                 "id": row["id"],
                 "email": row["email"],
                 "name": row["full_name"] or row["email"].split("@")[0],
+                "onboarding_completed": row["onboarding_completed"]
             }
 
     async def authenticate_user(self, email: str, password: str) -> dict:
         async with self.pool.acquire() as conn:
             row = await conn.fetchrow(
-                "SELECT id, email, full_name, password_hash FROM users WHERE email = $1 AND provider = 'email'",
+                "SELECT id, email, full_name, password_hash, onboarding_completed FROM users WHERE email = $1 AND provider = 'email'",
                 email.strip().lower(),
             )
             if not row or not row["password_hash"]:
@@ -44,4 +45,5 @@ class AuthRepository:
                 "id": row["id"],
                 "email": row["email"],
                 "name": row["full_name"] or row["email"].split("@")[0],
+                "onboarding_completed": row["onboarding_completed"]
             }

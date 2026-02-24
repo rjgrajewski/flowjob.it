@@ -107,11 +107,36 @@ export const auth = {
         localStorage.setItem('flowjob_user', JSON.stringify(user));
         return user;
     },
-    logout: () => localStorage.removeItem('flowjob_user'),
+    logout: () => {
+        localStorage.removeItem('flowjob_user');
+        localStorage.removeItem('flowjob_profile');
+        localStorage.removeItem('flowjob_onboarding_done');
+    },
     getUser: () => JSON.parse(localStorage.getItem('flowjob_user')),
-    hasCompletedOnboarding: () => localStorage.getItem('flowjob_onboarding_done') === 'true',
-    completeOnboarding: (profileData) => {
+    hasCompletedOnboarding: () => {
+        const user = JSON.parse(localStorage.getItem('flowjob_user'));
+        return user?.onboarding_completed === true || localStorage.getItem('flowjob_onboarding_done') === 'true';
+    },
+    async completeOnboarding(profileData) {
+        const user = this.getUser();
+        if (!user?.id) throw new Error('Nie znaleziono zalogowanego użytkownika.');
+
+        const res = await fetch(`${BASE}/users/${user.id}/onboarding`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(profileData)
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(parseDetail(err.detail) || 'Nie udało się zapisać profilu.');
+        }
+
+        // Update local state
+        const updatedUser = { ...user, onboarding_completed: true };
+        localStorage.setItem('flowjob_user', JSON.stringify(updatedUser));
         localStorage.setItem('flowjob_profile', JSON.stringify(profileData));
         localStorage.setItem('flowjob_onboarding_done', 'true');
+        return updatedUser;
     },
 };
