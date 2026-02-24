@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { api, auth } from '../services/api.js';
 import { useOffers } from '../hooks/useOffers.js';
 import JobCard from '../components/JobCard.jsx';
@@ -8,8 +7,10 @@ import SparklesBg from '../components/Sparkles.jsx';
 
 export default function JobBoard() {
     const { offers: jobs, loading } = useOffers();
-    const [userSkills, setUserSkills] = useState([]);
-    const [antiSkills, setAntiSkills] = useState([]);
+    const [userSkills, setUserSkills] = useState(new Set());
+    const [antiSkills, setAntiSkills] = useState(new Set());
+
+    const initialLoadDone = useRef(false);
 
     // Filters
     const [locationFilter, setLocationFilter] = useState('');
@@ -21,11 +22,75 @@ export default function JobBoard() {
             const user = auth.getUser();
             if (user) {
                 const cv = await api.getUserCV(user.id);
-                setUserSkills(cv.skills || []);
-                setAntiSkills(cv.antiSkills || []);
+                setUserSkills(new Set(cv.skills || []));
+                setAntiSkills(new Set(cv.antiSkills || []));
+                setTimeout(() => { initialLoadDone.current = true; }, 100);
             }
         };
         loadUserSkills();
+    }, []);
+
+    // Initial server load sort config
+    const [initialSortConfig, setInitialSortConfig] = useState([]);
+
+    // Auto-save changes (can be same 1000ms delay or different)
+    useEffect(() => {
+        if (!initialLoadDone.current) return;
+        const user = auth.getUser();
+        if (!user) return;
+
+        const timer = setTimeout(async () => {
+            try {
+                await api.saveUserCV(user.id, {
+                    skills: [...userSkills],
+                    antiSkills: [...antiSkills]
+                });
+            } catch (e) {
+                console.error("Failed to save skills from JobBoard:", e);
+            }
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [userSkills, antiSkills]);
+
+    const handleToggleSkill = useCallback((skill) => {
+        setAntiSkills(prev => {
+            if (prev.has(skill)) {
+                const next = new Set(prev);
+                next.delete(skill);
+                return next;
+            }
+            return prev;
+        });
+        setUserSkills(prev => {
+            const next = new Set(prev);
+            if (next.has(skill)) {
+                next.delete(skill);
+            } else {
+                next.add(skill);
+            }
+            return next;
+        });
+    }, []);
+
+    const handleToggleAnti = useCallback((skill) => {
+        setUserSkills(prev => {
+            if (prev.has(skill)) {
+                const next = new Set(prev);
+                next.delete(skill);
+                return next;
+            }
+            return prev;
+        });
+        setAntiSkills(prev => {
+            const next = new Set(prev);
+            if (next.has(skill)) {
+                next.delete(skill);
+            } else {
+                next.add(skill);
+            }
+            return next;
+        });
     }, []);
 
     // Derive unique filter options from loaded data
@@ -38,35 +103,50 @@ export default function JobBoard() {
         };
     }, [jobs]);
 
-    const processedJobs = useMemo(() => {
-        const skillSet = new Set(userSkills);
-        const antiSet = new Set(antiSkills);
+    // Calculate initial sorting order when jobs load or filters change
+    useEffect(() => {
+        if (!initialLoadDone.current) return;
 
-        return jobs
-            .filter(job => {
-                // Exclude anti-skills
-                if (job.requiredSkills?.some(s => antiSet.has(s))) return false;
-                return true;
-            })
-            .map(job => {
-                const required = job.requiredSkills || [];
-                const matched = required.filter(s => skillSet.has(s)).length;
-                const score = required.length > 0 ? Math.round((matched / required.length) * 100) : 0;
-                return { ...job, score };
-            })
-            .sort((a, b) => b.score - a.score);
-    }, [jobs, userSkills, antiSkills]);
+        const sorted = [...jobs].sort((a, b) => {
+            // Very simple initial sort based on what User already had saved
+            const reqA = a.requiredSkills || [];
+            const reqB = b.requiredSkills || [];
+            const scoreA = reqA.length > 0 ? (reqA.filter(s => userSkills.has(s)).length / reqA.length) * 100 : 0;
+            const scoreB = reqB.length > 0 ? (reqB.filter(s => userSkills.has(s)).length / reqB.length) * 100 : 0;
+            return scoreB - scoreA;
+        });
+
+        setInitialSortConfig(sorted.map(s => s.id));
+        // ONLY run when these arrays change length to avoid infinite re-renders on skill click
+    }, [jobs.length, locationFilter, operatingModeFilter, employmentTypeFilter, initialLoadDone.current]);
 
     const filteredJobs = useMemo(() => {
-        return processedJobs.filter(job => {
-            if (locationFilter && job.location !== locationFilter) return false;
-            if (operatingModeFilter && job.operatingMode !== operatingModeFilter) return false;
-            if (employmentTypeFilter && job.employmentType !== employmentTypeFilter) return false;
-            return true;
-        });
-    }, [processedJobs, locationFilter, operatingModeFilter, employmentTypeFilter]);
+        return jobs
+            .filter(job => {
+                if (locationFilter && job.location !== locationFilter) return false;
+                if (operatingModeFilter && job.operatingMode !== operatingModeFilter) return false;
+                if (employmentTypeFilter && job.employmentType !== employmentTypeFilter) return false;
+                return true;
+            })
+            // NOTE: We do not sort by dynamic userSkills score here anymore. 
+            // We only sort by the initial static configuration. The counter inside the card handles the score visualization.
+            .sort((a, b) => {
+                const indexA = initialSortConfig.indexOf(a.id);
+                const indexB = initialSortConfig.indexOf(b.id);
+                if (indexA === -1 && indexB === -1) return 0;
+                if (indexA === -1) return 1;
+                if (indexB === -1) return -1;
+                return indexA - indexB;
+            });
+    }, [jobs, locationFilter, operatingModeFilter, employmentTypeFilter, initialSortConfig]);
 
-    const blockedCount = jobs.length - processedJobs.length;
+    const blockedCount = useMemo(() => {
+        return jobs.filter(job => job.requiredSkills?.some(s => antiSkills.has(s))).length;
+    }, [jobs, antiSkills]);
+
+    // Convert Sets to Arrays once to avoid reallocating inside the render loop for every JobCard
+    const userSkillsArray = useMemo(() => Array.from(userSkills), [userSkills]);
+    const antiSkillsArray = useMemo(() => Array.from(antiSkills), [antiSkills]);
 
     return (
         <div style={{ position: 'relative' }}>
@@ -115,15 +195,21 @@ export default function JobBoard() {
                         </p>
                     </div>
                 ) : (
-                    <AnimatePresence>
-                        {filteredJobs.map((job, i) => (
-                            <JobCard
-                                key={job.id || job.title + job.company + i}
-                                job={job}
-                                userSkills={userSkills}
-                            />
-                        ))}
-                    </AnimatePresence>
+                    <>
+                        {filteredJobs.map((job, i) => {
+                            const uniqueKey = job.id || job.url || `${job.title}-${job.company}-${i}`;
+                            return (
+                                <JobCard
+                                    key={uniqueKey}
+                                    job={job}
+                                    userSkills={userSkillsArray}
+                                    antiSkills={antiSkillsArray}
+                                    onToggleSkill={handleToggleSkill}
+                                    onToggleAnti={handleToggleAnti}
+                                />
+                            );
+                        })}
+                    </>
                 )}
             </div>
         </div>

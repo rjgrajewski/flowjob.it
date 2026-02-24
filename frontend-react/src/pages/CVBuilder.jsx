@@ -588,15 +588,21 @@ export default function CVBuilder() {
                 </div>
 
                 {loading ? (
-                    <div style={styles.loadingPlaceholder}>
-                        {Array.from({ length: 20 }).map((_, i) => (
-                            <div key={i} style={{
-                                ...styles.skeleton,
-                                width: 60 + (i * 17) % 60,
-                                height: 60 + (i * 17) % 60,
-                                borderRadius: '50%',
-                            }} />
-                        ))}
+                    <div style={styles.bubbleCloudContainer}>
+                        <div style={styles.loadingPlaceholder}>
+                            {Array.from({ length: 24 }).map((_, i) => {
+                                const size = 60 + (i * 23) % 80;
+                                return (
+                                    <div key={i} className="pulse" style={{
+                                        ...styles.skeleton,
+                                        width: size,
+                                        height: size,
+                                        borderRadius: '50%',
+                                        margin: '0.5rem',
+                                    }} />
+                                );
+                            })}
+                        </div>
                     </div>
                 ) : (
                     <div style={styles.bubbleCloudContainer} ref={containerRef}>

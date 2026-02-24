@@ -222,6 +222,12 @@ h3 {
     background: rgba(0, 229, 255, 0.08);
 }
 
+.badge.anti {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+    background: rgba(255, 83, 112, 0.08);
+}
+
 /* ===== MATCH SCORE ===== */
 .match-score {
     display: inline-flex;
@@ -347,4 +353,23 @@ h3 {
 
 .w-full {
     width: 100%;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: scale(0.98);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+}
+
+.pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

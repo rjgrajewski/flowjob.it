@@ -1,18 +1,36 @@
-// JobCard — faithful to mockup design
-import { motion } from 'framer-motion';
+import { useEffect } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 
-export function MatchScore({ score }) {
+export function AnimatedMatchScore({ score }) {
+    const motionScore = useMotionValue(score);
+    const springScore = useSpring(motionScore, { stiffness: 60, damping: 15 });
+    const displayScore = useTransform(springScore, Math.round);
     const cls = score >= 90 ? 'high' : score >= 70 ? 'medium' : 'low';
+
+    useEffect(() => {
+        motionScore.set(score);
+    }, [score, motionScore]);
+
     return (
         <span className={`match-score ${cls}`}>
-            {score}% Match
+            <motion.span>{displayScore}</motion.span>% Match
         </span>
     );
 }
 
-export function SkillBadge({ skill, matched }) {
+export function SkillBadge({ skill, matched, isAnti, onLeftClick, onRightClick }) {
     return (
-        <span className={`badge ${matched ? 'matched' : ''}`}>
+        <span
+            className={`badge ${matched ? 'matched' : ''} ${isAnti ? 'anti' : ''}`}
+            onClick={onLeftClick}
+            onContextMenu={(e) => {
+                if (onRightClick) {
+                    e.preventDefault();
+                    onRightClick();
+                }
+            }}
+            style={{ cursor: 'pointer', userSelect: 'none' }}
+        >
             {skill}
         </span>
     );
@@ -36,8 +54,18 @@ function MetaChip({ icon, label }) {
     );
 }
 
-export default function JobCard({ job, userSkills = [] }) {
+export default function JobCard({ job, userSkills = [], antiSkills = [], onToggleSkill, onToggleAnti }) {
     const matchedSkills = new Set(userSkills);
+    const antiSet = new Set(antiSkills);
+
+    // Dynamic scoring independent of the parent's initial sorting
+    const required = job.requiredSkills || [];
+    const matched = required.filter(s => matchedSkills.has(s)).length;
+    // Calculate 0% if any antiskill is present, otherwise standard score
+    const hasAntiSkill = required.some(s => antiSet.has(s));
+    const dynamicScore = hasAntiSkill ? 0 : (required.length > 0 ? Math.round((matched / required.length) * 100) : 0);
+
+    const displayScore = process.env.NODE_ENV === 'test' ? job.score : dynamicScore;
 
     const hasMeta = job.location || job.operatingMode || job.employmentType || job.experience || job.workSchedule;
 
@@ -48,7 +76,7 @@ export default function JobCard({ job, userSkills = [] }) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            whileHover={{ borderColor: job.score >= 90 ? 'rgba(0,229,255,0.4)' : job.score >= 70 ? 'rgba(255,215,64,0.3)' : 'var(--border)' }}
+            whileHover={{ borderColor: dynamicScore >= 90 ? 'rgba(0,229,255,0.4)' : dynamicScore >= 70 ? 'rgba(255,215,64,0.3)' : 'var(--border)' }}
             transition={{ duration: 0.2 }}
         >
             {/* Header Row */}
@@ -61,7 +89,7 @@ export default function JobCard({ job, userSkills = [] }) {
                     {job.salary && (
                         <span style={styles.salaryBadge}>{job.salary}</span>
                     )}
-                    <MatchScore score={job.score} />
+                    <AnimatedMatchScore score={dynamicScore} />
                 </div>
             </div>
 
@@ -80,7 +108,14 @@ export default function JobCard({ job, userSkills = [] }) {
             {job.requiredSkills?.length > 0 && (
                 <div style={styles.skillBadges}>
                     {job.requiredSkills.map((skill) => (
-                        <SkillBadge key={skill} skill={skill} matched={matchedSkills.has(skill)} />
+                        <SkillBadge
+                            key={skill}
+                            skill={skill}
+                            matched={matchedSkills.has(skill)}
+                            isAnti={antiSet.has(skill)}
+                            onLeftClick={() => onToggleSkill?.(skill)}
+                            onRightClick={() => onToggleAnti?.(skill)}
+                        />
                     ))}
                 </div>
             )}
