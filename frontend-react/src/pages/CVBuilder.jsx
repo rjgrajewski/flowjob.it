@@ -307,10 +307,10 @@ export default function CVBuilder() {
                 }
             });
 
-            return [...exactMatches, ...startsWithMatches, ...containsMatches].slice(0, 75);
+            return [...exactMatches, ...startsWithMatches, ...containsMatches].slice(0, 50);
         }
 
-        return availableSkills.slice(0, 75);
+        return availableSkills.slice(0, 50);
     }, [sortedSkills, search, selected, anti]);
 
     const calculateSize = useCallback((skill, mFreq) => {
