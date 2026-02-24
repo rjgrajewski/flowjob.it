@@ -122,11 +122,11 @@ function SkillBubble({ skill, idx, radius, isSelected, isAnti, onLeft, onRight }
                     alignItems: 'center',
                     justifyContent: 'center',
                     textAlign: 'center',
-                    fontSize: `${Math.max(0.65, size / 120)}rem`,
+                    fontSize: `${Math.max(0.6, Math.min(1.1, size / 135))}rem`,
                     fontWeight: 600,
                     color: textColor,
                     cursor: 'pointer',
-                    padding: '0.4rem',
+                    padding: '0.6rem',
                     userSelect: 'none',
                     pointerEvents: 'auto',
                     transition: 'background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s',
@@ -135,11 +135,13 @@ function SkillBubble({ skill, idx, radius, isSelected, isAnti, onLeft, onRight }
                 <span style={{
                     overflowWrap: 'break-word',
                     wordBreak: 'normal',
+                    lineHeight: 1.1,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     display: '-webkit-box',
                     WebkitLineClamp: 3,
-                    WebkitBoxOrient: 'vertical'
+                    WebkitBoxOrient: 'vertical',
+                    width: '100%',
                 }}>
                     {skill.name}
                 </span>
@@ -315,11 +317,16 @@ export default function CVBuilder() {
 
     const calculateSize = useCallback((skill, mFreq) => {
         const freq = skill.frequency || 0;
-        const textLen = skill.name.length;
-        const minSize = Math.max(80, textLen * 9 + 30);
-        const maxSize = Math.max(160, minSize + 70);
+        const words = skill.name.split(/\s+/);
+        const longestWordLen = Math.max(...words.map(w => w.length));
+
+        // Base minSize on the longest word to ensure it fits horizontally, 
+        // with a small buffer for the string length to account for wrapping.
+        const minSize = Math.max(80, (longestWordLen * 11) + 20 + (skill.name.length * 0.5));
+        const maxSize = Math.max(160, minSize + 80);
+
         const ratio = mFreq > 0 ? freq / mFreq : 0;
-        return minSize + ((maxSize - minSize) * Math.pow(ratio, 0.65));
+        return minSize + ((maxSize - minSize) * Math.pow(ratio, 0.6));
     }, []);
 
     useEffect(() => {

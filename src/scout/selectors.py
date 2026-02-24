@@ -52,9 +52,9 @@ class JustJoinItSelectors:
 
     # Info Grid Selectors (using unique icons)
     LOCATION = SelectorConfig(
-        primary='a[href^="/job-offers/"]:not([href*="all-locations"])', # City link from breadcrumb
-        fallback='div.MuiBox-root:has(> svg path[d^="M12 2C16.2 2 20 5.22 20 10.2"])', # Pin Icon container
-        description="Location from breadcrumb or pin icon"
+        primary='div:has(> svg) + div:has-text(",")', 
+        fallback='a[href="/job-offers/all-locations"] >> nth=2',
+        description="Location from header icon sibling with comma"
     )
     
     WORK_SCHEDULE = SelectorConfig(
