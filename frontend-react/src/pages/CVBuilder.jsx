@@ -278,21 +278,26 @@ export default function CVBuilder() {
 
     const maxFreq = useMemo(() => Math.max(...skills.map(s => s.frequency || 0), 1), [skills]);
 
-    const topSkills = useMemo(() => {
+    const sortedSkills = useMemo(() => {
         return [...skills]
             .map(value => ({ value, sort: Math.random() }))
             .sort((a, b) => (b.value.frequency || 0) - (a.value.frequency || 0) || a.sort - b.sort)
-            .map(({ value }) => value)
-            .slice(0, 75);
+            .map(({ value }) => value);
     }, [skills]);
 
-    // Exclude already-selected and anti skills from bubble map
+    // Exclude already-selected and anti skills from bubble map, replenishing with new skills
     const filtered = useMemo(() => {
-        const base = search
-            ? skills.filter(s => s.name.toLowerCase().includes(search.toLowerCase())).slice(0, 150)
-            : topSkills;
-        return base.filter(s => !selected.has(s.name) && !anti.has(s.name));
-    }, [skills, search, topSkills, selected, anti]);
+        const availableSkills = sortedSkills.filter(s => !selected.has(s.name) && !anti.has(s.name));
+
+        if (search) {
+            const lowerSearch = search.toLowerCase();
+            return availableSkills
+                .filter(s => s.name.toLowerCase().includes(lowerSearch))
+                .slice(0, 150);
+        }
+
+        return availableSkills.slice(0, 75);
+    }, [sortedSkills, search, selected, anti]);
 
     const calculateSize = useCallback((skill, mFreq) => {
         const freq = skill.frequency || 0;
