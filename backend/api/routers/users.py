@@ -40,3 +40,16 @@ async def save_onboarding(
     except Exception as e:
         print(f"Error saving onboarding: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/{user_id}/onboarding")
+async def get_onboarding(user_id: str, repo: UserRepository = Depends(get_user_repo)):
+    try:
+        data = await repo.get_onboarding_full(user_id)
+        if not data:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        return data
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error fetching onboarding: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

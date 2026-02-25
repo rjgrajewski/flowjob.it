@@ -113,6 +113,20 @@ export const auth = {
         localStorage.removeItem('flowjob_onboarding_done');
     },
     getUser: () => JSON.parse(localStorage.getItem('flowjob_user')),
+    getOnboarding: async (userId) => {
+        if (!userId) return null;
+        try {
+            const res = await fetch(`${BASE}/users/${userId}/onboarding`);
+            if (!res.ok) {
+                if (res.status === 404) return null;
+                throw new Error('Failed to fetch user profile');
+            }
+            return await res.json();
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    },
     hasCompletedOnboarding: () => {
         const user = JSON.parse(localStorage.getItem('flowjob_user'));
         return user?.onboarding_completed === true || localStorage.getItem('flowjob_onboarding_done') === 'true';

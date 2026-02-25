@@ -1,34 +1,31 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import heroImg from '../assets/hero_illustration.png';
-import cvImg from '../assets/cv_illustration.png';
-import jobsImg from '../assets/jobs_illustration.png';
 
 const features = [
     {
         icon: '◈',
-        title: 'Skill Map',
-        description: 'Explore hundreds of tech skills. Click to select, shift+click to block. Build your profile visually.',
+        title: '1. Build a Skill Graph',
+        description: 'Navigate a visual map of tech skills. Click what you know, and importantly, shift+click to block what you hate.',
         accent: 'var(--accent-cyan)',
     },
     {
         icon: '⟳',
-        title: 'Job Match',
-        description: 'We score every job offer against your skill set in real time. See exactly how well you fit.',
+        title: '2. Transparent Scoring',
+        description: 'The algorithm compares your graph against real job descriptions. You get a clear match score showing exactly why a job fits.',
         accent: 'var(--accent-violet)',
     },
     {
         icon: '⬡',
-        title: 'Anti-Skills',
-        description: 'Block technologies you never want to work with. No more Rails jobs when you\'re a Go dev.',
+        title: '3. Absolute Dealbreakers',
+        description: 'If a job requires an "Anti-Skill" you blocked, we filter it out. Period. No compromises on the tools you despise.',
         accent: 'var(--accent-amber)',
     },
 ];
 
 const stats = [
-    { value: '12k+', label: 'Job Offers' },
-    { value: '500+', label: 'Tech Skills' },
-    { value: '98%', label: 'Match Accuracy' },
+    { value: '12k+', label: 'Job Offers Scraped' },
+    { value: '500+', label: 'Tech Skills Mapped' },
+    { value: '100%', label: 'Open & Honest' },
 ];
 
 const fadeUp = {
@@ -50,15 +47,14 @@ export default function Home() {
                     >
                         <div style={styles.heroBadge}>
                             <span style={styles.heroBadgeDot} />
-                            Built for tech professionals
+                            An honest hobby project
                         </div>
                         <h1 style={styles.heroHeading}>
                             Find your <span className="gradient-text">flow</span>
-                            <br />in tech careers
+                            <br />in tech jobs
                         </h1>
                         <p style={styles.heroSub}>
-                            Map your skills, block what you hate, and get matched with jobs that
-                            actually fit you — not the other way around.
+                            I built flowjob to scratch my own itch. It's a non-profit hobby project designed to map your real skills, block the tech you hate, and match you with jobs using straightforward data—no corporate BS.
                         </p>
                         <div style={styles.heroCtas}>
                             <Link to="/register" className="btn btn-primary" style={{ fontSize: '1rem', padding: '0.8rem 2rem' }}>
@@ -76,8 +72,22 @@ export default function Home() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.7, delay: 0.2 }}
                     >
-                        <div style={styles.heroImgWrapper}>
-                            <img src={heroImg} alt="flowjob illustration" style={styles.heroImg} />
+                        <div style={styles.abstractGraphic}>
+                            <motion.div
+                                style={{ ...styles.shape, ...styles.shape1 }}
+                                animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
+                                transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                            />
+                            <motion.div
+                                style={{ ...styles.shape, ...styles.shape2 }}
+                                animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
+                                transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+                            />
+                            <motion.div
+                                style={{ ...styles.shape, ...styles.shape3 }}
+                                animate={{ scale: [1, 1.05, 1], rotate: [45, 90, 45] }}
+                                transition={{ repeat: Infinity, duration: 10, ease: "easeInOut" }}
+                            />
                             <div style={styles.heroGlow} />
                         </div>
                     </motion.div>
@@ -113,9 +123,9 @@ export default function Home() {
                         transition={{ duration: 0.5 }}
                         style={{ textAlign: 'center', marginBottom: '3rem' }}
                     >
-                        <h2>Everything you need to <span className="gradient-text">land the right role</span></h2>
+                        <h2>How it <span className="gradient-text">actually works</span></h2>
                         <p style={{ color: 'var(--text-secondary)', marginTop: '0.75rem', maxWidth: '500px', margin: '0.75rem auto 0' }}>
-                            flowjob is designed around how developers actually think about what they want to work on.
+                            No AI buzzwords, no hidden recruiter algorithms. Just a transparent matching engine built by a developer, for developers.
                         </p>
                     </motion.div>
 
@@ -146,7 +156,23 @@ export default function Home() {
                 <div className="container">
                     <div style={{ ...styles.split, flexDirection: 'row' }}>
                         <div style={styles.splitImg}>
-                            <img src={cvImg} alt="Skill map" style={styles.splitImgEl} />
+                            <div style={styles.abstractGraphicSmall}>
+                                <motion.div
+                                    style={{ ...styles.gridShape, ...styles.gridShape1 }}
+                                    animate={{ opacity: [0.5, 0.8, 0.5] }}
+                                    transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                                />
+                                <motion.div
+                                    style={{ ...styles.gridShape, ...styles.gridShape2 }}
+                                    animate={{ opacity: [0.3, 0.7, 0.3] }}
+                                    transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
+                                />
+                                <motion.div
+                                    style={{ ...styles.gridShape, ...styles.gridShape3 }}
+                                    animate={{ opacity: [0.6, 1, 0.6] }}
+                                    transition={{ repeat: Infinity, duration: 3, ease: "easeInOut", delay: 2 }}
+                                />
+                            </div>
                         </div>
                         <motion.div
                             style={styles.splitText}
@@ -155,11 +181,10 @@ export default function Home() {
                             viewport={{ once: true }}
                             transition={{ duration: 0.5 }}
                         >
-                            <p style={styles.splitLabel}>Skill Profiling</p>
-                            <h2>Build your skill graph, <span className="gradient-text">not just a resume</span></h2>
+                            <p style={styles.splitLabel}>Honest Profiling</p>
+                            <h2>Map your skills, <span className="gradient-text">not buzzwords</span></h2>
                             <p style={{ color: 'var(--text-secondary)', marginTop: '1rem', lineHeight: 1.7 }}>
-                                Navigate a visual bubble cloud of hundreds of tech skills. Select what you know,
-                                block what you don't want. It takes 2 minutes and makes a huge difference.
+                                I wanted a tool where I could visually organize what I know and what I absolutely refuse to work with. It takes two minutes to click through the bubble cloud, and the algorithm honors your choices completely.
                             </p>
                             <Link to="/register" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
                                 Build my profile →
@@ -175,18 +200,39 @@ export default function Home() {
                             viewport={{ once: true }}
                             transition={{ duration: 0.5 }}
                         >
-                            <p style={styles.splitLabel}>Intelligent Matching</p>
-                            <h2>See your match score <span className="gradient-text">before you apply</span></h2>
+                            <p style={styles.splitLabel}>Transparent Data</p>
+                            <h2>Understand <span className="gradient-text">why you match</span></h2>
                             <p style={{ color: 'var(--text-secondary)', marginTop: '1rem', lineHeight: 1.7 }}>
-                                Every job is ranked by how well it fits your skill profile.
-                                Cyan glow = perfect fit. Stop wasting time on jobs that will reject you.
+                                Every offer is scored against your skill graph based on plain data logic. A cyan glow means a perfect fit. I built this so we can stop wasting time reading irrelevant job descriptions.
                             </p>
                             <Link to="/jobs" className="btn btn-ghost" style={{ marginTop: '1.5rem' }}>
                                 Explore Offers →
                             </Link>
                         </motion.div>
                         <div style={styles.splitImg}>
-                            <img src={jobsImg} alt="Job matching" style={styles.splitImgEl} />
+                            <div style={styles.abstractGraphicSmall}>
+                                <motion.div
+                                    style={styles.scoreCircleBackground}
+                                />
+                                <motion.div
+                                    style={styles.scoreCircleForeground}
+                                    initial={{ pathLength: 0 }}
+                                    animate={{ pathLength: 1 }}
+                                    transition={{ duration: 2, ease: "easeOut" }}
+                                >
+                                    <svg viewBox="0 0 100 100" style={styles.svgScore}>
+                                        <motion.circle
+                                            cx="50" cy="50" r="45"
+                                            fill="none" stroke="var(--accent-cyan)" strokeWidth="8"
+                                            strokeDasharray="283"
+                                            initial={{ strokeDashoffset: 283 }}
+                                            animate={{ strokeDashoffset: 40 }}
+                                            transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                                        />
+                                    </svg>
+                                    <div style={styles.scoreText}>98%</div>
+                                </motion.div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -203,10 +249,10 @@ export default function Home() {
                         transition={{ duration: 0.5 }}
                     >
                         <h2 style={{ color: '#000', fontWeight: 800 }}>
-                            Ready to find your flow?
+                            Try my hobby project
                         </h2>
                         <p style={{ color: 'rgba(0,0,0,0.65)', marginTop: '0.5rem', fontSize: '1.05rem' }}>
-                            Join developers who stopped sending resumes into the void.
+                            It's free, no ads, just a developer trying to fix the job search experience.
                         </p>
                         <Link to="/register" className="btn" style={{ marginTop: '1.5rem', background: '#000', color: 'var(--accent-cyan)', fontSize: '1rem', padding: '0.8rem 2rem' }}>
                             Start for free →
@@ -288,23 +334,58 @@ const styles = {
         display: 'flex',
         justifyContent: 'center',
     },
-    heroImgWrapper: {
+    abstractGraphic: {
         position: 'relative',
         width: '100%',
         maxWidth: '440px',
+        height: '440px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    heroImg: {
-        width: '100%',
-        borderRadius: '20px',
-        position: 'relative',
+    shape: {
+        position: 'absolute',
+        borderRadius: 'var(--radius-xl)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+    },
+    shape1: {
+        width: '280px',
+        height: '320px',
+        background: 'linear-gradient(135deg, rgba(0,229,255,0.1) 0%, rgba(0,229,255,0.02) 100%)',
+        border: '1px solid rgba(0,229,255,0.2)',
+        zIndex: 2,
+        borderRadius: '30px',
+        transform: 'rotate(-5deg)',
+    },
+    shape2: {
+        width: '240px',
+        height: '240px',
+        background: 'linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(139,92,246,0.02) 100%)',
+        border: '1px solid rgba(139,92,246,0.2)',
+        borderRadius: '50%',
+        top: '10%',
+        right: '5%',
         zIndex: 1,
+    },
+    shape3: {
+        width: '180px',
+        height: '180px',
+        background: 'linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(245,158,11,0.02) 100%)',
+        border: '1px solid rgba(245,158,11,0.2)',
+        bottom: '15%',
+        left: '10%',
+        zIndex: 3,
+        borderRadius: '20px',
+        transform: 'rotate(15deg)',
     },
     heroGlow: {
         position: 'absolute',
-        inset: '-20px',
-        background: 'radial-gradient(ellipse at center, rgba(0,229,255,0.15) 0%, transparent 70%)',
+        inset: '10%',
+        background: 'radial-gradient(circle at center, rgba(0,229,255,0.15) 0%, transparent 60%)',
         zIndex: 0,
-        borderRadius: '50%',
+        filter: 'blur(40px)',
     },
     statsRow: {
         display: 'flex',
@@ -370,10 +451,77 @@ const styles = {
         display: 'flex',
         justifyContent: 'center',
     },
-    splitImgEl: {
+    abstractGraphicSmall: {
+        position: 'relative',
         width: '100%',
         maxWidth: '380px',
-        borderRadius: '20px',
+        height: '380px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--bg-elevated)',
+        borderRadius: 'var(--radius-2xl)',
+        border: '1px solid var(--border)',
+        overflow: 'hidden',
+    },
+    gridShape: {
+        position: 'absolute',
+        background: 'var(--accent-cyan)',
+        borderRadius: '50%',
+        filter: 'blur(40px)',
+    },
+    gridShape1: {
+        width: '150px',
+        height: '150px',
+        top: '20%',
+        left: '20%',
+        background: 'var(--accent-cyan)',
+    },
+    gridShape2: {
+        width: '200px',
+        height: '200px',
+        bottom: '10%',
+        right: '10%',
+        background: 'var(--accent-violet)',
+    },
+    gridShape3: {
+        width: '100px',
+        height: '100px',
+        top: '40%',
+        right: '30%',
+        background: 'var(--accent-amber)',
+    },
+    scoreCircleBackground: {
+        position: 'absolute',
+        width: '200px',
+        height: '200px',
+        borderRadius: '50%',
+        border: '8px solid var(--bg-surface)',
+    },
+    scoreCircleForeground: {
+        position: 'relative',
+        width: '200px',
+        height: '200px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 2,
+    },
+    svgScore: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        transform: 'rotate(-90deg)',
+    },
+    scoreText: {
+        fontSize: '3.5rem',
+        fontWeight: 800,
+        color: 'var(--text-primary)',
+        fontFamily: 'var(--font-mono)',
+        letterSpacing: '-0.05em',
+        textShadow: '0 0 20px rgba(0,229,255,0.3)',
     },
     splitText: {
         flex: '1 1 360px',

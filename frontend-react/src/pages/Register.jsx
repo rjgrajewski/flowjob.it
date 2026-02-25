@@ -72,14 +72,6 @@ export default function Register() {
                     <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, fontSize: '0.95rem' }}>
                         Map your skills, set your boundaries, and get matched with jobs you'll actually want to take.
                     </p>
-                    <div style={styles.testimonial}>
-                        <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.9rem' }}>
-                            "Found my current role in 3 days. Never sent a resume."
-                        </p>
-                        <p style={{ color: 'var(--accent-cyan)', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 600 }}>
-                            — Senior Go Developer, Berlin
-                        </p>
-                    </div>
                 </div>
             </div>
 
@@ -204,13 +196,6 @@ const styles = {
         fontWeight: 800,
         marginBottom: '2rem',
         color: 'var(--text-primary)',
-    },
-    testimonial: {
-        marginTop: '2.5rem',
-        padding: '1.25rem',
-        background: 'var(--bg-elevated)',
-        borderLeft: '3px solid var(--accent-cyan)',
-        borderRadius: '0 var(--radius-md) var(--radius-md) 0',
     },
     rightPanel: {
         flex: '1 1 400px',

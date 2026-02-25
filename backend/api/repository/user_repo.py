@@ -159,3 +159,30 @@ class UserRepository:
                     user_id
                 )
         return True
+
+    async def get_onboarding_full(self, user_id: str) -> dict:
+        async with self.pool.acquire() as conn:
+            profile_row = await conn.fetchrow(
+                "SELECT first_name, last_name, phone_number, contact_email, location, bio FROM user_profiles WHERE user_id = $1",
+                user_id
+            )
+            
+            if not profile_row:
+                return None
+
+            edu_rows = await conn.fetch(
+                "SELECT school_name, field_of_study, specialization, graduation_year FROM user_education WHERE user_id = $1 ORDER BY graduation_year DESC NULLS LAST",
+                user_id
+            )
+
+            exp_rows = await conn.fetch(
+                "SELECT job_title, company_name, description, start_date, end_date, is_current FROM user_experience WHERE user_id = $1 ORDER BY start_date DESC",
+                user_id
+            )
+
+            return {
+                "profile": dict(profile_row),
+                "education": [dict(r) for r in edu_rows],
+                "experience": [dict(r) for r in exp_rows]
+            }
+

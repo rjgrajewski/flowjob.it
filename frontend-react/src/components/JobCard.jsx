@@ -86,9 +86,6 @@ export default function JobCard({ job, userSkills = [], antiSkills = [], onToggl
                     <p style={styles.company}>{job.company}</p>
                 </div>
                 <div style={styles.badges_right}>
-                    {job.salary && (
-                        <span style={styles.salaryBadge}>{job.salary}</span>
-                    )}
                     <AnimatedMatchScore score={dynamicScore} />
                 </div>
             </div>
@@ -101,6 +98,13 @@ export default function JobCard({ job, userSkills = [], antiSkills = [], onToggl
                     <MetaChip icon={META_ICONS.employmentType} label={job.employmentType} />
                     <MetaChip icon={META_ICONS.experience} label={job.experience} />
                     <MetaChip icon={META_ICONS.workSchedule} label={job.workSchedule} />
+                </div>
+            )}
+
+            {/* Salary Badge */}
+            {job.salary && (
+                <div style={{ marginBottom: '0.65rem' }}>
+                    <span style={styles.salaryBadge}>{job.salary}</span>
                 </div>
             )}
 
@@ -129,7 +133,7 @@ export default function JobCard({ job, userSkills = [], antiSkills = [], onToggl
                     className="btn btn-ghost"
                     style={{ fontSize: '0.85rem', padding: '0.4rem 1rem', textDecoration: 'none' }}
                 >
-                    View Details
+                    Go to JustJoin.it
                 </a>
             </div>
         </motion.div>
@@ -166,6 +170,7 @@ const styles = {
         color: 'var(--text-secondary)',
     },
     salaryBadge: {
+        display: 'inline-block',
         fontSize: '0.78rem',
         fontWeight: 600,
         color: '#4ade80',
