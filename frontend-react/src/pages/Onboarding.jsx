@@ -163,6 +163,14 @@ export default function Onboarding() {
     };
 
     const goNext = async () => {
+        // Auto-add current temp entries if they are filled
+        if (STEPS[currentStepIdx].id === 'education' && tempEdu.school_name && tempEdu.field_of_study) {
+            addEducation();
+        }
+        if (STEPS[currentStepIdx].id === 'experience' && tempExp.job_title && tempExp.company_name) {
+            addExperience();
+        }
+
         if (currentStepIdx === TOTAL - 1) {
             handleSubmit();
         } else {
@@ -181,20 +189,34 @@ export default function Onboarding() {
         setSaving(true);
         setError(null);
         try {
-            const cleanExperience = experience.map(exp => ({
+            // Include unsaved temp entries if they have basic info
+            let finalEducation = [...education];
+            if (tempEdu.school_name && tempEdu.field_of_study) {
+                const cleanTempEdu = { ...tempEdu, graduation_year: isNaN(tempEdu.graduation_year) ? null : tempEdu.graduation_year };
+                finalEducation.push(cleanTempEdu);
+            }
+
+            let finalExperience = [...experience];
+            if (tempExp.job_title && tempExp.company_name) {
+                finalExperience.push({ ...tempExp });
+            }
+
+            const cleanExperience = finalExperience.map(exp => ({
                 ...exp,
                 end_date: exp.end_date === "" ? null : exp.end_date
             }));
+
             const finalProfile = {
                 ...profile,
                 phone_number: phoneData.number ? `${phoneData.areaCode}${phoneData.number.replace(/\s/g, '')}` : ''
             };
+
             await auth.completeOnboarding({
                 profile: finalProfile,
-                education,
+                education: finalEducation,
                 experience: cleanExperience
             });
-            navigate('/cv');
+            navigate('/my-cv'); // Fixed path to /my-cv
         } catch (e) {
             setError(e.message);
         } finally {
@@ -477,7 +499,6 @@ export default function Onboarding() {
                             }} />
                         ))}
                     </div>
-                    <h2 style={styles.title}>{STEPS[currentStepIdx].icon} {STEPS[currentStepIdx].title}</h2>
                 </div>
 
                 <AnimatePresence mode="wait" custom={direction}>
@@ -488,8 +509,11 @@ export default function Onboarding() {
                         initial="enter"
                         animate="center"
                         exit="exit"
-                        style={{ flex: 1 }}
+                        style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
                     >
+                        <h2 style={{ ...styles.title, marginBottom: '1.5rem' }}>
+                            {STEPS[currentStepIdx].icon} {STEPS[currentStepIdx].title}
+                        </h2>
                         {renderStepContent()}
                     </motion.div>
                 </AnimatePresence>

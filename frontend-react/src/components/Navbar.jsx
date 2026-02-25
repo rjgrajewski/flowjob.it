@@ -46,6 +46,9 @@ export default function Navbar() {
                             <NavLink to="/cv" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
                                 My Skills
                             </NavLink>
+                            <NavLink to="/my-cv" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
+                                My CV
+                            </NavLink>
                         </>
                     )}
                     {!user && (

@@ -4,6 +4,7 @@ import Home from './pages/Home.jsx';
 import Register from './pages/Register.jsx';
 import Onboarding from './pages/Onboarding.jsx';
 import CVBuilder from './pages/CVBuilder.jsx';
+import MyCV from './pages/MyCV.jsx';
 import JobBoard from './pages/JobBoard.jsx';
 import { auth } from './services/api.js';
 
@@ -28,6 +29,7 @@ export default function App() {
                     <Route path="/register" element={<Register />} />
                     <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                     <Route path="/cv" element={<OnboardingGate><CVBuilder /></OnboardingGate>} />
+                    <Route path="/my-cv" element={<OnboardingGate><MyCV /></OnboardingGate>} />
                     <Route path="/jobs" element={<OnboardingGate><JobBoard /></OnboardingGate>} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
