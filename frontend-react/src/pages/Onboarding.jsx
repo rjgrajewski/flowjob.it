@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auth } from '../services/api.js';
+import { YearPicker } from '../components/YearPicker.jsx';
 
 const STEPS = [
     { id: 'personal', title: 'Personal details', icon: '👤' },
@@ -19,67 +20,6 @@ const slideVariants = {
     exit: (dir) => ({ x: dir > 0 ? -100 : 100, opacity: 0, transition: { duration: 0.2 } }),
 };
 
-const MonthYearPicker = ({ label, value, onChange, disabled }) => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 40 }, (_, i) => currentYear - i);
-
-    // Initial value parsing (expected YYYY-MM-DD)
-    const [selectedYear, setSelectedYear] = useState(value ? value.split('-')[0] : currentYear);
-    const [selectedMonth, setSelectedMonth] = useState(value ? parseInt(value.split('-')[1]) : 1);
-    const [isOpen, setIsOpen] = useState(false);
-
-    const handleSelect = (mIdx) => {
-        const month = (mIdx + 1).toString().padStart(2, '0');
-        const newValue = `${selectedYear}-${month}-01`;
-        onChange(newValue);
-        setSelectedMonth(mIdx + 1);
-        setIsOpen(false);
-    };
-
-    return (
-        <div style={{ position: 'relative', flex: 1 }}>
-            <label style={styles.label}>{label}</label>
-            <div
-                style={{ ...styles.input, cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1 }}
-                onClick={() => !disabled && setIsOpen(!isOpen)}
-            >
-                {value ? `${months[parseInt(value.split('-')[1]) - 1]} ${value.split('-')[0]}` : 'Select...'}
-            </div>
-
-            {isOpen && (
-                <div style={styles.pickerPopup}>
-                    <div style={styles.pickerHeader}>
-                        <button onClick={() => setSelectedYear(y => parseInt(y) - 1)} style={styles.pickerArrow}>&lt;</button>
-                        <select
-                            value={selectedYear}
-                            onChange={e => setSelectedYear(e.target.value)}
-                            style={styles.yearSelect}
-                        >
-                            {years.map(y => <option key={y} value={y}>{y}</option>)}
-                        </select>
-                        <button onClick={() => setSelectedYear(y => parseInt(y) + 1)} style={styles.pickerArrow}>&gt;</button>
-                    </div>
-                    <div style={styles.monthGrid}>
-                        {months.map((m, i) => (
-                            <div
-                                key={m}
-                                onClick={() => handleSelect(i)}
-                                style={{
-                                    ...styles.monthItem,
-                                    background: (selectedMonth === i + 1 && value?.startsWith(selectedYear)) ? 'var(--accent-cyan)' : 'transparent',
-                                    color: (selectedMonth === i + 1 && value?.startsWith(selectedYear)) ? '#000' : '#fff'
-                                }}
-                            >
-                                {m}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
 
 export default function Onboarding() {
     const navigate = useNavigate();
@@ -427,13 +367,13 @@ export default function Onboarding() {
                     </div>
                 </div>
                 <div style={styles.row}>
-                    <MonthYearPicker
-                        label="From"
+                    <YearPicker
+                        label="From (Year)"
                         value={tempExp.start_date}
                         onChange={val => setTempExp({ ...tempExp, start_date: val })}
                     />
-                    <MonthYearPicker
-                        label="To"
+                    <YearPicker
+                        label="To (Year)"
                         disabled={tempExp.is_current}
                         value={tempExp.end_date}
                         onChange={val => setTempExp({ ...tempExp, end_date: val })}

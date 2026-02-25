@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { api, auth } from '../services/api.js';
 import { Document, Page, Text, View, StyleSheet, PDFViewer, Svg, Path, Font, PDFDownloadLink } from '@react-pdf/renderer';
 
+import { CVEditorTabs } from '../components/CVEditorTabs.jsx';
+
 // Register Roboto for proper Polish character support
 Font.register({
     family: 'Roboto',
@@ -14,118 +16,138 @@ Font.register({
 const CVDocument = ({ profileData, skillsData }) => {
     const { profile, education, experience } = profileData;
     const primaryColor = '#00e5ff'; // Flowjob primary brand color
+    const darkBg = '#0f172a'; // Deep Navy/Slate
+    const maxSkills = 30; // limit skills on CV
 
     const styles = useMemo(() => StyleSheet.create({
+        // ... (rest holds the same)
         page: {
-            padding: 40,
             fontFamily: 'Roboto',
             backgroundColor: '#ffffff',
-            color: '#374151',
-            lineHeight: 1.5,
+            color: '#334155',
+            lineHeight: 1.6,
         },
-        header: {
-            marginBottom: 30,
+        headerBlock: {
+            backgroundColor: darkBg,
+            paddingTop: 45,
+            paddingBottom: 35,
+            paddingHorizontal: 50,
             flexDirection: 'column',
-            gap: 10,
+            alignItems: 'center',
+            color: '#f8fafc',
         },
         name: {
-            fontSize: 28,
+            fontSize: 32,
             fontWeight: 700,
-            color: '#111827',
+            color: '#ffffff',
             textTransform: 'uppercase',
-            marginBottom: 5,
+            letterSpacing: 2,
+            marginBottom: 8,
         },
-        contactInfo: {
+        headerSubtitle: {
+            fontSize: 14,
+            color: primaryColor,
+            fontWeight: 400,
+            letterSpacing: 1.5,
+            marginBottom: 20,
+            textTransform: 'uppercase',
+        },
+        contactInfoBox: {
             flexDirection: 'row',
             flexWrap: 'wrap',
-            gap: 15,
-            color: '#374151', // Darker for contrast, previously light gray
+            justifyContent: 'center',
+            gap: 20,
+            color: '#cbd5e1',
             fontSize: 10,
-            borderTopWidth: 2,
-            borderTopColor: primaryColor,
-            paddingTop: 10,
         },
         contactItem: {
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 4,
-            paddingTop: 2, // Slight top padding to center text visually with SVG path baseline
+            gap: 6,
         },
-        body: {
+        bodyContent: {
             flexDirection: 'row',
-            gap: 20,
+            paddingTop: 35,
+            paddingBottom: 40,
+            paddingHorizontal: 40,
+            gap: 30,
         },
         mainColumn: {
-            width: '65%',
+            flex: 2,
             flexDirection: 'column',
-            gap: 20,
+            gap: 25,
         },
         sideColumn: {
-            width: '35%',
+            flex: 1,
             flexDirection: 'column',
-            gap: 20,
-            paddingLeft: 20,
-            borderLeftWidth: 1,
-            borderLeftColor: '#e5e7eb',
+            gap: 25,
         },
         section: {
-            marginBottom: 10,
+            marginBottom: 5,
         },
         sectionTitle: {
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: 700,
             textTransform: 'uppercase',
-            color: '#111827', // Fix contrast, previously cyan
-            marginBottom: 10,
-            letterSpacing: 1,
+            color: darkBg,
+            marginBottom: 12,
+            letterSpacing: 1.2,
+            borderBottomWidth: 2,
+            borderBottomColor: primaryColor,
+            paddingBottom: 4,
         },
         bioText: {
             fontSize: 10,
-            color: '#4b5563',
+            color: '#475569',
+            lineHeight: 1.6,
+            textAlign: 'justify',
         },
         timelineItem: {
-            marginBottom: 15,
+            marginBottom: 16,
+            paddingLeft: 12,
+            borderLeftWidth: 2,
+            borderLeftColor: '#e2e8f0',
         },
         jobHeader: {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'baseline',
-            marginBottom: 2,
+            marginBottom: 3,
         },
         jobTitle: {
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 700,
-            color: '#111827',
+            color: darkBg,
         },
         dateRange: {
-            fontSize: 8,
-            color: '#4b5563', // Changed from cyan to avoid bleeding into white background
+            fontSize: 9,
+            color: primaryColor,
+            fontWeight: 700,
             textTransform: 'uppercase',
+            letterSpacing: 0.5,
         },
         companyName: {
             fontSize: 10,
-            color: '#6b7280',
+            color: '#64748b',
             fontWeight: 700,
-            marginBottom: 4,
+            marginBottom: 6,
         },
         description: {
-            fontSize: 9,
-            color: '#4b5563',
-            lineHeight: 1.4,
+            fontSize: 10,
+            color: '#475569',
+            lineHeight: 1.5,
         },
         skillsList: {
             flexDirection: 'row',
             flexWrap: 'wrap',
-            alignItems: 'flex-start',
-            alignContent: 'flex-start',
             gap: 6,
         },
         skillTagWrapper: {
             borderWidth: 1,
             borderColor: primaryColor,
-            borderRadius: 12, // More pill-like
+            borderRadius: 12,
             paddingTop: 5,
-            paddingBottom: 7, // Pushing bottom border down significantly to counter font baseline issues in PDF
+            paddingBottom: 7,
             paddingLeft: 8,
             paddingRight: 8,
             backgroundColor: '#ffffff',
@@ -136,101 +158,119 @@ const CVDocument = ({ profileData, skillsData }) => {
             lineHeight: 1,
         },
         eduItem: {
-            marginBottom: 10,
+            marginBottom: 12,
         },
         eduDegree: {
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
-            color: '#111827',
+            color: darkBg,
             marginBottom: 2,
         },
         eduSchool: {
-            fontSize: 9,
-            color: '#4b5563',
+            fontSize: 10,
+            color: '#475569',
             marginBottom: 2,
         },
         eduSpecialization: {
-            fontSize: 8,
-            color: '#6b7280',
+            fontSize: 9,
+            color: '#64748b',
             fontStyle: 'italic',
         },
         eduYear: {
-            fontSize: 8,
-            color: '#9ca3af',
-            marginTop: 2,
+            fontSize: 9,
+            color: primaryColor,
+            fontWeight: 700,
+            marginTop: 4,
         }
     }), []);
+
+    // Helper to determine a subtitle from the latest experience or default
+    const subtitle = (experience && experience.length > 0 && experience[0].job_title)
+        ? experience[0].job_title
+        : "Professional Profile";
 
     return (
         <Document>
             <Page size="A4" style={styles.page}>
-                <View style={styles.header}>
+                {/* Modern Dark Header block */}
+                <View style={styles.headerBlock}>
                     <Text style={styles.name}>
-                        {profile.first_name} {profile.last_name}
+                        {profile?.first_name || ''} {profile?.last_name || ''}
                     </Text>
-                    <View style={styles.contactInfo}>
-                        {profile.location && (
+                    <Text style={styles.headerSubtitle}>
+                        {subtitle || ''}
+                    </Text>
+                    <View style={styles.contactInfoBox}>
+                        {profile?.location ? (
                             <View style={styles.contactItem}>
-                                <Svg viewBox="0 0 24 24" width="10" height="10">
-                                    <Path fill="none" stroke={primaryColor} strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <Path fill="none" stroke={primaryColor} strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <Svg viewBox="0 0 24 24" width="12" height="12">
+                                    <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </Svg>
                                 <Text>{profile.location}</Text>
                             </View>
-                        )}
-                        {profile.contact_email && (
+                        ) : null}
+                        {profile?.phone_number ? (
                             <View style={styles.contactItem}>
-                                <Svg viewBox="0 0 24 24" width="10" height="10">
-                                    <Path fill="none" stroke={primaryColor} strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </Svg>
-                                <Text>{profile.contact_email}</Text>
-                            </View>
-                        )}
-                        {profile.phone_number && (
-                            <View style={styles.contactItem}>
-                                <Svg viewBox="0 0 24 24" width="10" height="10">
-                                    <Path fill="none" stroke={primaryColor} strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                <Svg viewBox="0 0 24 24" width="12" height="12">
+                                    <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                 </Svg>
                                 <Text>{profile.phone_number}</Text>
                             </View>
-                        )}
+                        ) : null}
+                        {profile?.contact_email ? (
+                            <View style={styles.contactItem}>
+                                <Svg viewBox="0 0 24 24" width="12" height="12">
+                                    <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </Svg>
+                                <Text>{profile.contact_email}</Text>
+                            </View>
+                        ) : null}
                     </View>
                 </View>
 
-                <View style={styles.body}>
+                {/* Main Body */}
+                <View style={styles.bodyContent}>
+                    {/* Left Column (Main content) */}
                     <View style={styles.mainColumn}>
-                        {profile.bio && (
+                        {profile?.bio ? (
                             <View style={styles.section} wrap={false}>
-                                <Text style={styles.sectionTitle}>Professional Summary</Text>
+                                <Text style={styles.sectionTitle}>Profile Summary</Text>
                                 <Text style={styles.bioText}>{profile.bio}</Text>
                             </View>
-                        )}
+                        ) : null}
 
-                        {experience && experience.length > 0 && (
+                        {experience && experience.length > 0 ? (
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>Experience</Text>
-                                {experience.map((exp, idx) => (
-                                    <View key={idx} style={styles.timelineItem} wrap={false}>
-                                        <View style={styles.jobHeader}>
-                                            <Text style={styles.jobTitle}>{exp.job_title}</Text>
-                                            <Text style={styles.dateRange}>
-                                                {exp.start_date} — {exp.is_current ? 'Present' : exp.end_date}
-                                            </Text>
+                                {experience.map((exp, idx) => {
+                                    const startYear = exp.start_date ? String(exp.start_date).substring(0, 4) : '';
+                                    const endYear = exp.end_date ? String(exp.end_date).substring(0, 4) : '';
+
+                                    return (
+                                        <View key={idx} style={styles.timelineItem} wrap={false}>
+                                            <View style={styles.jobHeader}>
+                                                <Text style={styles.jobTitle}>{exp.job_title || ''}</Text>
+                                                <Text style={styles.dateRange}>
+                                                    {startYear} — {exp.is_current ? 'Present' : endYear}
+                                                </Text>
+                                            </View>
+                                            <Text style={styles.companyName}>{exp.company_name || ''}</Text>
+                                            {exp.description ? <Text style={styles.description}>{exp.description}</Text> : null}
                                         </View>
-                                        <Text style={styles.companyName}>{exp.company_name}</Text>
-                                        {exp.description && <Text style={styles.description}>{exp.description}</Text>}
-                                    </View>
-                                ))}
+                                    );
+                                })}
                             </View>
-                        )}
+                        ) : null}
                     </View>
 
+                    {/* Right Column (Sidebar content) */}
                     <View style={styles.sideColumn}>
-                        {skillsData.skills && skillsData.skills.length > 0 && (
+                        {skillsData.skills && skillsData.skills.length > 0 ? (
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>Skills</Text>
                                 <View style={styles.skillsList}>
-                                    {skillsData.skills.map(skill => (
+                                    {skillsData.skills.slice(0, maxSkills).map(skill => (
                                         <View key={skill} style={styles.skillTagWrapper}>
                                             <Text style={styles.skillTagText}>
                                                 {skill}
@@ -239,21 +279,21 @@ const CVDocument = ({ profileData, skillsData }) => {
                                     ))}
                                 </View>
                             </View>
-                        )}
+                        ) : null}
 
-                        {education && education.length > 0 && (
+                        {education && education.length > 0 ? (
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>Education</Text>
                                 {education.map((edu, idx) => (
                                     <View key={idx} style={styles.eduItem} wrap={false}>
-                                        <Text style={styles.eduDegree}>{edu.field_of_study}</Text>
-                                        <Text style={styles.eduSchool}>{edu.school_name}</Text>
-                                        {edu.specialization && <Text style={styles.eduSpecialization}>{edu.specialization}</Text>}
-                                        {edu.graduation_year && <Text style={styles.eduYear}>{edu.graduation_year}</Text>}
+                                        <Text style={styles.eduDegree}>{edu.field_of_study || ''}</Text>
+                                        <Text style={styles.eduSchool}>{edu.school_name || ''}</Text>
+                                        {edu.specialization ? <Text style={styles.eduSpecialization}>{edu.specialization}</Text> : null}
+                                        {edu.graduation_year ? <Text style={styles.eduYear}>{String(edu.graduation_year)}</Text> : null}
                                     </View>
                                 ))}
                             </View>
-                        )}
+                        ) : null}
                     </View>
                 </View>
             </Page>
@@ -265,9 +305,11 @@ export default function MyCV() {
     const [profileData, setProfileData] = useState(null);
     const [skillsData, setSkillsData] = useState({ skills: [], antiSkills: [] });
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         const loadCVData = async () => {
+            // ...
             try {
                 // Get profile from local storage
                 const storedProfile = localStorage.getItem('flowjob_profile');
@@ -302,6 +344,40 @@ export default function MyCV() {
         loadCVData();
     }, []);
 
+    const handleSaveCV = async () => {
+        setSaving(true);
+        try {
+            const user = auth.getUser();
+            if (user && user.id && profileData) {
+                // The API endpoint from auth.completeOnboarding handles saving profileData structure
+                await auth.completeOnboarding({
+                    profile: profileData.profile,
+                    education: profileData.education,
+                    experience: profileData.experience
+                });
+                // updating local storage as well
+                localStorage.setItem('flowjob_profile', JSON.stringify(profileData));
+
+                // Show temporary success state
+                const btn = document.getElementById('save-cv-btn');
+                if (btn) {
+                    const originalText = btn.innerText;
+                    btn.innerText = '✓ Saved Successfully!';
+                    btn.style.backgroundColor = 'var(--accent-green)';
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.style.backgroundColor = '';
+                    }, 2000);
+                }
+            }
+        } catch (e) {
+            console.error('Error saving CV:', e);
+            alert('Error saving CV. Please try again.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
     if (loading) {
         return (
             <div style={pageStyles.loaderContainer}>
@@ -323,23 +399,25 @@ export default function MyCV() {
         <div style={pageStyles.page}>
             {/* Sidebar Tools - hidden during print via CSS */}
             <aside className="cv-tools" style={pageStyles.sidebar}>
-                <div style={{ marginBottom: '2rem' }}>
-                    <h3 style={pageStyles.sidebarTitle}>Your Flowjob CV</h3>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>
-                        Here is your generated CV. We've applied our clean, professional layout standard.
-                    </p>
-                </div>
-
-                <div style={{ padding: '1.5rem', background: '#1c2433', borderRadius: '12px', border: '1px solid #30363d', textAlign: 'center' }}>
+                <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={pageStyles.sidebarTitle}>Edit CV Content</h3>
                     <PDFDownloadLink
                         document={<CVDocument profileData={profileData} skillsData={skillsData} />}
                         fileName="flowjob-cv.pdf"
-                        style={pageStyles.downloadBtn}
+                        style={pageStyles.downloadIconBtn}
+                        title="Download PDF"
                     >
-                        {({ blob, url, loading, error }) =>
-                            loading ? 'Generating PDF...' : 'Download PDF'
-                        }
+                        {({ loading }) => loading ? '⏳' : '📥'}
                     </PDFDownloadLink>
+                </div>
+
+                <div style={{ flex: 1, minHeight: 0 }}>
+                    <CVEditorTabs
+                        profileData={profileData}
+                        setProfileData={setProfileData}
+                        onSave={handleSaveCV}
+                        saving={saving}
+                    />
                 </div>
             </aside>
 
@@ -359,48 +437,51 @@ export default function MyCV() {
 const pageStyles = {
     page: {
         display: 'flex',
-        minHeight: 'calc(100vh - 64px)',
+        height: 'calc(100vh - 64px)',
         background: 'var(--bg-surface)',
-        flexWrap: 'wrap',
+        overflow: 'hidden',
     },
     sidebar: {
-        width: '320px',
-        padding: '2.5rem 2rem',
+        width: '420px',
+        padding: '1.5rem',
         borderRight: '1px solid var(--border)',
-        background: 'rgba(13, 17, 23, 0.95)',
+        background: 'var(--bg-surface)',
         display: 'flex',
         flexDirection: 'column',
+        height: '100%',
     },
     sidebarTitle: {
-        fontSize: '1.5rem',
+        fontSize: '1.25rem',
         fontWeight: 700,
         color: 'var(--text-primary)',
-        marginBottom: '0.75rem',
+        margin: 0,
     },
-    downloadBtn: {
-        display: 'inline-flex',
-        width: '100%',
+    downloadIconBtn: {
+        display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '0.75rem 1.5rem',
-        background: 'var(--accent-cyan)',
-        color: '#000',
+        width: '36px',
+        height: '36px',
+        background: 'var(--bg-elevated)',
+        border: '1px solid var(--border)',
+        color: 'var(--text-primary)',
         textDecoration: 'none',
         borderRadius: '8px',
-        fontWeight: 600,
-        fontSize: '1rem',
+        fontSize: '1.2rem',
         transition: 'all 0.2s ease',
-        boxShadow: '0 0 12px rgba(0, 229, 255, 0.35)',
+        cursor: 'pointer',
     },
     documentWrapper: {
         flex: 1,
-        display: 'flex',
         background: '#e5e7eb', // soft gray background
+        position: 'relative',
     },
     pdfViewer: {
-        flex: 1,
+        position: 'absolute',
+        top: 0,
+        left: 0,
         width: '100%',
-        height: 'calc(100vh - 64px)',
+        height: '100%',
         border: 'none',
     },
     loaderContainer: {
