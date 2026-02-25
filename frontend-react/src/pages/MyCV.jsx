@@ -1,23 +1,24 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { api, auth } from '../services/api.js';
-import { Document, Page, Text, View, StyleSheet, PDFViewer, Svg, Path } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, PDFViewer, Svg, Path, Font, PDFDownloadLink } from '@react-pdf/renderer';
 
-// Helper to pick standard PDF fonts since loading true webfonts reliably in DOM + PDF requires URL hosting
-const getPdfFont = (fontFamily) => {
-    if (fontFamily.includes('serif')) return 'Times-Roman';
-    if (fontFamily.includes('Courier')) return 'Courier';
-    return 'Helvetica';
-};
+// Register Roboto for proper Polish character support
+Font.register({
+    family: 'Roboto',
+    fonts: [
+        { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf', fontWeight: 400 },
+        { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-bold-webfont.ttf', fontWeight: 700 }
+    ]
+});
 
-const CVDocument = ({ profileData, skillsData, primaryColor, fontFamily }) => {
+const CVDocument = ({ profileData, skillsData }) => {
     const { profile, education, experience } = profileData;
-    const pdfFont = getPdfFont(fontFamily);
+    const primaryColor = '#00e5ff'; // Flowjob primary brand color
 
     const styles = useMemo(() => StyleSheet.create({
         page: {
             padding: 40,
-            fontFamily: pdfFont,
+            fontFamily: 'Roboto',
             backgroundColor: '#ffffff',
             color: '#374151',
             lineHeight: 1.5,
@@ -29,7 +30,7 @@ const CVDocument = ({ profileData, skillsData, primaryColor, fontFamily }) => {
         },
         name: {
             fontSize: 28,
-            fontWeight: 'bold',
+            fontWeight: 700,
             color: '#111827',
             textTransform: 'uppercase',
             marginBottom: 5,
@@ -38,16 +39,17 @@ const CVDocument = ({ profileData, skillsData, primaryColor, fontFamily }) => {
             flexDirection: 'row',
             flexWrap: 'wrap',
             gap: 15,
-            color: '#6b7280',
+            color: '#374151', // Darker for contrast, previously light gray
             fontSize: 10,
-            borderTopWidth: 1,
-            borderTopColor: '#e5e7eb',
+            borderTopWidth: 2,
+            borderTopColor: primaryColor,
             paddingTop: 10,
         },
         contactItem: {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 4,
+            paddingTop: 2, // Slight top padding to center text visually with SVG path baseline
         },
         body: {
             flexDirection: 'row',
@@ -71,9 +73,9 @@ const CVDocument = ({ profileData, skillsData, primaryColor, fontFamily }) => {
         },
         sectionTitle: {
             fontSize: 12,
-            fontWeight: 'bold',
+            fontWeight: 700,
             textTransform: 'uppercase',
-            color: primaryColor,
+            color: '#111827', // Fix contrast, previously cyan
             marginBottom: 10,
             letterSpacing: 1,
         },
@@ -92,18 +94,18 @@ const CVDocument = ({ profileData, skillsData, primaryColor, fontFamily }) => {
         },
         jobTitle: {
             fontSize: 11,
-            fontWeight: 'bold',
+            fontWeight: 700,
             color: '#111827',
         },
         dateRange: {
             fontSize: 8,
-            color: primaryColor,
+            color: '#4b5563', // Changed from cyan to avoid bleeding into white background
             textTransform: 'uppercase',
         },
         companyName: {
             fontSize: 10,
             color: '#6b7280',
-            fontWeight: 'bold',
+            fontWeight: 700,
             marginBottom: 4,
         },
         description: {
@@ -114,24 +116,31 @@ const CVDocument = ({ profileData, skillsData, primaryColor, fontFamily }) => {
         skillsList: {
             flexDirection: 'row',
             flexWrap: 'wrap',
+            alignItems: 'flex-start',
+            alignContent: 'flex-start',
             gap: 6,
         },
-        skillTag: {
+        skillTagWrapper: {
+            borderWidth: 1,
+            borderColor: primaryColor,
+            borderRadius: 12, // More pill-like
+            paddingTop: 5,
+            paddingBottom: 7, // Pushing bottom border down significantly to counter font baseline issues in PDF
+            paddingLeft: 8,
+            paddingRight: 8,
+            backgroundColor: '#ffffff',
+        },
+        skillTagText: {
             fontSize: 9,
-            paddingVertical: 4,
-            paddingHorizontal: 8,
-            borderRadius: 10,
-            color: primaryColor,
-            backgroundColor: '#f3f4f6', // PDF renderer doesn't support complex hex opacity well natively without full hex
-            marginBottom: 6,
-            marginRight: 6,
+            color: '#111827',
+            lineHeight: 1,
         },
         eduItem: {
             marginBottom: 10,
         },
         eduDegree: {
             fontSize: 10,
-            fontWeight: 'bold',
+            fontWeight: 700,
             color: '#111827',
             marginBottom: 2,
         },
@@ -150,19 +159,19 @@ const CVDocument = ({ profileData, skillsData, primaryColor, fontFamily }) => {
             color: '#9ca3af',
             marginTop: 2,
         }
-    }), [primaryColor, pdfFont]);
+    }), []);
 
     return (
         <Document>
             <Page size="A4" style={styles.page}>
                 <View style={styles.header}>
                     <Text style={styles.name}>
-                        {profile.first_name} <Text style={{ color: primaryColor }}>{profile.last_name}</Text>
+                        {profile.first_name} {profile.last_name}
                     </Text>
                     <View style={styles.contactInfo}>
                         {profile.location && (
                             <View style={styles.contactItem}>
-                                <Svg viewBox="0 0 24 24" width="12" height="12">
+                                <Svg viewBox="0 0 24 24" width="10" height="10">
                                     <Path fill="none" stroke={primaryColor} strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <Path fill="none" stroke={primaryColor} strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </Svg>
@@ -171,7 +180,7 @@ const CVDocument = ({ profileData, skillsData, primaryColor, fontFamily }) => {
                         )}
                         {profile.contact_email && (
                             <View style={styles.contactItem}>
-                                <Svg viewBox="0 0 24 24" width="12" height="12">
+                                <Svg viewBox="0 0 24 24" width="10" height="10">
                                     <Path fill="none" stroke={primaryColor} strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </Svg>
                                 <Text>{profile.contact_email}</Text>
@@ -179,7 +188,7 @@ const CVDocument = ({ profileData, skillsData, primaryColor, fontFamily }) => {
                         )}
                         {profile.phone_number && (
                             <View style={styles.contactItem}>
-                                <Svg viewBox="0 0 24 24" width="12" height="12">
+                                <Svg viewBox="0 0 24 24" width="10" height="10">
                                     <Path fill="none" stroke={primaryColor} strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                 </Svg>
                                 <Text>{profile.phone_number}</Text>
@@ -222,9 +231,11 @@ const CVDocument = ({ profileData, skillsData, primaryColor, fontFamily }) => {
                                 <Text style={styles.sectionTitle}>Skills</Text>
                                 <View style={styles.skillsList}>
                                     {skillsData.skills.map(skill => (
-                                        <Text key={skill} style={styles.skillTag}>
-                                            {skill}
-                                        </Text>
+                                        <View key={skill} style={styles.skillTagWrapper}>
+                                            <Text style={styles.skillTagText}>
+                                                {skill}
+                                            </Text>
+                                        </View>
                                     ))}
                                 </View>
                             </View>
@@ -254,10 +265,6 @@ export default function MyCV() {
     const [profileData, setProfileData] = useState(null);
     const [skillsData, setSkillsData] = useState({ skills: [], antiSkills: [] });
     const [loading, setLoading] = useState(true);
-
-    // Customization state
-    const [primaryColor, setPrimaryColor] = useState('#00e5ff');
-    const [fontFamily, setFontFamily] = useState('Helvetica, sans-serif');
 
     useEffect(() => {
         const loadCVData = async () => {
@@ -316,43 +323,23 @@ export default function MyCV() {
         <div style={pageStyles.page}>
             {/* Sidebar Tools - hidden during print via CSS */}
             <aside className="cv-tools" style={pageStyles.sidebar}>
-                <h3 style={pageStyles.sidebarTitle}>Customize CV</h3>
-
-                <div style={pageStyles.toolSection}>
-                    <label style={pageStyles.label}>Accent Color</label>
-                    <div style={pageStyles.colorPicker}>
-                        {['#00e5ff', '#7c3aed', '#00e676', '#ff5370', '#ffa500'].map(color => (
-                            <button
-                                key={color}
-                                onClick={() => setPrimaryColor(color)}
-                                style={{
-                                    ...pageStyles.colorBtn,
-                                    background: color,
-                                    border: primaryColor === color ? '2px solid white' : '2px solid transparent'
-                                }}
-                            />
-                        ))}
-                    </div>
-                </div>
-
-                <div style={pageStyles.toolSection}>
-                    <label style={pageStyles.label}>Font Family</label>
-                    <select
-                        style={pageStyles.select}
-                        value={fontFamily}
-                        onChange={(e) => setFontFamily(e.target.value)}
-                    >
-                        <option value="Helvetica, sans-serif">Helvetica (Modern Clean)</option>
-                        <option value="Times-Roman, serif">Times New Roman (Classic)</option>
-                        <option value="Courier, monospace">Courier (Monospace)</option>
-                    </select>
-                </div>
-
-                <div style={{ marginTop: 'auto', padding: '1rem', background: '#374151', borderRadius: '8px', color: 'white', fontSize: '0.85rem' }}>
-                    <p style={{ margin: 0, lineHeight: 1.5 }}>
-                        <strong>True PDF Renderer</strong><br />
-                        This CV uses a real-time PDF engine. It flawlessly breaks pages on A4 sheets without cutting lines in half.
+                <div style={{ marginBottom: '2rem' }}>
+                    <h3 style={pageStyles.sidebarTitle}>Your Flowjob CV</h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                        Here is your generated CV. We've applied our clean, professional layout standard.
                     </p>
+                </div>
+
+                <div style={{ padding: '1.5rem', background: '#1c2433', borderRadius: '12px', border: '1px solid #30363d', textAlign: 'center' }}>
+                    <PDFDownloadLink
+                        document={<CVDocument profileData={profileData} skillsData={skillsData} />}
+                        fileName="flowjob-cv.pdf"
+                        style={pageStyles.downloadBtn}
+                    >
+                        {({ blob, url, loading, error }) =>
+                            loading ? 'Generating PDF...' : 'Download PDF'
+                        }
+                    </PDFDownloadLink>
                 </div>
             </aside>
 
@@ -362,8 +349,6 @@ export default function MyCV() {
                     <CVDocument
                         profileData={profileData}
                         skillsData={skillsData}
-                        primaryColor={primaryColor}
-                        fontFamily={fontFamily}
                     />
                 </PDFViewer>
             </div>
@@ -379,52 +364,33 @@ const pageStyles = {
         flexWrap: 'wrap',
     },
     sidebar: {
-        width: '300px',
-        padding: '2rem',
+        width: '320px',
+        padding: '2.5rem 2rem',
         borderRight: '1px solid var(--border)',
         background: 'rgba(13, 17, 23, 0.95)',
         display: 'flex',
         flexDirection: 'column',
-        gap: '2rem',
     },
     sidebarTitle: {
-        fontSize: '1.25rem',
+        fontSize: '1.5rem',
         fontWeight: 700,
         color: 'var(--text-primary)',
-        marginBottom: '0.5rem',
+        marginBottom: '0.75rem',
     },
-    toolSection: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.75rem',
-    },
-    label: {
-        fontSize: '0.85rem',
+    downloadBtn: {
+        display: 'inline-flex',
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '0.75rem 1.5rem',
+        background: 'var(--accent-cyan)',
+        color: '#000',
+        textDecoration: 'none',
+        borderRadius: '8px',
         fontWeight: 600,
-        color: 'var(--text-secondary)',
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-    },
-    colorPicker: {
-        display: 'flex',
-        gap: '0.75rem',
-    },
-    colorBtn: {
-        width: '32px',
-        height: '32px',
-        borderRadius: '50%',
-        cursor: 'pointer',
-        transition: 'transform 0.2s',
-    },
-    select: {
-        background: 'var(--bg-elevated)',
-        border: '1px solid var(--border)',
-        color: 'var(--text-primary)',
-        padding: '0.75rem',
-        borderRadius: 'var(--radius-md)',
-        fontSize: '0.9rem',
-        cursor: 'pointer',
-        outline: 'none',
+        fontSize: '1rem',
+        transition: 'all 0.2s ease',
+        boxShadow: '0 0 12px rgba(0, 229, 255, 0.35)',
     },
     documentWrapper: {
         flex: 1,

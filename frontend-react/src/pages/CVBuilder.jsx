@@ -197,10 +197,86 @@ function FlyingGhost({ id, name, startX, startY, startSize, targetX, targetY, co
     );
 }
 
+function SkillMapSkeleton({ width, height }) {
+    const simRef = useRef(null);
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        if (!width || !height || !containerRef.current) return;
+
+        const domNodes = Array.from(containerRef.current.children);
+
+        const fakeNodes = Array.from({ length: 24 }).map((_, i) => {
+            const size = 80 + (i * 23) % 80;
+            return {
+                id: i,
+                radius: size / 2,
+                x: width / 2 + (Math.random() - 0.5) * (width * 0.5),
+                y: height / 2 + (Math.random() - 0.5) * (height * 0.5),
+                vx: (Math.random() - 0.5) * 8,
+                vy: (Math.random() - 0.5) * 8,
+                domRef: domNodes[i],
+            };
+        });
+
+        simRef.current = d3.forceSimulation(fakeNodes)
+            .alphaDecay(0.01)
+            .velocityDecay(0.2)
+            .force("collide", d3.forceCollide().radius(d => d.radius + 3).iterations(3))
+            .force("charge", d3.forceManyBody().strength(-15).distanceMax(150))
+            .force("x", d3.forceX(width / 2).strength(0.03))
+            .force("y", d3.forceY(height / 2).strength(0.03))
+            .force("bounds", () => {
+                const padding = 5;
+                for (let node of fakeNodes) {
+                    const r = node.radius + padding;
+                    if (node.x < r) { node.x = r; node.vx += (r - node.x) * 0.15; }
+                    if (node.x > width - r) { node.x = width - r; node.vx += (width - r - node.x) * 0.15; }
+                    if (node.y < r) { node.y = r; node.vy += (r - node.y) * 0.15; }
+                    if (node.y > height - r) { node.y = height - r; node.vy += (height - r - node.y) * 0.15; }
+                }
+            })
+            .on("tick", () => {
+                for (let i = 0; i < fakeNodes.length; i++) {
+                    const node = fakeNodes[i];
+                    if (node.domRef) {
+                        node.domRef.style.transform = `translate(${node.x - node.radius}px, ${node.y - node.radius}px)`;
+                    }
+                }
+            });
+
+        return () => {
+            if (simRef.current) simRef.current.stop();
+        };
+    }, [width, height]);
+
+    if (!width || !height) return null;
+
+    return (
+        <div ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
+            {Array.from({ length: 24 }).map((_, i) => {
+                const size = 80 + (i * 23) % 80;
+                return (
+                    <div key={i} className="pulse" style={{
+                        position: 'absolute',
+                        top: 0, left: 0,
+                        width: size,
+                        height: size,
+                        borderRadius: '50%',
+                        background: 'var(--bg-elevated)',
+                        animation: 'pulse 1.5s ease-in-out infinite',
+                        transform: `translate(${width / 2 - size / 2}px, ${height / 2 - size / 2}px)`,
+                    }} />
+                )
+            })}
+        </div>
+    );
+}
+
 export default function CVBuilder() {
-    const { skills, loading } = useSkills();
-    const [search, setSearch] = useState('');
     const [selected, setSelected] = useState(new Set());
+    const { skills, loading } = useSkills([...selected]);
+    const [search, setSearch] = useState('');
     const [anti, setAnti] = useState(new Set());
     const selectedRef = useRef(new Set());
     const antiRef = useRef(new Set());
@@ -362,6 +438,8 @@ export default function CVBuilder() {
             .velocityDecay(0.2)
             .force("collide", d3.forceCollide().radius(d => d.radius + 3).iterations(3))
             .force("charge", d3.forceManyBody().strength(-15).distanceMax(150))
+            .force("x", d3.forceX(width / 2).strength(0.03))
+            .force("y", d3.forceY(height / 2).strength(0.03))
             .force("bounds", () => {
                 const padding = 5;
                 for (let node of newNodes) {
@@ -587,25 +665,10 @@ export default function CVBuilder() {
                     </div>
                 </div>
 
-                {loading ? (
-                    <div style={styles.bubbleCloudContainer}>
-                        <div style={styles.loadingPlaceholder}>
-                            {Array.from({ length: 24 }).map((_, i) => {
-                                const size = 60 + (i * 23) % 80;
-                                return (
-                                    <div key={i} className="pulse" style={{
-                                        ...styles.skeleton,
-                                        width: size,
-                                        height: size,
-                                        borderRadius: '50%',
-                                        margin: '0.5rem',
-                                    }} />
-                                );
-                            })}
-                        </div>
-                    </div>
-                ) : (
-                    <div style={styles.bubbleCloudContainer} ref={containerRef}>
+                <div style={styles.bubbleCloudContainer} ref={containerRef}>
+                    {loading ? (
+                        <SkillMapSkeleton width={dimensions.width} height={dimensions.height} />
+                    ) : (
                         <AnimatePresence>
                             {nodes.map((node, i) => (
                                 <SkillBubble
@@ -631,8 +694,8 @@ export default function CVBuilder() {
                                 </p>
                             )}
                         </AnimatePresence>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -19,8 +19,9 @@ function fetchWithTimeout(url, options = {}, timeoutMs = AUTH_TIMEOUT_MS) {
 }
 
 export const api = {
-    getSkills: async () => {
-        const res = await fetch(`${BASE}/skills`);
+    getSkills: async (selected = []) => {
+        const query = selected.length > 0 ? `?selected=${encodeURIComponent(selected.join(','))}` : '';
+        const res = await fetch(`${BASE}/skills${query}`);
         if (!res.ok) throw new Error('Failed to fetch skills');
         return res.json();
     },
