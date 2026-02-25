@@ -40,11 +40,11 @@ export default function Navbar() {
                     </NavLink>
                     {user && (
                         <>
+                            <NavLink to="/jobs" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
+                                Offers
+                            </NavLink>
                             <NavLink to="/cv" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
                                 My Skills
-                            </NavLink>
-                            <NavLink to="/jobs" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
-                                Jobs
                             </NavLink>
                         </>
                     )}

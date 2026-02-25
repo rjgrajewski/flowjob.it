@@ -65,7 +65,7 @@ export default function Home() {
                                 Get Started →
                             </Link>
                             <Link to="/jobs" className="btn btn-ghost" style={{ fontSize: '1rem', padding: '0.8rem 1.5rem' }}>
-                                Browse Jobs
+                                Browse Offers
                             </Link>
                         </div>
                     </motion.div>
@@ -182,7 +182,7 @@ export default function Home() {
                                 Cyan glow = perfect fit. Stop wasting time on jobs that will reject you.
                             </p>
                             <Link to="/jobs" className="btn btn-ghost" style={{ marginTop: '1.5rem' }}>
-                                Explore Jobs →
+                                Explore Offers →
                             </Link>
                         </motion.div>
                         <div style={styles.splitImg}>
