@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,10 +14,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# Enable CORS for local development if needed, though we serve static files from same origin
+ALLOWED_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:8000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,9 +29,6 @@ app.include_router(skills.router)
 app.include_router(offers.router)
 app.include_router(users.router)
 
-import os
-
-# Mount the static files directory to serve the frontend
 frontend_dist = "frontend-react/dist"
 if os.path.exists(frontend_dist):
     app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="static")

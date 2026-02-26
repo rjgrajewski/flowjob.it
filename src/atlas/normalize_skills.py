@@ -754,7 +754,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('stage', nargs='?', default='all', help='Stage to run')
     parser.add_argument('--clear', action='store_true', help='Clear tables first')
-    args = parser.add_argument
     args = parser.parse_args()
     
     main(stage=args.stage, clear_first=args.clear)

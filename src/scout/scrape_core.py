@@ -291,9 +291,6 @@ async def process_offers(page: Page, conn, offer_urls: list[str], browser=None, 
                 "experience": sanitize_string(experience),
                 "employment_type": sanitize_string(employment_type),
                 "operating_mode": sanitize_string(operating_mode),
-                "experience": sanitize_string(experience),
-                "employment_type": sanitize_string(employment_type),
-                "operating_mode": sanitize_string(operating_mode),
                 "tech_stack": sanitize_string(tech_stack_formatted),
                 "description": sanitize_string(description)
             }

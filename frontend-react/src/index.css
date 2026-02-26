@@ -375,3 +375,12 @@ h3 {
 .pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Hover styles for elements that can't use inline :hover */
+.suggestion-item:hover {
+    background: var(--border);
+}
+
+.select-option:hover {
+    background: var(--border);
+}

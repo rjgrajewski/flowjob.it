@@ -1,8 +1,11 @@
+import logging
 import os
 import asyncpg
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 _db_pool: asyncpg.Pool = None
 
@@ -10,7 +13,6 @@ async def init_db_pool():
     global _db_pool
     secret_arn = os.getenv("SECRET_ARN")
     if secret_arn:
-        # Fallback to AWS_BEDROCK_ACCESS_KEY if standard AWS credentials are not set
         if not os.getenv("AWS_ACCESS_KEY_ID") and os.getenv("AWS_BEDROCK_ACCESS_KEY"):
             os.environ["AWS_ACCESS_KEY_ID"] = os.getenv("AWS_BEDROCK_ACCESS_KEY")
         if not os.getenv("AWS_SECRET_ACCESS_KEY") and os.getenv("AWS_BEDROCK_SECRET_ACCESS_KEY"):
@@ -22,7 +24,7 @@ async def init_db_pool():
             from src.scout.aws_secrets import setup_database_credentials_from_secrets
             setup_database_credentials_from_secrets(secret_arn)
         except Exception as e:
-            print(f"Failed to load secrets from AWS: {e}")
+            logger.error("Failed to load secrets from AWS: %s", e)
 
     user = os.getenv("AWS_DB_USERNAME")
     password = os.getenv("AWS_DB_PASSWORD")

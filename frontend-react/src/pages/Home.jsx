@@ -57,7 +57,7 @@ export default function Home() {
                             I built flowjob to scratch my own itch. It's a non-profit hobby project designed to map your real skills, block the tech you hate, and match you with jobs using straightforward data—no corporate BS.
                         </p>
                         <div style={styles.heroCtas}>
-                            <Link to="/register" className="btn btn-primary" style={{ fontSize: '1rem', padding: '0.8rem 2rem' }}>
+                            <Link to="/register?tab=login" className="btn btn-primary" style={{ fontSize: '1rem', padding: '0.8rem 2rem' }}>
                                 Get Started →
                             </Link>
                             <Link to="/jobs" className="btn btn-ghost" style={{ fontSize: '1rem', padding: '0.8rem 1.5rem' }}>

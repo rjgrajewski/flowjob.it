@@ -33,11 +33,8 @@ export default function Navbar() {
                     flow<span style={styles.logoAccent}>job</span>
                 </NavLink>
 
-                {/* Nav Links */}
+                {/* Nav Links (authenticated users only) */}
                 <nav style={styles.nav}>
-                    <NavLink to="/" end style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
-                        Home
-                    </NavLink>
                     {user && (
                         <>
                             <NavLink to="/jobs" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
@@ -51,11 +48,6 @@ export default function Navbar() {
                             </NavLink>
                         </>
                     )}
-                    {!user && (
-                        <NavLink to="/register" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
-                            Sign In
-                        </NavLink>
-                    )}
                 </nav>
 
                 {/* Right side */}
@@ -68,7 +60,7 @@ export default function Navbar() {
                             </button>
                         </div>
                     ) : (
-                        <NavLink to="/register" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '0.5rem 1.2rem' }}>
+                        <NavLink to="/register?tab=login" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '0.5rem 1.2rem' }}>
                             Get Started →
                         </NavLink>
                     )}

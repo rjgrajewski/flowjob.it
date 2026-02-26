@@ -1,8 +1,6 @@
 // Sparkle effect — simple ReactBits-style sparkle for Job Board
 import { motion } from 'framer-motion';
 
-const SPARKLE_COUNT = 8;
-
 function Sparkle({ size, style }) {
     return (
         <motion.svg

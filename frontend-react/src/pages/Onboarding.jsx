@@ -300,7 +300,7 @@ export default function Onboarding() {
                     {uniSuggestions.length > 0 && (
                         <div style={styles.suggestions}>
                             {uniSuggestions.map((s, i) => (
-                                <div key={i} style={styles.suggestion} onClick={() => {
+                                <div key={i} className="suggestion-item" style={styles.suggestion} onClick={() => {
                                     setTempEdu({ ...tempEdu, school_name: s });
                                     setUniQuery(s);
                                     setUniSuggestions([]);
@@ -595,59 +595,5 @@ const styles = {
         cursor: 'pointer',
         fontSize: '0.85rem',
         borderBottom: '1px solid var(--border)',
-        '&:hover': {
-            background: 'var(--border)'
-        }
-    },
-    pickerPopup: {
-        position: 'absolute',
-        bottom: '100%',
-        left: 0,
-        width: '240px',
-        background: 'rgba(20,20,20,0.95)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-md)',
-        padding: '1rem',
-        zIndex: 100,
-        marginBottom: '0.5rem',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-    },
-    pickerHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '1rem',
-    },
-    pickerArrow: {
-        background: 'none',
-        border: 'none',
-        color: 'var(--accent-cyan)',
-        fontSize: '1.2rem',
-        cursor: 'pointer',
-        padding: '0 0.5rem',
-    },
-    yearSelect: {
-        background: 'none',
-        border: 'none',
-        color: '#fff',
-        fontSize: '1rem',
-        fontWeight: '600',
-        cursor: 'pointer',
-        textAlign: 'center',
-    },
-    monthGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '0.5rem',
-    },
-    monthItem: {
-        padding: '0.4rem',
-        textAlign: 'center',
-        fontSize: '0.8rem',
-        borderRadius: 'var(--radius-sm)',
-        cursor: 'pointer',
-        transition: 'all 0.2s',
-        border: '1px solid rgba(255,255,255,0.05)',
     }
 };

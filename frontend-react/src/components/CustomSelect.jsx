@@ -53,6 +53,7 @@ export default function CustomSelect({ label, value, options, onChange, placehol
                         style={styles.dropdown}
                     >
                         <li
+                            className="select-option"
                             style={{
                                 ...styles.option,
                                 color: !value ? 'var(--accent-cyan)' : 'var(--text-primary)',
@@ -68,6 +69,7 @@ export default function CustomSelect({ label, value, options, onChange, placehol
                         {options.map((option) => (
                             <li
                                 key={option}
+                                className="select-option"
                                 style={{
                                     ...styles.option,
                                     color: value === option ? 'var(--accent-cyan)' : 'var(--text-primary)',
@@ -144,8 +146,5 @@ const styles = {
         fontSize: '0.9rem',
         cursor: 'pointer',
         transition: 'all 0.15s ease',
-        '&:hover': {
-            background: 'var(--border)',
-        }
     }
 };

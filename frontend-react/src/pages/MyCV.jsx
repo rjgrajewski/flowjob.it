@@ -389,7 +389,8 @@ export default function MyCV() {
                 const user = auth.getUser();
                 const storedProfile = localStorage.getItem('flowjob_profile');
 
-                // Pokazuj od razu z localStorage (szybszy first paint), ale gdy użytkownik zalogowany – zawsze pobierz świeże dane z API (jedna baza, ta sama prawda na localhost i domenie)
+                // Show cached data from localStorage immediately for faster first paint,
+                // but always fetch fresh data from API when user is logged in
                 if (storedProfile) {
                     try {
                         setProfileData(JSON.parse(storedProfile));

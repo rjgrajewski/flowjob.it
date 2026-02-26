@@ -1,5 +1,3 @@
-// Services — mirrors old vanilla JS services but as ES modules for React
-
 const BASE = '/api';
 const AUTH_TIMEOUT_MS = 15000;
 
@@ -10,6 +8,24 @@ function parseDetail(detail) {
         return first?.msg || first?.loc?.join('. ') || JSON.stringify(first);
     }
     return null;
+}
+
+function getAuthHeaders() {
+    const token = localStorage.getItem('flowjob_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+}
+
+function handleUnauthorized(res) {
+    if (res.status === 401) {
+        localStorage.removeItem('flowjob_user');
+        localStorage.removeItem('flowjob_token');
+        localStorage.removeItem('flowjob_profile');
+        localStorage.removeItem('flowjob_onboarding_done');
+        window.location.href = '/register';
+    }
+    return res;
 }
 
 function fetchWithTimeout(url, options = {}, timeoutMs = AUTH_TIMEOUT_MS) {
@@ -32,18 +48,20 @@ export const api = {
     },
     saveUserCV: async (userId, cvData) => {
         if (!userId) return { success: false };
-        const res = await fetch(`${BASE}/users/${userId}/skills`, {
+        const res = handleUnauthorized(await fetch(`${BASE}/users/${userId}/skills`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify(cvData)
-        });
+        }));
         if (!res.ok) throw new Error('Failed to save skills');
         return res.json();
     },
     getUserCV: async (userId) => {
         if (!userId) return { skills: [], antiSkills: [], highlightedSkills: [] };
         try {
-            const res = await fetch(`${BASE}/users/${userId}/skills`);
+            const res = handleUnauthorized(await fetch(`${BASE}/users/${userId}/skills`, {
+                headers: getAuthHeaders(),
+            }));
             if (!res.ok) throw new Error('Failed to fetch user skills');
             return await res.json();
         } catch (e) {
@@ -64,19 +82,20 @@ export const auth = {
                 body: JSON.stringify({ email, password }),
             });
         } catch (e) {
-            if (e.name === 'AbortError') throw new Error('Serwer nie odpowiada. Sprawdź, czy backend działa (port 8000).');
-            throw new Error(e.message || 'Błąd połączenia');
+            if (e.name === 'AbortError') throw new Error('Server is not responding. Make sure the backend is running (port 8000).');
+            throw new Error(e.message || 'Connection error');
         }
         if (!res.ok) {
             const text = await res.text();
             const err = (() => { try { return JSON.parse(text); } catch { return {}; } })();
             const fallback = res.status === 502 || res.status === 503
-                ? 'Backend nie działa. Uruchom w drugim terminalu: cd aligno && python3 -m uvicorn backend.main:app --reload --port 8000'
-                : `Logowanie nie powiodło się (${res.status})`;
+                ? 'Backend is not running. Start it in another terminal: cd aligno && python3 -m uvicorn backend.main:app --reload --port 8000'
+                : `Login failed (${res.status})`;
             const msg = parseDetail(err.detail) || fallback;
             throw new Error(msg);
         }
         const user = await res.json();
+        if (user.token) localStorage.setItem('flowjob_token', user.token);
         localStorage.setItem('flowjob_user', JSON.stringify(user));
         return user;
     },
@@ -92,24 +111,26 @@ export const auth = {
                 }),
             });
         } catch (e) {
-            if (e.name === 'AbortError') throw new Error('Serwer nie odpowiada. Upewnij się, że backend działa (port 8000).');
-            throw new Error(e.message || 'Błąd połączenia');
+            if (e.name === 'AbortError') throw new Error('Server is not responding. Make sure the backend is running (port 8000).');
+            throw new Error(e.message || 'Connection error');
         }
         if (!res.ok) {
             const text = await res.text();
             const err = (() => { try { return JSON.parse(text); } catch { return {}; } })();
             const fallback = res.status === 502 || res.status === 503
-                ? 'Backend nie działa. Uruchom w drugim terminalu: cd aligno && python3 -m uvicorn backend.main:app --reload --port 8000'
-                : `Rejestracja nie powiodła się (${res.status})`;
+                ? 'Backend is not running. Start it in another terminal: cd aligno && python3 -m uvicorn backend.main:app --reload --port 8000'
+                : `Registration failed (${res.status})`;
             const msg = parseDetail(err.detail) || fallback;
             throw new Error(msg);
         }
         const user = await res.json();
+        if (user.token) localStorage.setItem('flowjob_token', user.token);
         localStorage.setItem('flowjob_user', JSON.stringify(user));
         return user;
     },
     logout: () => {
         localStorage.removeItem('flowjob_user');
+        localStorage.removeItem('flowjob_token');
         localStorage.removeItem('flowjob_profile');
         localStorage.removeItem('flowjob_onboarding_done');
     },
@@ -117,7 +138,9 @@ export const auth = {
     getOnboarding: async (userId) => {
         if (!userId) return null;
         try {
-            const res = await fetch(`${BASE}/users/${userId}/onboarding`);
+            const res = handleUnauthorized(await fetch(`${BASE}/users/${userId}/onboarding`, {
+                headers: getAuthHeaders(),
+            }));
             if (!res.ok) {
                 if (res.status === 404) return null;
                 throw new Error('Failed to fetch user profile');
@@ -134,20 +157,19 @@ export const auth = {
     },
     async completeOnboarding(profileData) {
         const user = this.getUser();
-        if (!user?.id) throw new Error('Nie znaleziono zalogowanego użytkownika.');
+        if (!user?.id) throw new Error('No authenticated user found.');
 
-        const res = await fetch(`${BASE}/users/${user.id}/onboarding`, {
+        const res = handleUnauthorized(await fetch(`${BASE}/users/${user.id}/onboarding`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify(profileData)
-        });
+        }));
 
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            throw new Error(parseDetail(err.detail) || 'Nie udało się zapisać profilu.');
+            throw new Error(parseDetail(err.detail) || 'Failed to save profile.');
         }
 
-        // Update local state
         const updatedUser = { ...user, onboarding_completed: true };
         localStorage.setItem('flowjob_user', JSON.stringify(updatedUser));
         localStorage.setItem('flowjob_profile', JSON.stringify(profileData));

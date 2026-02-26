@@ -118,7 +118,8 @@ export default function JobBoard() {
 
         setInitialSortConfig(sorted.map(s => s.id));
         // ONLY run when these arrays change length to avoid infinite re-renders on skill click
-    }, [jobs.length, locationFilter, operatingModeFilter, employmentTypeFilter, initialLoadDone.current]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [jobs.length, locationFilter, operatingModeFilter, employmentTypeFilter]);
 
     const filteredJobs = useMemo(() => {
         return jobs
@@ -160,7 +161,7 @@ export default function JobBoard() {
                             {loading ? 'Loading...' : (
                                 <>
                                     Found <strong style={{ color: 'var(--text-primary)' }}>{filteredJobs.length}</strong> offers
-                                    {antiSkills.length > 0 && blockedCount > 0 && (
+                                    {antiSkills.size > 0 && blockedCount > 0 && (
                                         <> · <span style={{ color: 'var(--accent-red)' }}>{blockedCount} blocked</span> by anti-skills</>
                                     )}
                                 </>

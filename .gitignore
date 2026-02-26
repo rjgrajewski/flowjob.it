@@ -6,10 +6,17 @@ __pycache__/
 venv/
 aws/
 
-# Generated deployment files
+# Generated deployment/build artifacts
 aws/deployment/scraper/ecs-task-definition.json
 aws/deployment/scraper/task-role-policy.json
 aws/deployment/scraper/execution-role-policy.json
+.aws-sam/
+frontend-react/dist/
+
+# Personal data dumps
+rafal_data.json
+current_onboarding.json
+
 *.pyc
 *.pyo
 *.pyd

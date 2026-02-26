@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auth } from '../services/api.js';
 
@@ -16,11 +16,18 @@ function getPasswordRequirements(password) {
 }
 
 export default function Register() {
-    const [tab, setTab] = useState('register'); // 'register' | 'login'
+    const location = useLocation();
+    const getTabFromSearch = (search) => new URLSearchParams(search).get('tab') === 'login' ? 'login' : 'register';
+    const [tab, setTab] = useState(() => getTabFromSearch(location.search)); // 'register' | 'login'
     const [form, setForm] = useState({ email: '', password: '', passwordConfirm: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        setTab(getTabFromSearch(location.search));
+        setError('');
+    }, [location.search]);
 
     const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
