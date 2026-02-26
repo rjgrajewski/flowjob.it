@@ -75,6 +75,7 @@ class UserProfile(BaseModel):
     location: Optional[str] = None
     bio: Optional[str] = None
     profile_picture: Optional[str] = None
+    data_processing_clause: Optional[str] = None
 
 class OnboardingRequest(BaseModel):
     profile: UserProfile

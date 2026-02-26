@@ -15,6 +15,8 @@ Font.register({
 });
 Font.registerHyphenationCallback(word => [word]);
 
+const DEFAULT_DATA_PROCESSING_CLAUSE = 'I hereby give consent for my personal data included in my application to be processed for the purposes of the recruitment process.';
+
 const CVDocument = ({ profileData, skillsData }) => {
     const { profile, education, experience } = profileData;
     const primaryColor = '#00e5ff'; // Flowjob primary brand color
@@ -345,6 +347,28 @@ const CVDocument = ({ profileData, skillsData }) => {
                         ) : null}
                     </View>
                 </View>
+
+                {/* Data processing clause – fixed footer at bottom of each page (no extra page, may overlap bottom margin) */}
+                <View
+                    fixed
+                    style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        paddingHorizontal: 40,
+                        paddingTop: 10,
+                        paddingBottom: 14,
+                        borderTopWidth: 1,
+                        borderTopColor: '#e2e8f0',
+                        backgroundColor: '#ffffff',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Text style={{ fontSize: 8, color: '#475569', fontStyle: 'italic', lineHeight: 1.35, textAlign: 'center' }}>
+                        {profile?.data_processing_clause?.trim() || DEFAULT_DATA_PROCESSING_CLAUSE}
+                    </Text>
+                </View>
             </Page>
         </Document>
     );
@@ -358,29 +382,26 @@ export default function MyCV() {
 
     useEffect(() => {
         const loadCVData = async () => {
-            // ...
             try {
-                // Get profile from local storage
+                const user = auth.getUser();
                 const storedProfile = localStorage.getItem('flowjob_profile');
-                let userProfileData = null;
 
+                // Pokazuj od razu z localStorage (szybszy first paint), ale gdy użytkownik zalogowany – zawsze pobierz świeże dane z API (jedna baza, ta sama prawda na localhost i domenie)
                 if (storedProfile) {
-                    userProfileData = JSON.parse(storedProfile);
-                    setProfileData(userProfileData);
+                    try {
+                        setProfileData(JSON.parse(storedProfile));
+                    } catch (_) {}
                 }
 
-                // Get skills from API
-                const user = auth.getUser();
                 if (user && user.id) {
-                    if (!userProfileData) {
-                        const fetchedProfileData = await auth.getOnboarding(user.id);
-                        if (fetchedProfileData && fetchedProfileData.profile) {
-                            setProfileData(fetchedProfileData);
-                            localStorage.setItem('flowjob_profile', JSON.stringify(fetchedProfileData));
-                        }
+                    const [fetchedProfileData, cv] = await Promise.all([
+                        auth.getOnboarding(user.id),
+                        api.getUserCV(user.id)
+                    ]);
+                    if (fetchedProfileData && fetchedProfileData.profile) {
+                        setProfileData(fetchedProfileData);
+                        localStorage.setItem('flowjob_profile', JSON.stringify(fetchedProfileData));
                     }
-
-                    const cv = await api.getUserCV(user.id);
                     setSkillsData(cv);
                 }
             } catch (err) {

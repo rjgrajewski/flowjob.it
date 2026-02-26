@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { YearPicker } from './YearPicker.jsx';
 
+const DEFAULT_DATA_PROCESSING_CLAUSE = 'I hereby give consent for my personal data included in my application to be processed for the purposes of the recruitment process.';
+
 export const CVEditorTabs = ({ profileData, setProfileData, onSave, saving }) => {
     const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'experience', 'education'
 
@@ -193,6 +195,18 @@ export const CVEditorTabs = ({ profileData, setProfileData, onSave, saving }) =>
                     style={styles.input}
                     value={profileData.profile?.location || ''}
                     onChange={e => handleProfileChange('location', e.target.value)}
+                />
+            </div>
+            <div style={{ ...styles.inputGroup, marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px dashed var(--border)' }}>
+                <label style={{ ...styles.label, fontWeight: 600 }}>Data processing clause (footer on each page)</label>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', marginTop: 0 }}>
+                    This text appears at the bottom of every PDF page. You can change it or keep the default.
+                </p>
+                <textarea
+                    style={{ ...styles.input, height: '88px', resize: 'vertical' }}
+                    value={profileData.profile?.data_processing_clause ?? DEFAULT_DATA_PROCESSING_CLAUSE}
+                    onChange={e => handleProfileChange('data_processing_clause', e.target.value)}
+                    placeholder={DEFAULT_DATA_PROCESSING_CLAUSE}
                 />
             </div>
         </div>

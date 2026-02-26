@@ -136,8 +136,8 @@ class UserRepository:
                 # 1. Update/Insert Profile
                 await conn.execute(
                     """
-                    INSERT INTO user_profiles (user_id, first_name, last_name, phone_number, contact_email, location, bio, profile_picture)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                    INSERT INTO user_profiles (user_id, first_name, last_name, phone_number, contact_email, location, bio, profile_picture, data_processing_clause)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                     ON CONFLICT (user_id) DO UPDATE SET
                         first_name = EXCLUDED.first_name,
                         last_name = EXCLUDED.last_name,
@@ -146,6 +146,7 @@ class UserRepository:
                         location = EXCLUDED.location,
                         bio = EXCLUDED.bio,
                         profile_picture = EXCLUDED.profile_picture,
+                        data_processing_clause = EXCLUDED.data_processing_clause,
                         updated_at = CURRENT_TIMESTAMP
                     """,
                     user_id,
@@ -155,7 +156,8 @@ class UserRepository:
                     data.profile.contact_email,
                     data.profile.location,
                     data.profile.bio,
-                    data.profile.profile_picture
+                    data.profile.profile_picture,
+                    getattr(data.profile, 'data_processing_clause', None)
                 )
 
                 # 2. Update Education (Delete old, insert new)
@@ -198,7 +200,7 @@ class UserRepository:
     async def get_onboarding_full(self, user_id: str) -> dict:
         async with self.pool.acquire() as conn:
             profile_row = await conn.fetchrow(
-                "SELECT first_name, last_name, phone_number, contact_email, location, bio, profile_picture FROM user_profiles WHERE user_id = $1",
+                "SELECT first_name, last_name, phone_number, contact_email, location, bio, profile_picture, data_processing_clause FROM user_profiles WHERE user_id = $1",
                 user_id
             )
             
