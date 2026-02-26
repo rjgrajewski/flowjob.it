@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { api, auth } from '../services/api.js';
-import { Document, Page, Text, View, StyleSheet, PDFViewer, Svg, Path, Font, PDFDownloadLink } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, PDFViewer, Svg, Path, Font, PDFDownloadLink, Image } from '@react-pdf/renderer';
 
 import { CVEditorTabs } from '../components/CVEditorTabs.jsx';
 
@@ -9,9 +9,11 @@ Font.register({
     family: 'Roboto',
     fonts: [
         { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf', fontWeight: 400 },
+        { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-italic-webfont.ttf', fontWeight: 400, fontStyle: 'italic' },
         { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-bold-webfont.ttf', fontWeight: 700 }
     ]
 });
+Font.registerHyphenationCallback(word => [word]);
 
 const CVDocument = ({ profileData, skillsData }) => {
     const { profile, education, experience } = profileData;
@@ -26,15 +28,34 @@ const CVDocument = ({ profileData, skillsData }) => {
             backgroundColor: '#ffffff',
             color: '#334155',
             lineHeight: 1.6,
+            paddingBottom: 40,
+            paddingTop: 0,
         },
         headerBlock: {
             backgroundColor: darkBg,
-            paddingTop: 45,
+            paddingTop: 40,
             paddingBottom: 35,
             paddingHorizontal: 50,
-            flexDirection: 'column',
+            flexDirection: 'row',
             alignItems: 'center',
             color: '#f8fafc',
+            gap: 30,
+        },
+        headerTextContainer: {
+            flex: 1,
+            flexDirection: 'column',
+            justifyContent: 'center',
+        },
+        profileImageContainer: {
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            overflow: 'hidden',
+        },
+        profileImage: {
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
         },
         name: {
             fontSize: 32,
@@ -42,23 +63,26 @@ const CVDocument = ({ profileData, skillsData }) => {
             color: '#ffffff',
             textTransform: 'uppercase',
             letterSpacing: 2,
-            marginBottom: 8,
+            marginBottom: 22,
         },
         headerSubtitle: {
-            fontSize: 14,
-            color: primaryColor,
+            fontSize: 12,
+            color: '#e2e8f0',
             fontWeight: 400,
-            letterSpacing: 1.5,
+            fontStyle: 'italic',
+            lineHeight: 1.5,
             marginBottom: 20,
-            textTransform: 'uppercase',
+            paddingRight: 40,
+            textAlign: 'justify',
         },
         contactInfoBox: {
             flexDirection: 'row',
             flexWrap: 'wrap',
-            justifyContent: 'center',
+            justifyContent: 'flex-start',
             gap: 20,
             color: '#cbd5e1',
             fontSize: 10,
+            lineHeight: 1,
         },
         contactItem: {
             flexDirection: 'row',
@@ -68,7 +92,7 @@ const CVDocument = ({ profileData, skillsData }) => {
         bodyContent: {
             flexDirection: 'row',
             paddingTop: 35,
-            paddingBottom: 40,
+            paddingBottom: 0,
             paddingHorizontal: 40,
             gap: 30,
         },
@@ -90,7 +114,7 @@ const CVDocument = ({ profileData, skillsData }) => {
             fontWeight: 700,
             textTransform: 'uppercase',
             color: darkBg,
-            marginBottom: 12,
+            marginBottom: 8,
             letterSpacing: 1.2,
             borderBottomWidth: 2,
             borderBottomColor: primaryColor,
@@ -103,16 +127,13 @@ const CVDocument = ({ profileData, skillsData }) => {
             textAlign: 'justify',
         },
         timelineItem: {
-            marginBottom: 16,
-            paddingLeft: 12,
-            borderLeftWidth: 2,
-            borderLeftColor: '#e2e8f0',
+            marginBottom: 8,
         },
         jobHeader: {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'baseline',
-            marginBottom: 3,
+            marginBottom: 0,
         },
         jobTitle: {
             fontSize: 12,
@@ -127,15 +148,16 @@ const CVDocument = ({ profileData, skillsData }) => {
             letterSpacing: 0.5,
         },
         companyName: {
-            fontSize: 10,
+            fontSize: 11,
             color: '#64748b',
-            fontWeight: 700,
-            marginBottom: 6,
+            fontWeight: 400,
         },
         description: {
-            fontSize: 10,
+            fontSize: 9,
             color: '#475569',
-            lineHeight: 1.5,
+            lineHeight: 1.3,
+            textAlign: 'justify',
+            marginTop: -2,
         },
         skillsList: {
             flexDirection: 'row',
@@ -184,48 +206,58 @@ const CVDocument = ({ profileData, skillsData }) => {
         }
     }), []);
 
-    // Helper to determine a subtitle from the latest experience or default
-    const subtitle = (experience && experience.length > 0 && experience[0].job_title)
-        ? experience[0].job_title
-        : "Professional Profile";
+    // Helper to determine a subtitle from the hook (bio) or default
+    const subtitle = profile?.bio || "Professional Profile";
 
     return (
         <Document>
             <Page size="A4" style={styles.page}>
+                {/* Secured Top Margin for secondary pages */}
+                <View fixed render={({ pageNumber }) => (
+                    pageNumber > 1 ? <View style={{ height: 40 }} /> : null
+                )} />
+
                 {/* Modern Dark Header block */}
                 <View style={styles.headerBlock}>
-                    <Text style={styles.name}>
-                        {profile?.first_name || ''} {profile?.last_name || ''}
-                    </Text>
-                    <Text style={styles.headerSubtitle}>
-                        {subtitle || ''}
-                    </Text>
-                    <View style={styles.contactInfoBox}>
-                        {profile?.location ? (
-                            <View style={styles.contactItem}>
-                                <Svg viewBox="0 0 24 24" width="12" height="12">
-                                    <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </Svg>
-                                <Text>{profile.location}</Text>
-                            </View>
-                        ) : null}
-                        {profile?.phone_number ? (
-                            <View style={styles.contactItem}>
-                                <Svg viewBox="0 0 24 24" width="12" height="12">
-                                    <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                </Svg>
-                                <Text>{profile.phone_number}</Text>
-                            </View>
-                        ) : null}
-                        {profile?.contact_email ? (
-                            <View style={styles.contactItem}>
-                                <Svg viewBox="0 0 24 24" width="12" height="12">
-                                    <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </Svg>
-                                <Text>{profile.contact_email}</Text>
-                            </View>
-                        ) : null}
+                    {profile?.profile_picture ? (
+                        <View style={styles.profileImageContainer}>
+                            <Image style={styles.profileImage} src={profile.profile_picture} />
+                        </View>
+                    ) : null}
+                    <View style={styles.headerTextContainer}>
+                        <Text style={styles.name}>
+                            {profile?.first_name || ''} {profile?.last_name || ''}
+                        </Text>
+                        <Text style={styles.headerSubtitle}>
+                            {subtitle || ''}
+                        </Text>
+                        <View style={styles.contactInfoBox}>
+                            {profile?.location ? (
+                                <View style={styles.contactItem}>
+                                    <Svg viewBox="0 0 24 24" width="10" height="10">
+                                        <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </Svg>
+                                    <Text>{profile.location}</Text>
+                                </View>
+                            ) : null}
+                            {profile?.phone_number ? (
+                                <View style={styles.contactItem}>
+                                    <Svg viewBox="0 0 24 24" width="10" height="10">
+                                        <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                    </Svg>
+                                    <Text>{profile.phone_number?.replace(/(\+\d{2})?(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4').trim()}</Text>
+                                </View>
+                            ) : null}
+                            {profile?.contact_email ? (
+                                <View style={styles.contactItem}>
+                                    <Svg viewBox="0 0 24 24" width="10" height="10">
+                                        <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </Svg>
+                                    <Text>{profile.contact_email}</Text>
+                                </View>
+                            ) : null}
+                        </View>
                     </View>
                 </View>
 
@@ -233,33 +265,36 @@ const CVDocument = ({ profileData, skillsData }) => {
                 <View style={styles.bodyContent}>
                     {/* Left Column (Main content) */}
                     <View style={styles.mainColumn}>
-                        {profile?.bio ? (
-                            <View style={styles.section} wrap={false}>
-                                <Text style={styles.sectionTitle}>Profile Summary</Text>
-                                <Text style={styles.bioText}>{profile.bio}</Text>
-                            </View>
-                        ) : null}
 
                         {experience && experience.length > 0 ? (
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>Experience</Text>
-                                {experience.map((exp, idx) => {
-                                    const startYear = exp.start_date ? String(exp.start_date).substring(0, 4) : '';
-                                    const endYear = exp.end_date ? String(exp.end_date).substring(0, 4) : '';
+                                {[...experience]
+                                    .sort((a, b) => {
+                                        if (a.is_current && !b.is_current) return -1;
+                                        if (!a.is_current && b.is_current) return 1;
+                                        return new Date(b.start_date) - new Date(a.start_date);
+                                    })
+                                    .map((exp, idx) => {
+                                        const startYear = exp.start_date ? String(exp.start_date).substring(0, 4) : '';
+                                        const endYear = exp.end_date ? String(exp.end_date).substring(0, 4) : '';
 
-                                    return (
-                                        <View key={idx} style={styles.timelineItem} wrap={false}>
-                                            <View style={styles.jobHeader}>
-                                                <Text style={styles.jobTitle}>{exp.job_title || ''}</Text>
-                                                <Text style={styles.dateRange}>
-                                                    {startYear} — {exp.is_current ? 'Present' : endYear}
-                                                </Text>
+                                        return (
+                                            <View key={idx} style={styles.timelineItem} wrap={false}>
+                                                <View style={styles.jobHeader}>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                                                        <Text style={styles.jobTitle}>{exp.job_title || ''}</Text>
+                                                        <Text style={{ fontSize: 10, color: '#e2e8f0' }}>|</Text>
+                                                        <Text style={styles.companyName}>{exp.company_name || ''}</Text>
+                                                    </View>
+                                                    <Text style={styles.dateRange}>
+                                                        {startYear} — {exp.is_current ? 'Present' : endYear}
+                                                    </Text>
+                                                </View>
+                                                {exp.description ? <Text style={styles.description}>{exp.description}</Text> : null}
                                             </View>
-                                            <Text style={styles.companyName}>{exp.company_name || ''}</Text>
-                                            {exp.description ? <Text style={styles.description}>{exp.description}</Text> : null}
-                                        </View>
-                                    );
-                                })}
+                                        );
+                                    })}
                             </View>
                         ) : null}
                     </View>
@@ -271,7 +306,7 @@ const CVDocument = ({ profileData, skillsData }) => {
                                 <Text style={styles.sectionTitle}>Skills</Text>
                                 <View style={styles.skillsList}>
                                     {skillsData.skills.slice(0, maxSkills).map(skill => (
-                                        <View key={skill} style={styles.skillTagWrapper}>
+                                        <View key={skill} style={styles.skillTagWrapper} wrap={false}>
                                             <Text style={styles.skillTagText}>
                                                 {skill}
                                             </Text>
@@ -284,14 +319,16 @@ const CVDocument = ({ profileData, skillsData }) => {
                         {education && education.length > 0 ? (
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>Education</Text>
-                                {education.map((edu, idx) => (
-                                    <View key={idx} style={styles.eduItem} wrap={false}>
-                                        <Text style={styles.eduDegree}>{edu.field_of_study || ''}</Text>
-                                        <Text style={styles.eduSchool}>{edu.school_name || ''}</Text>
-                                        {edu.specialization ? <Text style={styles.eduSpecialization}>{edu.specialization}</Text> : null}
-                                        {edu.graduation_year ? <Text style={styles.eduYear}>{String(edu.graduation_year)}</Text> : null}
-                                    </View>
-                                ))}
+                                {[...education]
+                                    .sort((a, b) => (b.graduation_year || 0) - (a.graduation_year || 0))
+                                    .map((edu, idx) => (
+                                        <View key={idx} style={styles.eduItem} wrap={false}>
+                                            <Text style={styles.eduDegree}>{edu.field_of_study || ''}</Text>
+                                            <Text style={styles.eduSchool}>{edu.school_name || ''}</Text>
+                                            {edu.specialization ? <Text style={styles.eduSpecialization}>{edu.specialization}</Text> : null}
+                                            {edu.graduation_year ? <Text style={styles.eduYear}>{String(edu.graduation_year)}</Text> : null}
+                                        </View>
+                                    ))}
                             </View>
                         ) : null}
                     </View>
@@ -372,7 +409,7 @@ export default function MyCV() {
             }
         } catch (e) {
             console.error('Error saving CV:', e);
-            alert('Error saving CV. Please try again.');
+            alert(e.message || 'Error saving CV. Please try again.');
         } finally {
             setSaving(false);
         }

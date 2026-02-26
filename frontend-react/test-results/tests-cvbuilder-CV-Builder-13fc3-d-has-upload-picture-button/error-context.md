@@ -1,0 +1,55 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "flowjob" [ref=e5] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=e6]:
+        - link "Home" [ref=e7] [cursor=pointer]:
+          - /url: /
+        - link "Sign In" [ref=e8] [cursor=pointer]:
+          - /url: /register
+      - link "Get Started →" [ref=e10] [cursor=pointer]:
+        - /url: /register
+  - main [ref=e11]:
+    - generic [ref=e12]:
+      - generic [ref=e14]:
+        - generic [ref=e15]: flowjob
+        - heading "Your career, on your terms." [level=2] [ref=e16]:
+          - text: Your career,
+          - text: on your terms.
+        - paragraph [ref=e17]: Map your skills, set your boundaries, and get matched with jobs you'll actually want to take.
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - button "Create Account" [ref=e21] [cursor=pointer]
+          - button "Sign In" [ref=e22] [cursor=pointer]
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - generic [ref=e25]: Email
+            - textbox "jan@example.com" [ref=e26]
+          - generic [ref=e27]:
+            - generic [ref=e28]: Password
+            - textbox "••••••••" [ref=e29]
+            - generic [ref=e30]:
+              - generic [ref=e31]:
+                - generic [ref=e32]: ○
+                - generic [ref=e33]: Minimum 8 characters
+              - generic [ref=e34]:
+                - generic [ref=e35]: ○
+                - generic [ref=e36]: Uppercase letter
+              - generic [ref=e37]:
+                - generic [ref=e38]: ○
+                - generic [ref=e39]: Lowercase letter
+              - generic [ref=e40]:
+                - generic [ref=e41]: ○
+                - generic [ref=e42]: Number
+              - generic [ref=e43]:
+                - generic [ref=e44]: ○
+                - generic [ref=e45]: Special character
+          - generic [ref=e46]:
+            - generic [ref=e47]: Confirm Password
+            - textbox "••••••••" [ref=e48]
+          - button "Create Account →" [disabled] [ref=e49] [cursor=pointer]
+```

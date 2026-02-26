@@ -47,8 +47,15 @@ export default function Onboarding() {
     const [phoneData, setPhoneData] = useState({ areaCode: '+48', number: '' });
 
     const handlePhoneChange = (e) => {
-        const val = e.target.value.replace(/\D/g, '');
-        const formatted = val.match(/.{1,3}/g)?.join(' ') || '';
+        const val = e.target.value.replace(/[^\d+]/g, '');
+        let formatted = val;
+        if (val.startsWith('+')) {
+            const country = val.slice(0, 3);
+            const rest = val.slice(3);
+            formatted = country + (rest ? ' ' + (rest.match(/.{1,3}/g)?.join(' ') || '') : '');
+        } else {
+            formatted = val.match(/.{1,3}/g)?.join(' ') || '';
+        }
         setPhoneData(prev => ({ ...prev, number: formatted }));
     };
 

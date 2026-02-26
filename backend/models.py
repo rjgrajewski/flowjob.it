@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import List, Optional
 from datetime import datetime, date
 from uuid import UUID
@@ -52,9 +52,18 @@ class ExperienceEntry(BaseModel):
     job_title: str
     company_name: str
     description: Optional[str] = None
-    start_date: date
+    start_date: Optional[date] = None # Make optional to handle validation manually if needed
     end_date: Optional[date] = None
     is_current: bool = False
+
+    @field_validator('start_date', 'end_date', mode='before')
+    @classmethod
+    def parse_year_only(cls, v):
+        if not v or v == "":
+            return None
+        if isinstance(v, (int, str)) and len(str(v)) == 4:
+            return f"{v}-01-01"
+        return v
 
 class UserProfile(BaseModel):
     first_name: str
@@ -63,6 +72,7 @@ class UserProfile(BaseModel):
     contact_email: Optional[str] = None
     location: Optional[str] = None
     bio: Optional[str] = None
+    profile_picture: Optional[str] = None
 
 class OnboardingRequest(BaseModel):
     profile: UserProfile

@@ -15,10 +15,50 @@ export const CVEditorTabs = ({ profileData, setProfileData, onSave, saving }) =>
         }));
     };
 
+    const handlePhotoUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_SIZE = 400;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_SIZE) {
+                        height *= MAX_SIZE / width;
+                        width = MAX_SIZE;
+                    }
+                } else {
+                    if (height > MAX_SIZE) {
+                        width *= MAX_SIZE / height;
+                        height = MAX_SIZE;
+                    }
+                }
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                handleProfileChange('profile_picture', compressedBase64);
+            };
+            img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleExperienceChange = (index, field, value) => {
-        const newExp = [...profileData.experience];
-        newExp[index] = { ...newExp[index], [field]: value };
-        setProfileData(prev => ({ ...prev, experience: newExp }));
+        setProfileData(prev => {
+            const newExp = [...(prev.experience || [])];
+            newExp[index] = { ...newExp[index], [field]: value };
+            return { ...prev, experience: newExp };
+        });
     };
 
     const addExperience = () => {
@@ -38,9 +78,11 @@ export const CVEditorTabs = ({ profileData, setProfileData, onSave, saving }) =>
     };
 
     const handleEducationChange = (index, field, value) => {
-        const newEdu = [...profileData.education];
-        newEdu[index] = { ...newEdu[index], [field]: value };
-        setProfileData(prev => ({ ...prev, education: newEdu }));
+        setProfileData(prev => {
+            const newEdu = [...(prev.education || [])];
+            newEdu[index] = { ...newEdu[index], [field]: value };
+            return { ...prev, education: newEdu };
+        });
     };
 
     const addEducation = () => {
@@ -61,24 +103,53 @@ export const CVEditorTabs = ({ profileData, setProfileData, onSave, saving }) =>
 
     const renderProfileTab = () => (
         <div style={styles.tabContent}>
-            <div style={styles.inputGroup}>
-                <label style={styles.label}>First Name</label>
-                <input
-                    style={styles.input}
-                    value={profileData.profile?.first_name || ''}
-                    onChange={e => handleProfileChange('first_name', e.target.value)}
-                />
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                <div style={{ ...styles.inputGroup, flex: 1 }}>
+                    <label style={styles.label}>Profile Picture (Square recommended)</label>
+                    <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/jpg"
+                        style={styles.fileInput}
+                        onChange={handlePhotoUpload}
+                    />
+                    {profileData.profile?.profile_picture && (
+                        <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <img
+                                src={profileData.profile.profile_picture}
+                                alt="Profile Preview"
+                                style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent-cyan)' }}
+                            />
+                            <button
+                                onClick={() => handleProfileChange('profile_picture', null)}
+                                style={styles.removeBtn}
+                            >
+                                Remove Photo
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div style={styles.row}>
+                <div style={{ ...styles.inputGroup, flex: 1 }}>
+                    <label style={styles.label}>First Name</label>
+                    <input
+                        style={styles.input}
+                        value={profileData.profile?.first_name || ''}
+                        onChange={e => handleProfileChange('first_name', e.target.value)}
+                    />
+                </div>
+                <div style={{ ...styles.inputGroup, flex: 1 }}>
+                    <label style={styles.label}>Last Name</label>
+                    <input
+                        style={styles.input}
+                        value={profileData.profile?.last_name || ''}
+                        onChange={e => handleProfileChange('last_name', e.target.value)}
+                    />
+                </div>
             </div>
             <div style={styles.inputGroup}>
-                <label style={styles.label}>Last Name</label>
-                <input
-                    style={styles.input}
-                    value={profileData.profile?.last_name || ''}
-                    onChange={e => handleProfileChange('last_name', e.target.value)}
-                />
-            </div>
-            <div style={styles.inputGroup}>
-                <label style={styles.label}>Professional Summary (Bio)</label>
+                <label style={styles.label}>Hook</label>
                 <textarea
                     style={{ ...styles.input, height: '120px', resize: 'vertical' }}
                     value={profileData.profile?.bio || ''}
@@ -99,7 +170,20 @@ export const CVEditorTabs = ({ profileData, setProfileData, onSave, saving }) =>
                     <input
                         style={styles.input}
                         value={profileData.profile?.phone_number || ''}
-                        onChange={e => handleProfileChange('phone_number', e.target.value)}
+                        onChange={e => {
+                            const val = e.target.value.replace(/[^\d+]/g, '');
+                            // Simple formatting: +48 792 847 256 or just 792 847 256
+                            let formatted = val;
+                            if (val.startsWith('+')) {
+                                const country = val.slice(0, 3);
+                                const rest = val.slice(3);
+                                formatted = country + (rest ? ' ' + (rest.match(/.{1,3}/g)?.join(' ') || '') : '');
+                            } else {
+                                formatted = val.match(/.{1,3}/g)?.join(' ') || '';
+                            }
+                            handleProfileChange('phone_number', formatted);
+                        }}
+                        placeholder="+48 792 847 256"
                     />
                 </div>
             </div>
@@ -358,6 +442,17 @@ const styles = {
         width: '100%',
         fontSize: '0.9rem',
         fontFamily: 'inherit',
+    },
+    fileInput: {
+        background: 'var(--bg-elevated)',
+        border: '1px dashed var(--border)',
+        borderRadius: 'var(--radius-md)',
+        padding: '0.5rem',
+        color: 'var(--text-secondary)',
+        width: '100%',
+        fontSize: '0.85rem',
+        fontFamily: 'inherit',
+        cursor: 'pointer',
     },
     row: {
         display: 'flex',
