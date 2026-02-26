@@ -89,7 +89,7 @@ export const CVEditorTabs = ({ profileData, setProfileData, onSave, saving }) =>
         setProfileData(prev => ({
             ...prev,
             education: [
-                { school_name: '', field_of_study: '', specialization: '', graduation_year: null },
+                { school_name: '', field_of_study: '', specialization: '', start_year: null, graduation_year: null },
                 ...(prev.education || [])
             ]
         }));
@@ -297,25 +297,25 @@ export const CVEditorTabs = ({ profileData, setProfileData, onSave, saving }) =>
                                 onChange={e => handleEducationChange(i, 'field_of_study', e.target.value)}
                             />
                         </div>
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}>Specialization (Optional)</label>
+                            <input
+                                style={styles.input}
+                                value={edu.specialization || ''}
+                                onChange={e => handleEducationChange(i, 'specialization', e.target.value)}
+                            />
+                        </div>
                         <div style={styles.row}>
-                            <div style={{ ...styles.inputGroup, flex: 1 }}>
-                                <label style={styles.label}>Specialization (Optional)</label>
-                                <input
-                                    style={styles.input}
-                                    value={edu.specialization || ''}
-                                    onChange={e => handleEducationChange(i, 'specialization', e.target.value)}
-                                />
-                            </div>
-                            <div style={{ ...styles.inputGroup, width: '120px' }}>
-                                <label style={styles.label}>Year</label>
-                                <input
-                                    type="number"
-                                    style={styles.input}
-                                    value={edu.graduation_year || ''}
-                                    onChange={e => handleEducationChange(i, 'graduation_year', e.target.value ? parseInt(e.target.value) : null)}
-                                    placeholder="YYYY"
-                                />
-                            </div>
+                            <YearPicker
+                                label="From (Year)"
+                                value={edu.start_year}
+                                onChange={val => handleEducationChange(i, 'start_year', val)}
+                            />
+                            <YearPicker
+                                label="Graduation Year"
+                                value={edu.graduation_year}
+                                onChange={val => handleEducationChange(i, 'graduation_year', val)}
+                            />
                         </div>
                     </div>
                 ))}

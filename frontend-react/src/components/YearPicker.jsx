@@ -2,9 +2,9 @@ export const YearPicker = ({ label, value, onChange, disabled }) => {
     // value is expected to be a string like "2023" or "2023-01-01"
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 40 }, (_, i) => currentYear - i);
-    
+
     // Extract just the year part for display/state
-    const displayValue = value ? value.split('-')[0] : '';
+    const displayValue = value ? String(value).split('-')[0] : '';
 
     return (
         <div style={{ flex: 1 }}>

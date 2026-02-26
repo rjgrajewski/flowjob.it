@@ -76,13 +76,11 @@ const CVDocument = ({ profileData, skillsData }) => {
             textAlign: 'justify',
         },
         contactInfoBox: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            justifyContent: 'flex-start',
-            gap: 20,
-            color: '#cbd5e1',
+            flexDirection: 'column',
+            gap: 10,
+            color: '#475569',
             fontSize: 10,
-            lineHeight: 1,
+            lineHeight: 1.4,
         },
         contactItem: {
             flexDirection: 'row',
@@ -127,12 +125,12 @@ const CVDocument = ({ profileData, skillsData }) => {
             textAlign: 'justify',
         },
         timelineItem: {
-            marginBottom: 8,
+            marginBottom: 6,
         },
         jobHeader: {
             flexDirection: 'row',
             justifyContent: 'space-between',
-            alignItems: 'baseline',
+            alignItems: 'center',
             marginBottom: 0,
         },
         jobTitle: {
@@ -157,7 +155,7 @@ const CVDocument = ({ profileData, skillsData }) => {
             color: '#475569',
             lineHeight: 1.3,
             textAlign: 'justify',
-            marginTop: -2,
+            marginTop: -4,
         },
         skillsList: {
             flexDirection: 'row',
@@ -180,29 +178,33 @@ const CVDocument = ({ profileData, skillsData }) => {
             lineHeight: 1,
         },
         eduItem: {
-            marginBottom: 12,
+            marginBottom: 8,
         },
         eduDegree: {
             fontSize: 11,
             fontWeight: 700,
             color: darkBg,
-            marginBottom: 2,
+            marginBottom: 0,
+            lineHeight: 1.1,
         },
         eduSchool: {
             fontSize: 10,
             color: '#475569',
-            marginBottom: 2,
+            marginBottom: 0,
+            lineHeight: 1.1,
         },
         eduSpecialization: {
             fontSize: 9,
             color: '#64748b',
             fontStyle: 'italic',
+            lineHeight: 1.1,
         },
         eduYear: {
             fontSize: 9,
             color: primaryColor,
             fontWeight: 700,
-            marginTop: 4,
+            marginTop: 2,
+            lineHeight: 1.1,
         }
     }), []);
 
@@ -231,33 +233,6 @@ const CVDocument = ({ profileData, skillsData }) => {
                         <Text style={styles.headerSubtitle}>
                             {subtitle || ''}
                         </Text>
-                        <View style={styles.contactInfoBox}>
-                            {profile?.location ? (
-                                <View style={styles.contactItem}>
-                                    <Svg viewBox="0 0 24 24" width="10" height="10">
-                                        <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </Svg>
-                                    <Text>{profile.location}</Text>
-                                </View>
-                            ) : null}
-                            {profile?.phone_number ? (
-                                <View style={styles.contactItem}>
-                                    <Svg viewBox="0 0 24 24" width="10" height="10">
-                                        <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                    </Svg>
-                                    <Text>{profile.phone_number?.replace(/(\+\d{2})?(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4').trim()}</Text>
-                                </View>
-                            ) : null}
-                            {profile?.contact_email ? (
-                                <View style={styles.contactItem}>
-                                    <Svg viewBox="0 0 24 24" width="10" height="10">
-                                        <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </Svg>
-                                    <Text>{profile.contact_email}</Text>
-                                </View>
-                            ) : null}
-                        </View>
                     </View>
                 </View>
 
@@ -301,6 +276,56 @@ const CVDocument = ({ profileData, skillsData }) => {
 
                     {/* Right Column (Sidebar content) */}
                     <View style={styles.sideColumn}>
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Contact</Text>
+                            <View style={styles.contactInfoBox}>
+                                {profile?.location ? (
+                                    <View style={styles.contactItem}>
+                                        <Svg viewBox="0 0 24 24" width="10" height="10">
+                                            <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </Svg>
+                                        <Text>{profile.location}</Text>
+                                    </View>
+                                ) : null}
+                                {profile?.phone_number ? (
+                                    <View style={styles.contactItem}>
+                                        <Svg viewBox="0 0 24 24" width="10" height="10">
+                                            <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        </Svg>
+                                        <Text>{profile.phone_number?.replace(/(\+\d{2})?(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4').trim()}</Text>
+                                    </View>
+                                ) : null}
+                                {profile?.contact_email ? (
+                                    <View style={styles.contactItem}>
+                                        <Svg viewBox="0 0 24 24" width="10" height="10">
+                                            <Path fill="none" stroke={primaryColor} strokeWidth="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </Svg>
+                                        <Text>{profile.contact_email}</Text>
+                                    </View>
+                                ) : null}
+                            </View>
+                        </View>
+                        {education && education.length > 0 ? (
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>Education</Text>
+                                {[...education]
+                                    .sort((a, b) => (b.graduation_year || 0) - (a.graduation_year || 0))
+                                    .map((edu, idx) => (
+                                        <View key={idx} style={styles.eduItem} wrap={false}>
+                                            <Text style={styles.eduDegree}>{edu.field_of_study || ''}</Text>
+                                            <Text style={styles.eduSchool}>{edu.school_name || ''}</Text>
+                                            {edu.specialization ? <Text style={styles.eduSpecialization}>{edu.specialization}</Text> : null}
+                                            {edu.graduation_year ? (
+                                                <Text style={styles.eduYear}>
+                                                    {edu.start_year ? `${edu.start_year} — ` : ''}{edu.graduation_year}
+                                                </Text>
+                                            ) : null}
+                                        </View>
+                                    ))}
+                            </View>
+                        ) : null}
+
                         {skillsData.skills && skillsData.skills.length > 0 ? (
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>Skills</Text>
@@ -313,22 +338,6 @@ const CVDocument = ({ profileData, skillsData }) => {
                                         </View>
                                     ))}
                                 </View>
-                            </View>
-                        ) : null}
-
-                        {education && education.length > 0 ? (
-                            <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Education</Text>
-                                {[...education]
-                                    .sort((a, b) => (b.graduation_year || 0) - (a.graduation_year || 0))
-                                    .map((edu, idx) => (
-                                        <View key={idx} style={styles.eduItem} wrap={false}>
-                                            <Text style={styles.eduDegree}>{edu.field_of_study || ''}</Text>
-                                            <Text style={styles.eduSchool}>{edu.school_name || ''}</Text>
-                                            {edu.specialization ? <Text style={styles.eduSpecialization}>{edu.specialization}</Text> : null}
-                                            {edu.graduation_year ? <Text style={styles.eduYear}>{String(edu.graduation_year)}</Text> : null}
-                                        </View>
-                                    ))}
                             </View>
                         ) : null}
                     </View>
