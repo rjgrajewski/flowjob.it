@@ -40,7 +40,7 @@ export default function Navbar() {
                             <NavLink to="/jobs" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
                                 Offers
                             </NavLink>
-                            <NavLink to="/cv" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
+                            <NavLink to="/my-skills" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
                                 My Skills
                             </NavLink>
                             <NavLink to="/my-cv" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
@@ -60,7 +60,7 @@ export default function Navbar() {
                             </button>
                         </div>
                     ) : (
-                        <NavLink to="/register?tab=login" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '0.5rem 1.2rem' }}>
+                        <NavLink to="/get-started?tab=login" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '0.5rem 1.2rem' }}>
                             Get Started →
                         </NavLink>
                     )}

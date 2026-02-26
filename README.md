@@ -42,9 +42,9 @@ The Vite dev server proxies all `/api` requests to the FastAPI backend on `:8000
 | Route | Page | Auth | Description |
 |---|---|---|---|
 | `/` | Home | — | Hero, feature grid, split sections |
-| `/register` | Register / Login | — | Split-layout with tab toggle |
+| `/get-started` | Register / Login | — | Split-layout with tab toggle |
 | `/onboarding` | Onboarding | Login | Multi-step profile form (personal info, education, experience) |
-| `/cv` | CV Builder | Login + Onboarding | Bubble cloud skill selector with sidebar |
+| `/my-skills` | CV Builder | Login + Onboarding | Bubble cloud skill selector with sidebar |
 | `/my-cv` | My CV | Login + Onboarding | PDF CV preview and download (via @react-pdf/renderer) |
 | `/jobs` | Job Board | Login + Onboarding | Filtered job cards with match scores |
 

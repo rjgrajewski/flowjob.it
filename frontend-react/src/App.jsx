@@ -9,12 +9,12 @@ import JobBoard from './pages/JobBoard.jsx';
 import { auth } from './services/api.js';
 
 function ProtectedRoute({ children }) {
-    return auth.isAuthenticated() ? children : <Navigate to="/register" replace />;
+    return auth.isAuthenticated() ? children : <Navigate to="/get-started" replace />;
 }
 
 // After login, new users that haven't completed onboarding are redirected to /onboarding
 function OnboardingGate({ children }) {
-    if (!auth.isAuthenticated()) return <Navigate to="/register" replace />;
+    if (!auth.isAuthenticated()) return <Navigate to="/get-started" replace />;
     if (!auth.hasCompletedOnboarding()) return <Navigate to="/onboarding" replace />;
     return children;
 }
@@ -26,9 +26,9 @@ export default function App() {
             <main style={{ minHeight: 'calc(100vh - 64px)' }}>
                 <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/register" element={<Register />} />
+                    <Route path="/get-started" element={<Register />} />
                     <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                    <Route path="/cv" element={<OnboardingGate><CVBuilder /></OnboardingGate>} />
+                    <Route path="/my-skills" element={<OnboardingGate><CVBuilder /></OnboardingGate>} />
                     <Route path="/my-cv" element={<OnboardingGate><MyCV /></OnboardingGate>} />
                     <Route path="/jobs" element={<OnboardingGate><JobBoard /></OnboardingGate>} />
                     <Route path="*" element={<Navigate to="/" replace />} />

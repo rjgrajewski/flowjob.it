@@ -55,7 +55,7 @@ export default function Register() {
                 navigate('/onboarding');
             } else {
                 await auth.login(form.email, form.password);
-                navigate(auth.hasCompletedOnboarding() ? '/cv' : '/onboarding');
+                navigate(auth.hasCompletedOnboarding() ? '/my-skills' : '/onboarding');
             }
         } catch (err) {
             setError(err?.message || 'Something went wrong. Please try again.');

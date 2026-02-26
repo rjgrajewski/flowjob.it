@@ -23,7 +23,7 @@ function handleUnauthorized(res) {
         localStorage.removeItem('flowjob_token');
         localStorage.removeItem('flowjob_profile');
         localStorage.removeItem('flowjob_onboarding_done');
-        window.location.href = '/register';
+        window.location.href = '/get-started';
     }
     return res;
 }

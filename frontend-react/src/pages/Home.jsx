@@ -57,7 +57,7 @@ export default function Home() {
                             I built flowjob to scratch my own itch. It's a non-profit hobby project designed to map your real skills, block the tech you hate, and match you with jobs using straightforward data—no corporate BS.
                         </p>
                         <div style={styles.heroCtas}>
-                            <Link to="/register?tab=login" className="btn btn-primary" style={{ fontSize: '1rem', padding: '0.8rem 2rem' }}>
+                            <Link to="/get-started?tab=login" className="btn btn-primary" style={{ fontSize: '1rem', padding: '0.8rem 2rem' }}>
                                 Get Started →
                             </Link>
                             <Link to="/jobs" className="btn btn-ghost" style={{ fontSize: '1rem', padding: '0.8rem 1.5rem' }}>
@@ -186,7 +186,7 @@ export default function Home() {
                             <p style={{ color: 'var(--text-secondary)', marginTop: '1rem', lineHeight: 1.7 }}>
                                 I wanted a tool where I could visually organize what I know and what I absolutely refuse to work with. It takes two minutes to click through the bubble cloud, and the algorithm honors your choices completely.
                             </p>
-                            <Link to="/register" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
+                            <Link to="/get-started" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
                                 Build my profile →
                             </Link>
                         </motion.div>
@@ -254,7 +254,7 @@ export default function Home() {
                         <p style={{ color: 'rgba(0,0,0,0.65)', marginTop: '0.5rem', fontSize: '1.05rem' }}>
                             It's free, no ads, just a developer trying to fix the job search experience.
                         </p>
-                        <Link to="/register" className="btn" style={{ marginTop: '1.5rem', background: '#000', color: 'var(--accent-cyan)', fontSize: '1rem', padding: '0.8rem 2rem' }}>
+                        <Link to="/get-started" className="btn" style={{ marginTop: '1.5rem', background: '#000', color: 'var(--accent-cyan)', fontSize: '1rem', padding: '0.8rem 2rem' }}>
                             Start for free →
                         </Link>
                     </motion.div>
