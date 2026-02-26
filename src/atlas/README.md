@@ -9,7 +9,7 @@ Atlas is the intelligence layer of Aligno, responsible for analyzing raw job dat
 ## 🔧 Key Features
 
 - **Skill Extraction**: Extracts raw skills from the `tech_stack` field of offers.
-- **Normalization**: Uses **Claude 3.5 Sonnet** (via AWS Bedrock) to canonicalize skill names (e.g., "React.js" -> "React").
+- **Normalization**: Uses **Claude 3.5 Sonnet** (via AWS Bedrock) to canonicalize skill names (e.g., "React.js" → "React").
 - **Deduplication**: Uses **Claude 3 Haiku** to semantically deduplicate similar skills into clusters.
 - **Linking**: Links job offers to their canonicalized skills in the database.
 
@@ -17,10 +17,15 @@ Atlas is the intelligence layer of Aligno, responsible for analyzing raw job dat
 
 ```
 atlas/
-├── __main__.py              # Entry point for Atlas
+├── __main__.py              # Entry point for local execution
+├── lambda_handler.py        # AWS Lambda entry point (invoked by Scout after scraping)
 ├── normalize_skills.py      # Core pipeline: Extract -> Normalize -> Dedup -> Link
 └── README.md                # This file
 ```
+
+### Deployment
+
+Atlas is deployed as an **AWS Lambda** (`aligno-normalize-skills`) via SAM. After each successful scrape, Scout invokes this Lambda asynchronously. See [infra/README.md](../../infra/README.md) for deployment instructions.
 
 ## ⚙️ How it Works (`normalize_skills.py`)
 

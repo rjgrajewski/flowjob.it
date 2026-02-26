@@ -57,13 +57,14 @@ After data extraction, Scout performs cleanup actions to maintain data quality. 
 
 ```
 scout/
-├── __main__.py         # Entry point for running as module
-├── cli.py              # Main orchestration and CLI interface
-├── config.py           # Configuration constants
-├── db.py               # Database connection and operations
-├── scrape_core.py      # Core scraping logic
-├── selectors.py        # CSS/XPath selectors configuration
-└── aws_secrets.py      # AWS Secrets Manager integration
+├── __main__.py           # Entry point for running as module
+├── cli.py                # Main orchestration and CLI interface
+├── config.py             # Configuration constants
+├── db.py                 # Database connection and operations
+├── scrape_core.py        # Core scraping logic
+├── selectors.py          # CSS/XPath selectors configuration
+├── aws_secrets.py        # AWS Secrets Manager integration
+└── invoke_normalize.py   # Triggers Atlas Lambda after successful scrape
 ```
 
 ### Async Architecture
@@ -318,9 +319,11 @@ if i > 1 and (i - 1) % ScrapingConfig.RESTART_BROWSER_EVERY == 0:
 
 ## 🔗 Related Documentation
 
-- [Aligno README](../../README.md) - Project overview and architecture
-- [AWS Deployment Guide](../../aws/deployment/scout/README.md) - Detailed AWS setup and deployment
+- [Project README](../../README.md) - Project overview and architecture
+- [Atlas Normalization (infra)](../../infra/README.md) - Lambda deployment triggered by Scout
+
+> **Note:** The AWS Fargate deployment scripts (`aws/deployment/scout/`) are not tracked in git. They are maintained locally and contain IAM setup, ECS task definitions, and Dockerfile.
 
 ---
 
-**Proudly built and maintained by Rafal Grajewski for the Aligno project**
+*Built and maintained by Rafal Grajewski*
