@@ -275,6 +275,7 @@ function SkillMapSkeleton({ width, height }) {
 
 export default function CVBuilder() {
     const [selected, setSelected] = useState(new Set());
+    const [highlighted, setHighlighted] = useState(new Set());
     const { skills, loading } = useSkills([...selected]);
     const [search, setSearch] = useState('');
     const [anti, setAnti] = useState(new Set());
@@ -313,6 +314,7 @@ export default function CVBuilder() {
             if (!mounted) return;
             setSelected(new Set(cv.skills || []));
             setAnti(new Set(cv.antiSkills || []));
+            setHighlighted(new Set(cv.highlightedSkills || []));
             setTimeout(() => { if (mounted) initialLoadDone.current = true; }, 100);
         };
         load();
@@ -329,14 +331,19 @@ export default function CVBuilder() {
 
         saveTimeout.current = setTimeout(async () => {
             try {
-                await api.saveUserCV(user.id, { skills: [...selected], antiSkills: [...anti] });
+                const highlightedFiltered = [...highlighted].filter(s => selected.has(s));
+                await api.saveUserCV(user.id, {
+                    skills: [...selected],
+                    antiSkills: [...anti],
+                    highlightedSkills: highlightedFiltered
+                });
                 setSaved('Saved!');
                 setTimeout(() => setSaved(''), 2500);
             } catch (e) {
                 setSaved('Error saving');
             }
         }, 1000);
-    }, [selected, anti]);
+    }, [selected, anti, highlighted]);
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -490,14 +497,20 @@ export default function CVBuilder() {
         setFlyingGhosts(prev => [...prev, { id, name: skillName, startX, startY, startSize, targetX, targetY, color }]);
     }, []);
 
+    const toggleHighlighted = useCallback((name) => {
+        setHighlighted(h => {
+            const n = new Set(h);
+            n.has(name) ? n.delete(name) : n.add(name);
+            return n;
+        });
+    }, []);
+
     const toggleSkill = useCallback((name) => {
         const curSelected = selectedRef.current;
         const curAnti = antiRef.current;
-        // Only launch ghost if transitioning from unselected -> selected
         if (!curSelected.has(name)) {
             launchGhost(name, 'cyan');
         }
-        // Remove from anti
         if (curAnti.has(name)) {
             setAnti(a => { const n = new Set(a); n.delete(name); return n; });
         }
@@ -526,6 +539,17 @@ export default function CVBuilder() {
         });
     }, [launchGhost]);
 
+    // Keep highlighted a subset of selected (e.g. when user deselects a skill)
+    useEffect(() => {
+        setHighlighted(prev => {
+            const next = new Set(prev);
+            for (const x of next) {
+                if (!selected.has(x)) next.delete(x);
+            }
+            return next;
+        });
+    }, [selected]);
+
     const removeGhost = useCallback((id) => {
         setFlyingGhosts(prev => prev.filter(g => g.id !== id));
     }, []);
@@ -551,6 +575,11 @@ export default function CVBuilder() {
                     <div style={styles.sidebarLabel}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                             ✅ Selected Skills <span style={styles.count}>{selected.size}</span>
+                            {highlighted.size > 0 && (
+                                <span style={{ color: 'var(--text-secondary)', fontWeight: 400, fontSize: '0.75rem' }}>
+                                    · <span style={{ color: 'var(--accent-cyan)' }}>{highlighted.size} on CV</span>
+                                </span>
+                            )}
                         </span>
                         {selected.size > 0 && (
                             <motion.button
@@ -573,11 +602,18 @@ export default function CVBuilder() {
                                     animate={{ opacity: 1, scale: 1, x: 0 }}
                                     exit={{ opacity: 0, scale: 0.5, x: -10 }}
                                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                    style={{ ...styles.sidebarTag, borderColor: 'var(--accent-cyan)', color: 'var(--accent-cyan)', cursor: 'pointer' }}
-                                    onClick={() => toggleSkill(s)}
-                                    title="Click to deselect"
+                                    style={{ ...styles.sidebarTag, borderColor: 'var(--accent-cyan)', color: 'var(--accent-cyan)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                                 >
-                                    {s}
+                                    <span
+                                        onClick={e => { e.stopPropagation(); toggleHighlighted(s); }}
+                                        style={{ cursor: 'pointer', userSelect: 'none', fontSize: '1rem', lineHeight: 1 }}
+                                        title={highlighted.has(s) ? 'Remove from CV' : 'Show on CV'}
+                                    >
+                                        {highlighted.has(s) ? '★' : '☆'}
+                                    </span>
+                                    <span onClick={() => toggleSkill(s)} style={{ flex: 1 }} title="Click to deselect">
+                                        {s}
+                                    </span>
                                 </motion.span>
                             ))}
                         </AnimatePresence>

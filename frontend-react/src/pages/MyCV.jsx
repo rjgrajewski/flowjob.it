@@ -19,7 +19,10 @@ const CVDocument = ({ profileData, skillsData }) => {
     const { profile, education, experience } = profileData;
     const primaryColor = '#00e5ff'; // Flowjob primary brand color
     const darkBg = '#0f172a'; // Deep Navy/Slate
-    const maxSkills = 30; // limit skills on CV
+    const maxSkills = 30; // limit skills on CV when no highlighted set
+    const skillsToShow = (skillsData.highlightedSkills && skillsData.highlightedSkills.length > 0)
+        ? skillsData.highlightedSkills
+        : (skillsData.skills || []).slice(0, maxSkills);
 
     const styles = useMemo(() => StyleSheet.create({
         // ... (rest holds the same)
@@ -326,11 +329,11 @@ const CVDocument = ({ profileData, skillsData }) => {
                             </View>
                         ) : null}
 
-                        {skillsData.skills && skillsData.skills.length > 0 ? (
+                        {skillsToShow.length > 0 ? (
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>Skills</Text>
                                 <View style={styles.skillsList}>
-                                    {skillsData.skills.slice(0, maxSkills).map(skill => (
+                                    {skillsToShow.map(skill => (
                                         <View key={skill} style={styles.skillTagWrapper} wrap={false}>
                                             <Text style={styles.skillTagText}>
                                                 {skill}
@@ -349,7 +352,7 @@ const CVDocument = ({ profileData, skillsData }) => {
 
 export default function MyCV() {
     const [profileData, setProfileData] = useState(null);
-    const [skillsData, setSkillsData] = useState({ skills: [], antiSkills: [] });
+    const [skillsData, setSkillsData] = useState({ skills: [], antiSkills: [], highlightedSkills: [] });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 

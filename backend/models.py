@@ -37,10 +37,12 @@ class LoginRequest(BaseModel):
 class UserSkillsRequest(BaseModel):
     skills: List[str] = []
     antiSkills: List[str] = []
+    highlightedSkills: List[str] = []
 
 class UserSkillsResponse(BaseModel):
     skills: List[str]
     antiSkills: List[str]
+    highlightedSkills: List[str]
 
 class EducationEntry(BaseModel):
     school_name: str

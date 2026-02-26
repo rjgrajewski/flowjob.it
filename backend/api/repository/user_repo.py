@@ -1,5 +1,8 @@
+import logging
 from asyncpg import Pool
 from typing import List, Dict
+
+logger = logging.getLogger(__name__)
 
 class UserRepository:
     def __init__(self, pool: Pool):
@@ -9,7 +12,7 @@ class UserRepository:
         async with self.pool.acquire() as conn:
             rows = await conn.fetch(
                 """
-                SELECT s.canonical_skill_name, s.original_skill_name, us.skill_type
+                SELECT s.canonical_skill_name, s.original_skill_name, us.skill_type, COALESCE(us.show_on_cv, false) AS show_on_cv
                 FROM user_skills us
                 JOIN skills s ON us.skill_id = s.uuid
                 WHERE us.user_id = $1
@@ -19,73 +22,87 @@ class UserRepository:
             
             skills = []
             anti_skills = []
+            highlighted_skills = []
             
             for row in rows:
                 name = row["canonical_skill_name"] or row["original_skill_name"]
                 if row["skill_type"] == 'HAS':
                     skills.append(name)
+                    if row["show_on_cv"]:
+                        highlighted_skills.append(name)
                 elif row["skill_type"] == 'AVOIDS':
                     anti_skills.append(name)
                     
             return {
                 "skills": list(set(skills)),
-                "antiSkills": list(set(anti_skills))
+                "antiSkills": list(set(anti_skills)),
+                "highlightedSkills": list(set(highlighted_skills))
             }
 
-    async def save_user_skills(self, user_id: str, skills: List[str], anti_skills: List[str]) -> dict:
+    async def save_user_skills(
+        self,
+        user_id: str,
+        skills: List[str],
+        anti_skills: List[str],
+        highlighted_skills: List[str] = None
+    ) -> dict:
+        highlighted_skills = highlighted_skills or []
         async with self.pool.acquire() as conn:
-            # We need a transaction to delete old and insert new safely
-            async with conn.transaction():
-                # Clear existing
-                await conn.execute("DELETE FROM user_skills WHERE user_id = $1", user_id)
-                
-                # We need to map string names back to UUIDs
-                # Since skills table has either canonical or original matching the string
-                # we match against both.
-                
-                # Fetch all relevant skills
-                all_names = skills + anti_skills
-                if not all_names:
-                    return {"skills": [], "antiSkills": []}
-                
-                skill_records = await conn.fetch(
-                    """
-                    SELECT uuid, canonical_skill_name, original_skill_name 
-                    FROM skills 
-                    WHERE canonical_skill_name = ANY($1) OR original_skill_name = ANY($1)
-                    """,
-                    all_names
+            # We need to map string names back to UUIDs from the skills table first.
+            # If no names match, we do NOT delete existing rows (avoid wiping data).
+            all_names = skills + anti_skills
+            if not all_names:
+                async with conn.transaction():
+                    await conn.execute("DELETE FROM user_skills WHERE user_id = $1", user_id)
+                return {"skills": [], "antiSkills": [], "highlightedSkills": []}
+
+            skill_records = await conn.fetch(
+                """
+                SELECT uuid, canonical_skill_name, original_skill_name
+                FROM skills
+                WHERE canonical_skill_name = ANY($1) OR original_skill_name = ANY($1)
+                """,
+                all_names
+            )
+
+            # Map names to their UUIDs. Prefer canonical if it matches.
+            name_to_uuids = {name: [] for name in all_names}
+            for record in skill_records:
+                if record["canonical_skill_name"] in all_names:
+                    name_to_uuids[record["canonical_skill_name"]].append(record["uuid"])
+                if record["original_skill_name"] in all_names:
+                    name_to_uuids[record["original_skill_name"]].append(record["uuid"])
+
+            inserts = []
+            added = set()
+            for s in set(skills):
+                for uid in name_to_uuids.get(s, []):
+                    if uid not in added:
+                        inserts.append((user_id, uid, 'HAS'))
+                        added.add(uid)
+            for a in set(anti_skills):
+                for uid in name_to_uuids.get(a, []):
+                    if uid not in added:
+                        inserts.append((user_id, uid, 'AVOIDS'))
+                        added.add(uid)
+
+            # If we have requested skills but none matched the DB, do not delete – log and return current state
+            if not inserts and all_names:
+                unmatched = set(all_names)
+                for r in skill_records:
+                    if r["canonical_skill_name"] in unmatched:
+                        unmatched.discard(r["canonical_skill_name"])
+                    if r["original_skill_name"] in unmatched:
+                        unmatched.discard(r["original_skill_name"])
+                logger.warning(
+                    "save_user_skills: no rows to insert for user_id=%s; requested names may not exist in skills table. Unmatched sample: %s",
+                    user_id,
+                    list(unmatched)[:10],
                 )
-                
-                # Map names to their UUIDs. Prefer canonical if it matches.
-                name_to_uuids = {name: [] for name in all_names}
-                for record in skill_records:
-                    if record["canonical_skill_name"] in all_names:
-                        name_to_uuids[record["canonical_skill_name"]].append(record["uuid"])
-                    if record["original_skill_name"] in all_names:
-                        name_to_uuids[record["original_skill_name"]].append(record["uuid"])
-                
-                # Prepare inserts
-                # Use a set to prevent duplicate inserts if the user provided duplicate strings
-                # Or if multiple canonical hits mapped to same string (we just pick the first UUID we found for that string)
-                
-                inserts = []
-                # Helper to add inserts safely
-                added = set()
-                
-                for s in set(skills):
-                    for uid in name_to_uuids.get(s, []):
-                        if uid not in added:
-                            inserts.append((user_id, uid, 'HAS'))
-                            added.add(uid)
-                            
-                for a in set(anti_skills):
-                    for uid in name_to_uuids.get(a, []):
-                        # Don't add to anti if already in HAS
-                        if uid not in added:
-                            inserts.append((user_id, uid, 'AVOIDS'))
-                            added.add(uid)
-                
+                return await self.get_user_skills(user_id)
+
+            async with conn.transaction():
+                await conn.execute("DELETE FROM user_skills WHERE user_id = $1", user_id)
                 if inserts:
                     await conn.executemany(
                         """
@@ -95,7 +112,23 @@ class UserRepository:
                         """,
                         inserts
                     )
-        
+                skills_set = set(skills)
+                highlighted_valid = [h for h in highlighted_skills if h in skills_set]
+                highlight_uuids = []
+                for name in highlighted_valid:
+                    for uid in name_to_uuids.get(name, []):
+                        if uid in added:
+                            highlight_uuids.append(uid)
+                            break
+                await conn.execute(
+                    """
+                    UPDATE user_skills SET show_on_cv = (skill_id = ANY($1))
+                    WHERE user_id = $2 AND skill_type = 'HAS'
+                    """,
+                    highlight_uuids,
+                    user_id
+                )
+
         return await self.get_user_skills(user_id)
     async def save_onboarding_full(self, user_id: str, data: 'OnboardingRequest') -> bool:
         async with self.pool.acquire() as conn:

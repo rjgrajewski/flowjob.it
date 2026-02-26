@@ -41,14 +41,14 @@ export const api = {
         return res.json();
     },
     getUserCV: async (userId) => {
-        if (!userId) return { skills: [], antiSkills: [] };
+        if (!userId) return { skills: [], antiSkills: [], highlightedSkills: [] };
         try {
             const res = await fetch(`${BASE}/users/${userId}/skills`);
             if (!res.ok) throw new Error('Failed to fetch user skills');
             return await res.json();
         } catch (e) {
             console.error(e);
-            return { skills: [], antiSkills: [] };
+            return { skills: [], antiSkills: [], highlightedSkills: [] };
         }
     },
 };

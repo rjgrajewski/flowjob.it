@@ -1,9 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, Body
+import logging
+from fastapi import APIRouter, Depends, HTTPException, Body, Response
 from backend.database import get_db_pool
 from backend.api.repository.user_repo import UserRepository
 from backend.models import UserSkillsRequest, UserSkillsResponse, OnboardingRequest
 import asyncpg
 
+# Zapobiega cache'owaniu odpowiedzi z danymi użytkownika (CDN/przeglądarka) – na domenie widzisz zawsze świeże dane
+NO_CACHE_HEADERS = {"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"}
+
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 def get_user_repo() -> UserRepository:
@@ -11,7 +16,8 @@ def get_user_repo() -> UserRepository:
     return UserRepository(pool)
 
 @router.get("/{user_id}/skills", response_model=UserSkillsResponse)
-async def get_skills(user_id: str, repo: UserRepository = Depends(get_user_repo)):
+async def get_skills(user_id: str, response: Response, repo: UserRepository = Depends(get_user_repo)):
+    response.headers.update(NO_CACHE_HEADERS)
     try:
         return await repo.get_user_skills(user_id)
     except Exception as e:
@@ -24,8 +30,14 @@ async def save_skills(
     repo: UserRepository = Depends(get_user_repo)
 ):
     try:
-        return await repo.save_user_skills(user_id, body.skills, body.antiSkills)
+        return await repo.save_user_skills(
+            user_id,
+            body.skills,
+            body.antiSkills,
+            highlighted_skills=body.highlightedSkills or []
+        )
     except Exception as e:
+        logger.exception("save_skills failed for user_id=%s: %s", user_id, e)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/{user_id}/onboarding")
@@ -42,7 +54,8 @@ async def save_onboarding(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{user_id}/onboarding")
-async def get_onboarding(user_id: str, repo: UserRepository = Depends(get_user_repo)):
+async def get_onboarding(user_id: str, response: Response, repo: UserRepository = Depends(get_user_repo)):
+    response.headers.update(NO_CACHE_HEADERS)
     try:
         data = await repo.get_onboarding_full(user_id)
         if not data:
