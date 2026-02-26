@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { api, auth } from '../services/api.js';
 import { Document, Page, Text, View, StyleSheet, PDFViewer, Svg, Path, Font, PDFDownloadLink, Image } from '@react-pdf/renderer';
 
@@ -348,7 +348,7 @@ const CVDocument = ({ profileData, skillsData }) => {
                     </View>
                 </View>
 
-                {/* Data processing clause – fixed footer at bottom of each page (no extra page, may overlap bottom margin) */}
+                {/* Footer: clause + Made with flowjob.it */}
                 <View
                     fixed
                     style={{
@@ -358,7 +358,7 @@ const CVDocument = ({ profileData, skillsData }) => {
                         right: 0,
                         paddingHorizontal: 40,
                         paddingTop: 10,
-                        paddingBottom: 14,
+                        paddingBottom: 10,
                         borderTopWidth: 1,
                         borderTopColor: '#e2e8f0',
                         backgroundColor: '#ffffff',
@@ -367,6 +367,9 @@ const CVDocument = ({ profileData, skillsData }) => {
                 >
                     <Text style={{ fontSize: 8, color: '#475569', fontStyle: 'italic', lineHeight: 1.35, textAlign: 'center' }}>
                         {profile?.data_processing_clause?.trim() || DEFAULT_DATA_PROCESSING_CLAUSE}
+                    </Text>
+                    <Text style={{ fontSize: 7, color: '#94a3b8', marginTop: 6, textAlign: 'center' }}>
+                        Made with flowjob.it
                     </Text>
                 </View>
             </Page>
@@ -414,39 +417,42 @@ export default function MyCV() {
         loadCVData();
     }, []);
 
-    const handleSaveCV = async () => {
-        setSaving(true);
-        try {
-            const user = auth.getUser();
-            if (user && user.id && profileData) {
-                // The API endpoint from auth.completeOnboarding handles saving profileData structure
+    const saveTimeoutRef = useRef(null);
+    const initialLoadDoneRef = useRef(false);
+
+    // Auto-save CV in the background when profileData changes (debounced)
+    useEffect(() => {
+        if (!initialLoadDoneRef.current || !profileData) return;
+        const user = auth.getUser();
+        if (!user?.id) return;
+
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = setTimeout(async () => {
+            setSaving(true);
+            try {
                 await auth.completeOnboarding({
                     profile: profileData.profile,
                     education: profileData.education,
                     experience: profileData.experience
                 });
-                // updating local storage as well
                 localStorage.setItem('flowjob_profile', JSON.stringify(profileData));
-
-                // Show temporary success state
-                const btn = document.getElementById('save-cv-btn');
-                if (btn) {
-                    const originalText = btn.innerText;
-                    btn.innerText = '✓ Saved Successfully!';
-                    btn.style.backgroundColor = 'var(--accent-green)';
-                    setTimeout(() => {
-                        btn.innerText = originalText;
-                        btn.style.backgroundColor = '';
-                    }, 2000);
-                }
+            } catch (e) {
+                console.error('Error auto-saving CV:', e);
+            } finally {
+                setSaving(false);
+                saveTimeoutRef.current = null;
             }
-        } catch (e) {
-            console.error('Error saving CV:', e);
-            alert(e.message || 'Error saving CV. Please try again.');
-        } finally {
-            setSaving(false);
-        }
-    };
+        }, 1200);
+
+        return () => {
+            if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        };
+    }, [profileData]);
+
+    // Mark initial load done after first profileData set (so we don't save immediately on load)
+    useEffect(() => {
+        if (profileData && !loading) initialLoadDoneRef.current = true;
+    }, [profileData, loading]);
 
     if (loading) {
         return (
@@ -485,7 +491,6 @@ export default function MyCV() {
                     <CVEditorTabs
                         profileData={profileData}
                         setProfileData={setProfileData}
-                        onSave={handleSaveCV}
                         saving={saving}
                     />
                 </div>

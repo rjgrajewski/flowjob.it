@@ -4,7 +4,7 @@ import { YearPicker } from './YearPicker.jsx';
 
 const DEFAULT_DATA_PROCESSING_CLAUSE = 'I hereby give consent for my personal data included in my application to be processed for the purposes of the recruitment process.';
 
-export const CVEditorTabs = ({ profileData, setProfileData, onSave, saving }) => {
+export const CVEditorTabs = ({ profileData, setProfileData, saving }) => {
     const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'experience', 'education'
 
     const handleProfileChange = (field, value) => {
@@ -378,17 +378,11 @@ export const CVEditorTabs = ({ profileData, setProfileData, onSave, saving }) =>
                     </motion.div>
                 </AnimatePresence>
             </div>
-
-            <div style={styles.footer}>
-                <button
-                    className="btn btn-primary"
-                    style={{ width: '100%', padding: '0.75rem', fontSize: '1rem' }}
-                    onClick={onSave}
-                    disabled={saving}
-                >
-                    {saving ? 'Saving...' : 'Save CV'}
-                </button>
-            </div>
+            {saving && (
+                <div style={{ paddingTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    Saving…
+                </div>
+            )}
         </div>
     );
 };
@@ -501,9 +495,4 @@ const styles = {
         fontStyle: 'italic',
         marginTop: '1rem',
     },
-    footer: {
-        marginTop: '1rem',
-        paddingTop: '1rem',
-        borderTop: '1px solid var(--border)',
-    }
 };
