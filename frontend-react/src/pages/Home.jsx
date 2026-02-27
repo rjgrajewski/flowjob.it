@@ -33,10 +33,6 @@ export default function Home() {
                         initial="hidden" animate="show" variants={staggerContainer}
                         style={styles.heroContent}
                     >
-                        <motion.div variants={fadeUp} style={styles.badge}>
-                            <span style={styles.badgeDot} />
-                            flowjob.it — how it started
-                        </motion.div>
                         <div style={styles.authorSectionWrapper}>
                             <motion.div variants={fadeUp} style={styles.avatarWrapperAbsolute}>
                                 <img
@@ -57,20 +53,22 @@ export default function Home() {
 
                             <motion.div variants={fadeUp} style={styles.authorBoxRedesign}>
                                 <div style={styles.authorText}>
-                                    <p style={styles.greeting}>My name is Rafal, and I am the creator of flowjob.it.</p>
+                                    <p style={styles.greeting}>I'm Rafal — data analyst by profession, musician by passion, and the builder behind flowjob.it.</p>
                                     <p style={styles.bio}>
-                                        I’m a data analyst by profession, a music producer by passion, and someone who moves comfortably between code, sound design, visual storytelling, graphic design, and video editing. I like building things — whether it’s a beat, a cinematic sequence, or a scalable data pipeline.<br /><br />
-                                        At my core, I work with data — designing SQL queries, building reporting models, and creating analytical layers with one clear objective: turning chaos into logic. On a daily basis, I’m responsible for the technical side of processing recruitment data at scale. I design data structures, optimize performance, and think in terms of scalability and data quality. I’m not interested in things merely working — I care about them working in a way that makes sense.
+                                        I build things that make sense. Sometimes it's a song. Sometimes it's a data pipeline processing recruitment data at scale.
                                     </p>
+                                </div>
+                                <div style={styles.techBadge}>
+                                    Python • SQL • AWS • AI
                                 </div>
                             </motion.div>
                         </div>
                     </motion.div>
                 </div>
-            </section>
+            </section >
 
             {/* 2. THE PROBLEM */}
-            <section className="section" style={styles.sectionDark}>
+            < section className="section" style={styles.sectionDark} >
                 <div className="container">
                     <motion.div
                         initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
@@ -94,10 +92,10 @@ export default function Home() {
                         </motion.div>
                     </motion.div>
                 </div>
-            </section>
+            </section >
 
             {/* 3. THE FOUNDATION: DATA MODEL */}
-            <section className="section" style={styles.sectionLight}>
+            < section className="section" style={styles.sectionLight} >
                 <div className="container">
                     <motion.div
                         initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
@@ -134,10 +132,10 @@ export default function Home() {
                         </motion.div>
                     </motion.div>
                 </div>
-            </section>
+            </section >
 
             {/* 4. PREPARING THE SCRAPER */}
-            <section className="section" style={styles.sectionDark}>
+            < section className="section" style={styles.sectionDark} >
                 <div className="container" style={styles.centerContainer}>
                     <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer}>
                         <motion.h2 variants={fadeUp} style={{ ...styles.sectionTitle, textAlign: 'center' }}>Preparing the Scraper</motion.h2>
@@ -161,10 +159,10 @@ export default function Home() {
                         </div>
                     </motion.div>
                 </div>
-            </section>
+            </section >
 
             {/* 5. ARCHITECTURE & AUTOMATION */}
-            <section className="section" style={styles.sectionLight}>
+            < section className="section" style={styles.sectionLight} >
                 <div className="container">
                     <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer}>
                         <motion.h2 variants={fadeUp} style={{ ...styles.sectionTitle, textAlign: 'center' }}>Event-Driven Automation</motion.h2>
@@ -193,10 +191,10 @@ export default function Home() {
                         </div>
                     </motion.div>
                 </div>
-            </section>
+            </section >
 
             {/* 6. TACKLING SKILL CHAOS WITH AI */}
-            <section className="section" style={styles.sectionDark}>
+            < section className="section" style={styles.sectionDark} >
                 <div className="container">
                     <motion.div
                         initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
@@ -225,10 +223,10 @@ export default function Home() {
                         </motion.div>
                     </motion.div>
                 </div>
-            </section>
+            </section >
 
             {/* 7. FRONTEND VIBE & D3 */}
-            <section className="section" style={styles.sectionLight}>
+            < section className="section" style={styles.sectionLight} >
                 <div className="container">
                     <motion.div
                         initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
@@ -251,10 +249,10 @@ export default function Home() {
                         </motion.div>
                     </motion.div>
                 </div>
-            </section>
+            </section >
 
             {/* 8. BACKEND RECOMMENDATION */}
-            <section className="section" style={styles.sectionDark}>
+            < section className="section" style={styles.sectionDark} >
                 <div className="container">
                     <motion.div
                         initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
@@ -292,10 +290,10 @@ export default function Home() {
                         </motion.div>
                     </motion.div>
                 </div>
-            </section>
+            </section >
 
             {/* 9. CV BUILDER & NEXT STEPS */}
-            <section className="section" style={styles.sectionLight}>
+            < section className="section" style={styles.sectionLight} >
                 <div className="container" style={{ textAlign: 'center' }}>
                     <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer} style={{ maxWidth: '800px', margin: '0 auto' }}>
                         <motion.h2 variants={fadeUp} style={styles.sectionTitle}>The Last Mile: CV Builder</motion.h2>
@@ -319,17 +317,17 @@ export default function Home() {
                         </motion.div>
                     </motion.div>
                 </div>
-            </section>
+            </section >
 
             {/* FOOTER */}
-            <footer style={styles.footer}>
+            < footer style={styles.footer} >
                 <div className="container" style={{ textAlign: 'center' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                         © 2026 <strong style={{ color: 'var(--text-primary)' }}>flowjob</strong>. All rights reserved. Built by Rafal Grajewski.
                     </p>
                 </div>
-            </footer>
-        </div>
+            </footer >
+        </div >
     );
 }
 
@@ -419,6 +417,9 @@ const styles = {
         marginLeft: '140px',
         marginBottom: '1rem',
         lineHeight: 1.1,
+    },
+    techBadge: {
+        opacity: 0.5,
     },
     authorBoxRedesign: {
         display: 'flex',
