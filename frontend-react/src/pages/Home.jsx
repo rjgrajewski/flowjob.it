@@ -45,6 +45,28 @@ const DatabaseIcon = () => (
     </svg>
 );
 
+const AnimatedCounter = ({ value, label, duration = value / 1000 }) => {
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+        const controls = animate(0, value, {
+            duration: duration,
+            ease: "easeOut",
+            onUpdate: (latest) => setDisplayValue(latest ? Math.floor(latest) : 0),
+        });
+        return () => controls.stop();
+    }, [value, duration]);
+
+    return (
+        <div style={styles.counterItem}>
+            <div style={styles.counterValue}>
+                + {displayValue.toLocaleString()}
+            </div>
+            <div style={styles.counterLabel}>{label}</div>
+        </div>
+    );
+};
+
 const FloatingSymbol = ({ icon: Icon, color, delay = 0, size = 30, initialPos = { left: '0%', top: '0%' } }) => (
     <motion.div
         style={{
