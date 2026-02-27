@@ -1,6 +1,6 @@
 # flowjob: IT Job Search Engine
 
-![Python 3.9](https://img.shields.io/badge/python-3.9-blue) ![React](https://img.shields.io/badge/React-18-61dafb) ![Vite](https://img.shields.io/badge/Vite-5-646cff) ![FastAPI](https://img.shields.io/badge/FastAPI-0.104-009688) ![Playwright](https://img.shields.io/badge/playwright-1.52.0-blue) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.3-blue) ![AWS](https://img.shields.io/badge/AWS-RDS-orange) ![AWS](https://img.shields.io/badge/AWS-Fargate-orange)
+![Python](https://img.shields.io/badge/Python-3.9+-3776ab?style=for-the-badge&logo=python&logoColor=white) ![React](https://img.shields.io/badge/React-18-61dafb?style=for-the-badge&logo=react&logoColor=black) ![AWS](https://img.shields.io/badge/AWS-Fargate%20%7C%20RDS%20%7C%20Bedrock-ff9900?style=for-the-badge&logo=amazon-aws&logoColor=white) ![Playwright](https://img.shields.io/badge/Playwright-Browser%20Automation-2ead33?style=for-the-badge&logo=playwright&logoColor=white)
 
 ## Overview
 
