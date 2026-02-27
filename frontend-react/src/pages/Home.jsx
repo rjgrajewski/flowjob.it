@@ -1,223 +1,279 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-const features = [
-    {
-        icon: '◈',
-        title: '1. Build a Skill Graph',
-        description: 'Navigate a visual map of tech skills. Click what you know, and importantly, shift+click to block what you hate.',
-        accent: 'var(--accent-cyan)',
-    },
-    {
-        icon: '⟳',
-        title: '2. Transparent Scoring',
-        description: 'The algorithm compares your graph against real job descriptions. You get a clear match score showing exactly why a job fits.',
-        accent: 'var(--accent-violet)',
-    },
-    {
-        icon: '⬡',
-        title: '3. Absolute Dealbreakers',
-        description: 'If a job requires an "Anti-Skill" you blocked, we filter it out. Period. No compromises on the tools you despise.',
-        accent: 'var(--accent-amber)',
-    },
-];
-
-const stats = [
-    { value: '12k+', label: 'Job Offers Scraped' },
-    { value: '500+', label: 'Tech Skills Mapped' },
-    { value: '100%', label: 'Open & Honest' },
-];
-
 const fadeUp = {
-    hidden: { opacity: 0, y: 24 },
-    show: (i) => ({ opacity: 1, y: 0, transition: { delay: i * 0.12, duration: 0.5 } }),
+    hidden: { opacity: 0, y: 40 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
 };
+
+const staggerContainer = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: { staggerChildren: 0.2 }
+    }
+};
+
+const archNodes = [
+    { label: "EventBridge", desc: "(02:00 UTC)", color: "var(--accent-amber)" },
+    { label: "ECS Fargate", desc: "(Scout Scraper)", color: "var(--accent-cyan)" },
+    { label: "AWS RDS", desc: "(PostgreSQL)", color: "var(--accent-blue)" },
+    { label: "Atlas Pipeline", desc: "(Normalization)", color: "var(--accent-violet)" },
+    { label: "flowjob", desc: "Search Layer", color: "var(--text-primary)" },
+];
 
 export default function Home() {
     return (
-        <div>
-            {/* ===== HERO ===== */}
-            <section style={styles.hero}>
-                <div className="container" style={styles.heroInner}>
-                    <motion.div
-                        style={styles.heroLeft}
-                        initial={{ opacity: 0, x: -30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <div style={styles.heroBadge}>
-                            <span style={styles.heroBadgeDot} />
-                            An honest hobby project
-                        </div>
-                        <h1 style={styles.heroHeading}>
-                            Find your <span className="gradient-text">flow</span>
-                            <br />in tech jobs
-                        </h1>
-                        <p style={styles.heroSub}>
-                            I built flowjob to scratch my own itch. It's a non-profit hobby project designed to map your real skills, block the tech you hate, and match you with jobs using straightforward data—no corporate BS.
-                        </p>
-                        <div style={styles.heroCtas}>
-                            <Link to="/get-started?tab=login" className="btn btn-primary" style={{ fontSize: '1rem', padding: '0.8rem 2rem' }}>
-                                Get Started →
-                            </Link>
-                            <Link to="/jobs" className="btn btn-ghost" style={{ fontSize: '1rem', padding: '0.8rem 1.5rem' }}>
-                                Browse Offers
-                            </Link>
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        style={styles.heroRight}
-                        initial={{ opacity: 0, scale: 0.92 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.7, delay: 0.2 }}
-                    >
-                        <div style={styles.abstractGraphic}>
-                            <motion.div
-                                style={{ ...styles.shape, ...styles.shape1 }}
-                                animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
-                                transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-                            />
-                            <motion.div
-                                style={{ ...styles.shape, ...styles.shape2 }}
-                                animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
-                                transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-                            />
-                            <motion.div
-                                style={{ ...styles.shape, ...styles.shape3 }}
-                                animate={{ scale: [1, 1.05, 1], rotate: [45, 90, 45] }}
-                                transition={{ repeat: Infinity, duration: 10, ease: "easeInOut" }}
-                            />
-                            <div style={styles.heroGlow} />
-                        </div>
-                    </motion.div>
-                </div>
-
-                {/* Stats row */}
+        <div style={styles.page}>
+            {/* 1. HERO - HELLO WORLD */}
+            <section style={styles.sectionHero}>
+                <div style={styles.heroGlow} />
                 <div className="container">
-                    <div style={styles.statsRow}>
-                        {stats.map((s, i) => (
-                            <motion.div
-                                key={i}
-                                style={styles.statItem}
-                                custom={i}
-                                initial="hidden"
-                                animate="show"
-                                variants={fadeUp}
-                            >
-                                <span style={styles.statValue}>{s.value}</span>
-                                <span style={styles.statLabel}>{s.label}</span>
+                    <motion.div
+                        initial="hidden" animate="show" variants={staggerContainer}
+                        style={styles.heroContent}
+                    >
+                        <motion.div variants={fadeUp} style={styles.badge}>
+                            <span style={styles.badgeDot} />
+                            flowjob.it — how it started
+                        </motion.div>
+                        <div style={styles.authorSectionWrapper}>
+                            <motion.div variants={fadeUp} style={styles.avatarWrapperAbsolute}>
+                                <img
+                                    src="https://github.com/rjgrajewski.png"
+                                    alt="Rafal"
+                                    style={styles.avatar}
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'flex';
+                                    }}
+                                />
+                                <div style={styles.avatarFallback}>RG</div>
                             </motion.div>
-                        ))}
-                    </div>
+
+                            <motion.h1 variants={fadeUp} style={styles.headingBio}>
+                                Hello <span className="gradient-text">World!</span>
+                            </motion.h1>
+
+                            <motion.div variants={fadeUp} style={styles.authorBoxRedesign}>
+                                <div style={styles.authorText}>
+                                    <p style={styles.greeting}>My name is Rafal, and I am the creator of flowjob.it.</p>
+                                    <p style={styles.bio}>
+                                        I’m a data analyst by profession, a music producer by passion, and someone who moves comfortably between code, sound design, visual storytelling, graphic design, and video editing. I like building things — whether it’s a beat, a cinematic sequence, or a scalable data pipeline.<br /><br />
+                                        At my core, I work with data — designing SQL queries, building reporting models, and creating analytical layers with one clear objective: turning chaos into logic. On a daily basis, I’m responsible for the technical side of processing recruitment data at scale. I design data structures, optimize performance, and think in terms of scalability and data quality. I’m not interested in things merely working — I care about them working in a way that makes sense.
+                                    </p>
+                                </div>
+                            </motion.div>
+                        </div>
+                    </motion.div>
                 </div>
             </section>
 
-            {/* ===== FEATURES ===== */}
-            <section className="section">
+            {/* 2. THE PROBLEM */}
+            <section className="section" style={styles.sectionDark}>
                 <div className="container">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5 }}
-                        style={{ textAlign: 'center', marginBottom: '3rem' }}
+                        initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
+                        style={styles.twoCol}
                     >
-                        <h2>How it <span className="gradient-text">actually works</span></h2>
-                        <p style={{ color: 'var(--text-secondary)', marginTop: '0.75rem', maxWidth: '500px', margin: '0.75rem auto 0' }}>
-                            No AI buzzwords, no hidden recruiter algorithms. Just a transparent matching engine built by a developer, for developers.
-                        </p>
-                    </motion.div>
-
-                    <div style={styles.featuresGrid}>
-                        {features.map((f, i) => (
-                            <motion.div
-                                key={i}
-                                className="card"
-                                style={{ ...styles.featureCard, borderTopColor: f.accent }}
-                                custom={i}
-                                initial="hidden"
-                                whileInView="show"
-                                viewport={{ once: true }}
-                                variants={fadeUp}
-                                whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                            >
-                                <div style={{ ...styles.featureIcon, color: f.accent }}>{f.icon}</div>
-                                <h3 style={styles.featureTitle}>{f.title}</h3>
-                                <p style={styles.featureDesc}>{f.description}</p>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ===== SPLIT SECTIONS ===== */}
-            <section className="section" style={{ borderTop: '1px solid var(--border)' }}>
-                <div className="container">
-                    <div style={{ ...styles.split, flexDirection: 'row' }}>
-                        <div style={styles.splitImg}>
-                            <div style={styles.abstractGraphicSmall}>
-                                <motion.div
-                                    style={{ ...styles.gridShape, ...styles.gridShape1 }}
-                                    animate={{ opacity: [0.5, 0.8, 0.5] }}
-                                    transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                                />
-                                <motion.div
-                                    style={{ ...styles.gridShape, ...styles.gridShape2 }}
-                                    animate={{ opacity: [0.3, 0.7, 0.3] }}
-                                    transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
-                                />
-                                <motion.div
-                                    style={{ ...styles.gridShape, ...styles.gridShape3 }}
-                                    animate={{ opacity: [0.6, 1, 0.6] }}
-                                    transition={{ repeat: Infinity, duration: 3, ease: "easeInOut", delay: 2 }}
-                                />
+                        <motion.div variants={fadeUp} style={styles.colLeft}>
+                            <h2 style={styles.sectionTitle}>The Problem</h2>
+                            <p style={styles.paragraph}>As I kept expanding my skills in SQL, data transformation, and reporting, I decided to validate myself on the job market.</p>
+                            <p style={styles.paragraph}>Very quickly, I ran into two problems. First, I noticed that this kind of skillset often goes hand in hand with expectations around building web scrapers. Second, browsing job boards felt painfully inefficient.</p>
+                            <blockquote style={styles.quote}>
+                                "The signal was there, but so was the noise. And the noise was winning."
+                            </blockquote>
+                            <p style={styles.paragraph}>I would receive offers that indeed mentioned SQL or data modeling, yet at the same time required things that immediately disqualified me — for example, fluency in additional foreign languages. It was frustrating.</p>
+                        </motion.div>
+                        <motion.div variants={fadeUp} style={styles.colRight}>
+                            <div style={styles.illustrationBox}>
+                                <motion.div style={styles.noiseCircle} animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.6, 0.3] }} transition={{ repeat: Infinity, duration: 2 }} />
+                                <motion.div style={styles.signalCircle} animate={{ scale: [1, 1.05, 1], rotate: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 4 }} />
+                                <div style={styles.illustrationText}>SIGNAL VS NOISE</div>
                             </div>
-                        </div>
-                        <motion.div
-                            style={styles.splitText}
-                            initial={{ opacity: 0, x: 30 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            <p style={styles.splitLabel}>Honest Profiling</p>
-                            <h2>Map your skills, <span className="gradient-text">not buzzwords</span></h2>
-                            <p style={{ color: 'var(--text-secondary)', marginTop: '1rem', lineHeight: 1.7 }}>
-                                I wanted a tool where I could visually organize what I know and what I absolutely refuse to work with. It takes two minutes to click through the bubble cloud, and the algorithm honors your choices completely.
-                            </p>
-                            <Link to="/get-started" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
-                                Build my profile →
-                            </Link>
                         </motion.div>
-                    </div>
+                    </motion.div>
+                </div>
+            </section>
 
-                    <div style={{ ...styles.split, marginTop: '5rem' }}>
-                        <motion.div
-                            style={styles.splitText}
-                            initial={{ opacity: 0, x: -30 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            <p style={styles.splitLabel}>Transparent Data</p>
-                            <h2>Understand <span className="gradient-text">why you match</span></h2>
-                            <p style={{ color: 'var(--text-secondary)', marginTop: '1rem', lineHeight: 1.7 }}>
-                                Every offer is scored against your skill graph based on plain data logic. A cyan glow means a perfect fit. I built this so we can stop wasting time reading irrelevant job descriptions.
+            {/* 3. THE FOUNDATION: DATA MODEL */}
+            <section className="section" style={styles.sectionLight}>
+                <div className="container">
+                    <motion.div
+                        initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
+                        style={{ ...styles.twoCol, flexDirection: 'row-reverse' }}
+                    >
+                        <motion.div variants={fadeUp} style={styles.colLeft}>
+                            <h2 style={styles.sectionTitle}>Logical Layer</h2>
+                            <p style={styles.paragraph}>I didn’t want to build “another job board.” The internet doesn’t need one. I wanted to build a logical layer between the candidate and the job listing.</p>
+                            <p style={styles.paragraph}>Job offers are not just text — they are already data. They just aren’t treated that way. If something can be parsed, normalized, and modeled, it can be queried properly. And once you can query it properly, filtering, comparison, and matching start to actually make sense.</p>
+                            <p style={styles.highlightText}>
+                                That’s why the foundation of flowjob is not a list of job ads. The foundation is a data model.
                             </p>
-                            <Link to="/jobs" className="btn btn-ghost" style={{ marginTop: '1.5rem' }}>
-                                Explore Offers →
-                            </Link>
                         </motion.div>
-                        <div style={styles.splitImg}>
-                            <div style={styles.abstractGraphicSmall}>
+                        <motion.div variants={fadeUp} style={styles.colRight}>
+                            <div style={styles.codeWindow}>
+                                <div style={styles.codeHeader}>
+                                    <span style={styles.dotRed} /> <span style={styles.dotYellow} /> <span style={styles.dotGreen} />
+                                    <span style={styles.codeTitle}>job_offer.json</span>
+                                </div>
+                                <pre style={styles.codeBody}>
+                                    {`{
+  "id": "offer_9f8a",
+  "title": "Data Engineer",
+  "stack": [
+    { "skill": "SQL", "required": true },
+    { "skill": "Python", "required": true },
+    { "skill": "AWS", "required": true }
+  ],
+  "parsed": true,
+  "normalized": true
+}`}
+                                </pre>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* 4. PREPARING THE SCRAPER */}
+            <section className="section" style={styles.sectionDark}>
+                <div className="container" style={styles.centerContainer}>
+                    <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer}>
+                        <motion.h2 variants={fadeUp} style={{ ...styles.sectionTitle, textAlign: 'center' }}>Preparing the Scraper</motion.h2>
+
+                        <div style={styles.gridCards}>
+                            <motion.div variants={fadeUp} style={styles.card}>
+                                <div style={styles.cardIcon}>🎯</div>
+                                <h3 style={styles.cardTitle}>1. JustJoin.it</h3>
+                                <p style={styles.cardText}>Selected for its strong focus on transparent tech stacks and overall engineering quality, exposing structured skill info consistently.</p>
+                            </motion.div>
+                            <motion.div variants={fadeUp} style={styles.card}>
+                                <div style={styles.cardIcon}>⚙️</div>
+                                <h3 style={styles.cardTitle}>2. The Challenge</h3>
+                                <p style={styles.cardText}>Scraping was non-trivial. The platform uses dynamic DOM loading without classic pagination, requiring robust browser automation.</p>
+                            </motion.div>
+                            <motion.div variants={fadeUp} style={styles.card}>
+                                <div style={styles.cardIcon}>🐍</div>
+                                <h3 style={styles.cardTitle}>3. Python & Playwright</h3>
+                                <p style={styles.cardText}>Chose Python to strengthen my market position. After experimenting with Selenium and BS4, Playwright delivered the most reliable results.</p>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* 5. ARCHITECTURE & AUTOMATION */}
+            <section className="section" style={styles.sectionLight}>
+                <div className="container">
+                    <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer}>
+                        <motion.h2 variants={fadeUp} style={{ ...styles.sectionTitle, textAlign: 'center' }}>Event-Driven Automation</motion.h2>
+                        <motion.p variants={fadeUp} style={{ ...styles.paragraph, textAlign: 'center', maxWidth: '800px', margin: '0 auto 3rem' }}>
+                            The automation follows an event-driven model. <strong>Scout</strong> (the scraping module) triggers <strong>Atlas</strong> (the normalization pipeline). Deployed as a containerized workload on AWS Fargate, the system updates daily with full observability.
+                        </motion.p>
+
+                        <div style={styles.architectureFlow}>
+                            {archNodes.map((node, i) => (
+                                <motion.div key={i} variants={fadeUp} style={styles.archNodeWrapper}>
+                                    <div style={{ ...styles.archNode, borderColor: node.color }}>
+                                        <div style={{ color: node.color, fontWeight: 'bold' }}>{node.label}</div>
+                                        <div style={styles.archDesc}>{node.desc}</div>
+                                    </div>
+                                    {i < archNodes.length - 1 && (
+                                        <motion.div
+                                            style={styles.archArrow}
+                                            animate={{ y: [0, 5, 0] }}
+                                            transition={{ repeat: Infinity, duration: 1.5 }}
+                                        >
+                                            ↓
+                                        </motion.div>
+                                    )}
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* 6. TACKLING SKILL CHAOS WITH AI */}
+            <section className="section" style={styles.sectionDark}>
+                <div className="container">
+                    <motion.div
+                        initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
+                        style={styles.twoCol}
+                    >
+                        <motion.div variants={fadeUp} style={styles.colLeft}>
+                            <h2 style={styles.sectionTitle}>Tackling Skill Chaos with <span className="gradient-text">AI</span></h2>
+                            <p style={styles.paragraph}>Many listings contained the same requirements written in multiple ways — e.g., <em>MS Excel, Microsoft Excel, Excel</em>. From a data perspective, they fragment the signal.</p>
+                            <p style={styles.paragraph}>I brought <strong>Amazon Bedrock</strong> into the architecture. The <strong>Atlas</strong> service interprets raw skill text and maps it into a consistent semantic representation.</p>
+                            <p style={styles.paragraph}>Instead of relying purely on expensive embeddings, the approach sorts raw skills, splits them, and normalizes them via a carefully tuned system prompt. Each run only processes unseen entries, keeping the Lambda function incredibly fast and cost-efficient.</p>
+                        </motion.div>
+                        <motion.div variants={fadeUp} style={{ ...styles.colRight, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <div style={styles.aiBox}>
+                                <div style={styles.aiWordRaw}>MS Excel</div>
+                                <div style={styles.aiWordRaw}>Microsoft Excel</div>
+                                <div style={styles.aiWordRaw}>Excel</div>
                                 <motion.div
-                                    style={styles.scoreCircleBackground}
-                                />
+                                    style={styles.aiFunnel}
+                                    animate={{ opacity: [0.5, 1, 0.5] }}
+                                    transition={{ repeat: Infinity, duration: 2 }}
+                                >
+                                    ↓ Bedrock Normalization ↓
+                                </motion.div>
+                                <div style={styles.aiWordClean}>Excel</div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* 7. FRONTEND VIBE & D3 */}
+            <section className="section" style={styles.sectionLight}>
+                <div className="container">
+                    <motion.div
+                        initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
+                        style={{ ...styles.twoCol, flexDirection: 'row-reverse' }}
+                    >
+                        <motion.div variants={fadeUp} style={styles.colLeft}>
+                            <p style={styles.labelSection}>Frontend — the “vibe interface”</p>
+                            <h2 style={styles.sectionTitle}>Designing the Matching Experience</h2>
+                            <p style={styles.paragraph}>I wanted the experience to feel fundamentally different from traditional job search filters. Using Vite and React, I built an interactive skill map where technologies behave more like objects in a living ecosystem.</p>
+                            <p style={styles.paragraph}>With D3-force and Framer Motion, bubbles move, reposition, and flow into your profile. Users don’t have to think in terms of filters — they explore, they tap, they follow momentum. The system continuously responds by surfacing the next most relevant skills.</p>
+                            <p style={styles.paragraph}>Left click means "I have it". Shift+click means "avoid".</p>
+                        </motion.div>
+                        <motion.div variants={fadeUp} style={styles.colRight}>
+                            <div style={styles.vibeMap}>
+                                <motion.div style={{ ...styles.vibeNode, top: '20%', left: '30%', borderColor: 'var(--accent-cyan)' }} animate={{ y: [0, -10, 0], x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 4 }}>React</motion.div>
+                                <motion.div style={{ ...styles.vibeNode, top: '50%', left: '50%', borderColor: 'var(--accent-violet)', transform: 'translate(-50%, -50%)', background: 'var(--bg-elevated)', border: '2px solid var(--accent-violet)' }} animate={{ y: [0, 10, 0], scale: [1, 1.05, 1] }} transition={{ repeat: Infinity, duration: 5 }}>Skills Match</motion.div>
+                                <motion.div style={{ ...styles.vibeNode, top: '70%', left: '20%', borderColor: 'var(--accent-amber)' }} animate={{ y: [0, 8, 0], x: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 4.5 }}>Python</motion.div>
+                                <motion.div style={{ ...styles.vibeNode, top: '30%', right: '20%', borderColor: 'var(--accent-amber)' }} animate={{ y: [0, -5, 0], x: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 3 }}>SQL</motion.div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* 8. BACKEND RECOMMENDATION */}
+            <section className="section" style={styles.sectionDark}>
+                <div className="container">
+                    <motion.div
+                        initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
+                        style={styles.twoCol}
+                    >
+                        <motion.div variants={fadeUp} style={styles.colLeft}>
+                            <p style={styles.labelSection}>Backend — SQL-native engine</p>
+                            <h2 style={styles.sectionTitle}>Pragmatic Core</h2>
+                            <p style={styles.paragraph}>Behind this playful surface sits a very pragmatic core. The heart of the recommendation logic lives directly in PostgreSQL.</p>
+                            <p style={styles.paragraph}>It aggregates the market to surface hot tech initially. Once you select a skill, the logic shifts into personalization mode, finding real co-occurrence patterns in job offers. This creates a recommendation loop that feels predictive without heavy ML infrastructure.</p>
+                            <p style={styles.paragraph}>The Match Score is computed in real time on the frontend, making the experience feel immediate.</p>
+                        </motion.div>
+                        <motion.div variants={fadeUp} style={styles.colRight}>
+                            <div style={styles.matchScoreBox}>
                                 <motion.div
                                     style={styles.scoreCircleForeground}
                                     initial={{ pathLength: 0 }}
-                                    animate={{ pathLength: 1 }}
+                                    whileInView={{ pathLength: 1 }}
+                                    viewport={{ once: true }}
                                     transition={{ duration: 2, ease: "easeOut" }}
                                 >
                                     <svg viewBox="0 0 100 100" style={styles.svgScore}>
@@ -233,30 +289,34 @@ export default function Home() {
                                     <div style={styles.scoreText}>98%</div>
                                 </motion.div>
                             </div>
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
                 </div>
             </section>
 
-            {/* ===== CTA BANNER ===== */}
-            <section className="section" style={{ borderTop: '1px solid var(--border)' }}>
-                <div className="container">
-                    <motion.div
-                        style={styles.ctaBanner}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        <h2 style={{ color: '#000', fontWeight: 800 }}>
-                            Try my hobby project
-                        </h2>
-                        <p style={{ color: 'rgba(0,0,0,0.65)', marginTop: '0.5rem', fontSize: '1.05rem' }}>
-                            It's free, no ads, just a developer trying to fix the job search experience.
-                        </p>
-                        <Link to="/get-started" className="btn" style={{ marginTop: '1.5rem', background: '#000', color: 'var(--accent-cyan)', fontSize: '1rem', padding: '0.8rem 2rem' }}>
-                            Start for free →
-                        </Link>
+            {/* 9. CV BUILDER & NEXT STEPS */}
+            <section className="section" style={styles.sectionLight}>
+                <div className="container" style={{ textAlign: 'center' }}>
+                    <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer} style={{ maxWidth: '800px', margin: '0 auto' }}>
+                        <motion.h2 variants={fadeUp} style={styles.sectionTitle}>The Last Mile: CV Builder</motion.h2>
+                        <motion.p variants={fadeUp} style={styles.paragraph}>
+                            Born from a simple observation: right before applying, it often makes sense to manually tailor your document. flowjob renders the CV directly in the browser using <code>@react-pdf/renderer</code> for true live preview.
+                        </motion.p>
+                        <motion.p variants={fadeUp} style={styles.paragraph}>
+                            Skills selected on the map don’t disappear into a black box — they flow directly into the CV builder. In the end, it turns your activity inside flowjob into a market-ready asset.
+                        </motion.p>
+
+                        <motion.div variants={fadeUp} style={styles.nextStepsBox}>
+                            <h3 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>What's next?</h3>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>1. One-click CV tailoring based on specific job descriptions.</p>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>2. Deeper recommendation intelligence to analyze full semantic content.</p>
+
+                            <p style={{ fontWeight: 600, color: 'var(--accent-cyan)', marginBottom: '2rem', fontSize: '1.2rem' }}>Not just a job search tool, but an intelligent career interface.</p>
+
+                            <Link to="/get-started" className="btn btn-primary" style={{ fontSize: '1.2rem', padding: '1rem 3rem' }}>
+                                Start your journey →
+                            </Link>
+                        </motion.div>
                     </motion.div>
                 </div>
             </section>
@@ -265,7 +325,7 @@ export default function Home() {
             <footer style={styles.footer}>
                 <div className="container" style={{ textAlign: 'center' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                        © 2026 <strong style={{ color: 'var(--text-primary)' }}>flowjob</strong>. All rights reserved.
+                        © 2026 <strong style={{ color: 'var(--text-primary)' }}>flowjob</strong>. All rights reserved. Built by Rafal Grajewski.
                     </p>
                 </div>
             </footer>
@@ -274,238 +334,396 @@ export default function Home() {
 }
 
 const styles = {
-    hero: {
-        paddingTop: '5rem',
+    page: {
+        width: '100%',
+    },
+    sectionHero: {
+        paddingTop: '6rem',
         paddingBottom: '4rem',
         position: 'relative',
         overflow: 'hidden',
-    },
-    heroInner: {
+        minHeight: '70vh',
         display: 'flex',
         alignItems: 'center',
-        gap: '4rem',
-        marginBottom: '4rem',
     },
-    heroLeft: {
-        flex: '1 1 420px',
-        minWidth: 0,
+    heroGlow: {
+        position: 'absolute',
+        top: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '800px',
+        height: '400px',
+        background: 'radial-gradient(ellipse at top, rgba(0,229,255,0.15) 0%, transparent 70%)',
+        zIndex: 0,
+        filter: 'blur(50px)',
     },
-    heroBadge: {
+    heroContainer: {
+        position: 'relative',
+        zIndex: 1,
+    },
+    heroContent: {
+        maxWidth: '800px',
+        margin: '0 auto',
+        textAlign: 'center',
+    },
+    badge: {
         display: 'inline-flex',
         alignItems: 'center',
         gap: '0.5rem',
         background: 'rgba(0,229,255,0.08)',
         border: '1px solid rgba(0,229,255,0.25)',
         borderRadius: '999px',
-        padding: '0.3rem 0.9rem',
-        fontSize: '0.8rem',
+        padding: '0.4rem 1rem',
+        fontSize: '0.85rem',
         color: 'var(--accent-cyan)',
-        marginBottom: '1.25rem',
+        marginBottom: '2rem',
         fontWeight: 500,
     },
-    heroBadgeDot: {
-        display: 'inline-block',
-        width: '6px',
-        height: '6px',
+    badgeDot: {
+        width: '8px',
+        height: '8px',
         borderRadius: '50%',
         background: 'var(--accent-cyan)',
-        boxShadow: '0 0 6px var(--accent-cyan)',
+        boxShadow: '0 0 8px var(--accent-cyan)',
         animation: 'pulse 2s infinite',
     },
-    heroHeading: {
+    heading: {
+        fontSize: '4rem',
+        fontWeight: 800,
+        letterSpacing: '-0.03em',
+        marginBottom: '4rem',
         lineHeight: 1.1,
-        letterSpacing: '-0.02em',
-        marginBottom: '1.25rem',
     },
-    heroSub: {
-        color: 'var(--text-secondary)',
-        fontSize: '1.05rem',
-        lineHeight: 1.7,
-        marginBottom: '2rem',
-        maxWidth: '460px',
-    },
-    heroCtas: {
-        display: 'flex',
-        gap: '1rem',
-        flexWrap: 'wrap',
-    },
-    heroRight: {
-        flex: '1 1 380px',
-        display: 'flex',
-        justifyContent: 'center',
-    },
-    abstractGraphic: {
+    authorSectionWrapper: {
         position: 'relative',
+        marginTop: '2rem',
+        textAlign: 'left',
+    },
+    avatarWrapperAbsolute: {
+        position: 'absolute',
+        top: '-40px',
+        left: '-20px',
+        width: '140px',
+        height: '140px',
+        borderRadius: '50%',
+        overflow: 'hidden',
+        border: '4px solid var(--accent-cyan)',
+        boxShadow: '0 0 40px rgba(0,229,255,0.4)',
+        zIndex: 10,
+        background: 'var(--bg-surface)',
+    },
+    headingBio: {
+        fontSize: '3.5rem',
+        fontWeight: 800,
+        letterSpacing: '-0.03em',
+        marginLeft: '140px',
+        marginBottom: '1rem',
+        lineHeight: 1.1,
+    },
+    authorBoxRedesign: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: '2rem',
+        background: 'var(--bg-elevated)',
+        padding: '5rem 3rem 3rem 3rem',
+        borderRadius: '24px',
+        border: '1px solid var(--border)',
+        textAlign: 'left',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+        marginTop: '0',
+    },
+    avatar: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
         width: '100%',
-        maxWidth: '440px',
-        height: '440px',
+        height: '100%',
+        objectFit: 'cover',
+        objectPosition: 'center',
+        zIndex: 2,
+    },
+    avatarFallback: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        fontSize: '2.5rem',
+        fontWeight: 'bold',
+        color: 'var(--text-secondary)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    shape: {
-        position: 'absolute',
-        borderRadius: 'var(--radius-xl)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-    },
-    shape1: {
-        width: '280px',
-        height: '320px',
-        background: 'linear-gradient(135deg, rgba(0,229,255,0.1) 0%, rgba(0,229,255,0.02) 100%)',
-        border: '1px solid rgba(0,229,255,0.2)',
-        zIndex: 2,
-        borderRadius: '30px',
-        transform: 'rotate(-5deg)',
-    },
-    shape2: {
-        width: '240px',
-        height: '240px',
-        background: 'linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(139,92,246,0.02) 100%)',
-        border: '1px solid rgba(139,92,246,0.2)',
-        borderRadius: '50%',
-        top: '10%',
-        right: '5%',
         zIndex: 1,
     },
-    shape3: {
-        width: '180px',
-        height: '180px',
-        background: 'linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(245,158,11,0.02) 100%)',
-        border: '1px solid rgba(245,158,11,0.2)',
-        bottom: '15%',
-        left: '10%',
-        zIndex: 3,
-        borderRadius: '20px',
-        transform: 'rotate(15deg)',
-    },
-    heroGlow: {
-        position: 'absolute',
-        inset: '10%',
-        background: 'radial-gradient(circle at center, rgba(0,229,255,0.15) 0%, transparent 60%)',
-        zIndex: 0,
-        filter: 'blur(40px)',
-    },
-    statsRow: {
-        display: 'flex',
-        gap: '0',
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-xl)',
-        overflow: 'hidden',
-        maxWidth: '600px',
-        margin: '0 auto',
-    },
-    statItem: {
+    authorText: {
         flex: 1,
+    },
+    greeting: {
+        fontSize: '1.5rem',
+        fontWeight: 700,
+        color: 'var(--text-primary)',
+        marginBottom: '1rem',
+    },
+    bio: {
+        fontSize: '1rem',
+        lineHeight: 1.7,
+        color: 'var(--text-secondary)',
+        margin: 0,
+    },
+    sectionDark: {
+        padding: '6rem 0',
+        background: 'var(--bg-default)',
+    },
+    sectionLight: {
+        padding: '6rem 0',
+        background: 'var(--bg-surface)',
+        borderTop: '1px solid var(--border)',
+        borderBottom: '1px solid var(--border)',
+    },
+    sectionTitle: {
+        fontSize: '2.5rem',
+        fontWeight: 800,
+        marginBottom: '1.5rem',
+        letterSpacing: '-0.02em',
+    },
+    labelSection: {
+        color: 'var(--accent-cyan)',
+        fontSize: '0.85rem',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        marginBottom: '1rem',
+    },
+    paragraph: {
+        fontSize: '1.1rem',
+        lineHeight: 1.7,
+        color: 'var(--text-secondary)',
+        marginBottom: '1.5rem',
+    },
+    highlightText: {
+        fontSize: '1.25rem',
+        fontWeight: 600,
+        lineHeight: 1.6,
+        color: 'var(--accent-cyan)',
+        paddingLeft: '1.5rem',
+        borderLeft: '4px solid var(--accent-cyan)',
+        marginTop: '2rem',
+    },
+    quote: {
+        fontSize: '1.4rem',
+        fontStyle: 'italic',
+        fontWeight: 600,
+        lineHeight: 1.5,
+        color: 'var(--text-primary)',
+        margin: '2rem 0',
+        padding: '0 2rem',
+        borderLeft: '4px solid var(--accent-amber)',
+    },
+    twoCol: {
+        display: 'flex',
+        gap: '4rem',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+    },
+    colLeft: {
+        flex: '1 1 500px',
+    },
+    colRight: {
+        flex: '1 1 400px',
+    },
+    centerContainer: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '1.25rem',
-        borderRight: '1px solid var(--border)',
     },
-    statValue: {
-        fontSize: '1.75rem',
-        fontWeight: 800,
-        color: 'var(--accent-cyan)',
-        letterSpacing: '-0.03em',
-    },
-    statLabel: {
-        fontSize: '0.8rem',
-        color: 'var(--text-secondary)',
-        marginTop: '0.2rem',
-    },
-    featuresGrid: {
+    gridCards: {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '1.25rem',
+        gap: '2rem',
+        marginTop: '3rem',
     },
-    featureCard: {
-        borderTop: '2px solid',
-        paddingTop: '1.5rem',
+    card: {
+        background: 'var(--bg-elevated)',
+        padding: '2rem',
+        borderRadius: '20px',
+        border: '1px solid var(--border)',
     },
-    featureIcon: {
-        fontSize: '2rem',
-        marginBottom: '0.75rem',
-        display: 'block',
+    cardIcon: {
+        fontSize: '2.5rem',
+        marginBottom: '1rem',
     },
-    featureTitle: {
-        fontSize: '1.1rem',
+    cardTitle: {
+        fontSize: '1.25rem',
+        marginBottom: '1rem',
         fontWeight: 700,
-        marginBottom: '0.5rem',
     },
-    featureDesc: {
+    cardText: {
         color: 'var(--text-secondary)',
-        fontSize: '0.9rem',
         lineHeight: 1.6,
     },
-    split: {
+    codeWindow: {
+        background: '#1e1e1e',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        width: '100%',
+    },
+    codeHeader: {
+        background: '#2d2d2d',
+        padding: '10px 15px',
         display: 'flex',
         alignItems: 'center',
-        gap: '4rem',
-        flexWrap: 'wrap',
+        gap: '8px',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
     },
-    splitImg: {
-        flex: '1 1 300px',
-        display: 'flex',
-        justifyContent: 'center',
+    dotRed: { width: 12, height: 12, borderRadius: '50%', background: '#ff5f56' },
+    dotYellow: { width: 12, height: 12, borderRadius: '50%', background: '#ffbd2e' },
+    dotGreen: { width: 12, height: 12, borderRadius: '50%', background: '#27c93f' },
+    codeTitle: { color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', marginLeft: '10px', fontFamily: 'monospace' },
+    codeBody: {
+        padding: '20px',
+        margin: 0,
+        color: '#e6e6e6',
+        fontFamily: 'monospace',
+        fontSize: '0.95rem',
+        lineHeight: 1.5,
+        overflowX: 'auto',
     },
-    abstractGraphicSmall: {
+    illustrationBox: {
         position: 'relative',
         width: '100%',
-        maxWidth: '380px',
-        height: '380px',
+        height: '350px',
+        background: 'var(--bg-elevated)',
+        borderRadius: '24px',
+        border: '1px solid var(--border)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        overflow: 'hidden',
+    },
+    noiseCircle: {
+        position: 'absolute',
+        width: '250px',
+        height: '250px',
+        borderRadius: '50%',
+        background: 'var(--accent-amber)',
+        filter: 'blur(40px)',
+    },
+    signalCircle: {
+        position: 'absolute',
+        width: '100px',
+        height: '100px',
+        background: 'var(--accent-cyan)',
+        borderRadius: '24px',
+        zIndex: 2,
+    },
+    illustrationText: {
+        position: 'absolute',
+        zIndex: 3,
+        fontWeight: 'bold',
+        color: 'var(--bg-default)',
+        letterSpacing: '0.1em',
+    },
+    architectureFlow: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginTop: '2rem',
+    },
+    archNodeWrapper: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+    },
+    archNode: {
         background: 'var(--bg-elevated)',
-        borderRadius: 'var(--radius-2xl)',
+        border: '2px solid',
+        borderRadius: '12px',
+        padding: '1.25rem 2rem',
+        textAlign: 'center',
+        width: '300px',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+    },
+    archDesc: {
+        color: 'var(--text-secondary)',
+        fontSize: '0.9rem',
+        marginTop: '0.25rem',
+    },
+    archArrow: {
+        color: 'var(--text-secondary)',
+        fontSize: '1.5rem',
+        margin: '1rem 0',
+    },
+    aiBox: {
+        background: 'var(--bg-elevated)',
+        padding: '3rem',
+        borderRadius: '24px',
+        border: '1px solid var(--border)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '1rem',
+        width: '100%',
+    },
+    aiWordRaw: {
+        background: 'rgba(255,255,255,0.05)',
+        padding: '0.5rem 1rem',
+        borderRadius: '8px',
+        color: 'var(--text-secondary)',
+        border: '1px dashed rgba(255,255,255,0.1)',
+    },
+    aiFunnel: {
+        color: 'var(--accent-violet)',
+        fontWeight: 'bold',
+        margin: '1rem 0',
+        fontSize: '0.9rem',
+        letterSpacing: '0.1em',
+    },
+    aiWordClean: {
+        background: 'rgba(139, 92, 246, 0.2)',
+        color: '#d8b4fe',
+        border: '1px solid var(--accent-violet)',
+        padding: '1rem 2rem',
+        borderRadius: '12px',
+        fontWeight: 'bold',
+        fontSize: '1.25rem',
+        boxShadow: '0 0 20px rgba(139, 92, 246, 0.2)',
+    },
+    vibeMap: {
+        position: 'relative',
+        width: '100%',
+        height: '400px',
+        background: 'var(--bg-default)',
+        borderRadius: '24px',
         border: '1px solid var(--border)',
         overflow: 'hidden',
     },
-    gridShape: {
+    vibeNode: {
         position: 'absolute',
-        background: 'var(--accent-cyan)',
-        borderRadius: '50%',
-        filter: 'blur(40px)',
+        padding: '0.75rem 1.5rem',
+        borderRadius: '999px',
+        border: '1px solid',
+        background: 'var(--bg-surface)',
+        fontWeight: 600,
+        boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
     },
-    gridShape1: {
-        width: '150px',
-        height: '150px',
-        top: '20%',
-        left: '20%',
-        background: 'var(--accent-cyan)',
-    },
-    gridShape2: {
-        width: '200px',
-        height: '200px',
-        bottom: '10%',
-        right: '10%',
-        background: 'var(--accent-violet)',
-    },
-    gridShape3: {
-        width: '100px',
-        height: '100px',
-        top: '40%',
-        right: '30%',
-        background: 'var(--accent-amber)',
-    },
-    scoreCircleBackground: {
-        position: 'absolute',
-        width: '200px',
-        height: '200px',
-        borderRadius: '50%',
-        border: '8px solid var(--bg-surface)',
+    matchScoreBox: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        height: '300px',
     },
     scoreCircleForeground: {
         position: 'relative',
-        width: '200px',
-        height: '200px',
+        width: '240px',
+        height: '240px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 2,
     },
     svgScore: {
         position: 'absolute',
@@ -516,33 +734,23 @@ const styles = {
         transform: 'rotate(-90deg)',
     },
     scoreText: {
-        fontSize: '3.5rem',
+        fontSize: '4rem',
         fontWeight: 800,
         color: 'var(--text-primary)',
-        fontFamily: 'var(--font-mono)',
+        fontFamily: 'monospace',
         letterSpacing: '-0.05em',
         textShadow: '0 0 20px rgba(0,229,255,0.3)',
     },
-    splitText: {
-        flex: '1 1 360px',
-    },
-    splitLabel: {
-        color: 'var(--accent-cyan)',
-        fontSize: '0.8rem',
-        fontWeight: 600,
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        marginBottom: '0.75rem',
-    },
-    ctaBanner: {
-        background: 'linear-gradient(135deg, var(--accent-cyan), #00b8d4)',
-        borderRadius: 'var(--radius-xl)',
-        padding: '3.5rem',
-        textAlign: 'center',
-        boxShadow: '0 0 60px rgba(0,229,255,0.2)',
+    nextStepsBox: {
+        background: 'linear-gradient(135deg, rgba(0,229,255,0.05) 0%, rgba(139,92,246,0.05) 100%)',
+        border: '1px solid rgba(0,229,255,0.2)',
+        borderRadius: '24px',
+        padding: '4rem 2rem',
+        marginTop: '4rem',
     },
     footer: {
         borderTop: '1px solid var(--border)',
-        padding: '2rem 0',
+        padding: '3rem 0',
+        background: 'var(--bg-default)',
     },
 };
