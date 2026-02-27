@@ -53,3 +53,9 @@ class OffersRepository:
                     "requiredSkills": skills_list,
                 })
             return results
+
+    async def get_offers_count(self) -> int:
+        query = "SELECT COUNT(*) FROM offers"
+        async with self.pool.acquire() as conn:
+            count = await conn.fetchval(query)
+            return count or 0

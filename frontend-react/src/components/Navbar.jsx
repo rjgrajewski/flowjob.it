@@ -30,7 +30,7 @@ export default function Navbar() {
             <div className="container" style={styles.inner}>
                 {/* Logo */}
                 <NavLink to="/" style={styles.logo}>
-                    flow<span style={styles.logoAccent}>job</span>
+                    flowjob<span style={styles.logoAccent}>.it</span>
                 </NavLink>
 
                 {/* Nav Links (authenticated users only) */}

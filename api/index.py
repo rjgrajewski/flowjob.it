@@ -1,4 +1,7 @@
-from backend.main import app
+""" import os
+import sys
 
-# Vercel needs this as the entry point
-# The app is imported from backend.main
+# Add the project root to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) """
+
+from backend.main import app

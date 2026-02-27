@@ -59,3 +59,9 @@ class SkillsRepository:
             }
             for row in rows
         ]
+
+    async def get_skills_count(self) -> int:
+        query = "SELECT COUNT(*) FROM skills"
+        async with self.pool.acquire() as conn:
+            count = await conn.fetchval(query)
+            return count or 0

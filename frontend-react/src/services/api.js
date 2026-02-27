@@ -69,6 +69,11 @@ export const api = {
             return { skills: [], antiSkills: [], highlightedSkills: [] };
         }
     },
+    getStats: async () => {
+        const res = await fetchWithTimeout(`${BASE}/stats`, {}, 5000);
+        if (!res.ok) throw new Error('Failed to fetch stats');
+        return res.json();
+    },
 };
 
 export const auth = {
