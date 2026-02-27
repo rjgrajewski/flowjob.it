@@ -22,13 +22,85 @@ const archNodes = [
     { label: "flowjob", desc: "Search Layer", color: "var(--text-primary)" },
 ];
 
+const MusicIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '100%', height: '100%' }}>
+        <path d="M9 18V5l12-2v13" />
+        <circle cx="6" cy="18" r="3" />
+        <circle cx="18" cy="16" r="3" />
+    </svg>
+);
+
+const AIIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '100%', height: '100%' }}>
+        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+        <path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" />
+    </svg>
+);
+
+const DatabaseIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '100%', height: '100%' }}>
+        <ellipse cx="12" cy="5" rx="9" ry="3" />
+        <path d="M3 5V19A9 3 0 0 0 21 19V5" />
+        <path d="M3 12A9 3 0 0 0 21 12" />
+    </svg>
+);
+
+const FloatingSymbol = ({ icon: Icon, color, delay = 0, size = 30, initialPos = { left: '0%', top: '0%' } }) => (
+    <motion.div
+        style={{
+            position: 'absolute',
+            width: size,
+            height: size,
+            color: color,
+            opacity: 0,
+            zIndex: 1,
+            ...initialPos
+        }}
+        animate={{
+            opacity: [0, 0.4, 0.4, 0],
+            scale: [0.5, 1, 1, 0.5],
+            x: [0, Math.random() * 100 - 50],
+            y: [0, -150 - Math.random() * 100],
+        }}
+        transition={{
+            duration: 15 + Math.random() * 10,
+            repeat: Infinity,
+            delay: delay,
+            ease: "easeInOut"
+        }}
+    >
+        <Icon />
+    </motion.div>
+);
+
+const symbols = [
+    // Left side
+    { icon: MusicIcon, color: 'var(--accent-violet)', size: 24, initialPos: { left: '10%', top: '60%' }, delay: 0 },
+    { icon: AIIcon, color: 'var(--accent-cyan)', size: 28, initialPos: { left: '15%', top: '30%' }, delay: 1 },
+    { icon: DatabaseIcon, color: 'var(--accent-blue)', size: 26, initialPos: { left: '5%', top: '80%' }, delay: 3 },
+    { icon: MusicIcon, color: 'var(--accent-violet)', size: 18, initialPos: { left: '20%', top: '10%' }, delay: 7 },
+
+    // Right side
+    { icon: MusicIcon, color: 'var(--accent-violet)', size: 18, initialPos: { left: '85%', top: '40%' }, delay: 2 },
+    { icon: AIIcon, color: 'var(--accent-cyan)', size: 20, initialPos: { left: '90%', top: '70%' }, delay: 4 },
+    { icon: DatabaseIcon, color: 'var(--accent-blue)', size: 22, initialPos: { left: '80%', top: '20%' }, delay: 5 },
+    { icon: DatabaseIcon, color: 'var(--accent-blue)', size: 18, initialPos: { left: '75%', top: '90%' }, delay: 8 },
+
+    // Top/Bottom bias
+    { icon: MusicIcon, color: 'var(--accent-violet)', size: 20, initialPos: { left: '40%', top: '15%' }, delay: 1.5 },
+    { icon: AIIcon, color: 'var(--accent-cyan)', size: 24, initialPos: { left: '60%', top: '85%' }, delay: 6 },
+];
+
 export default function Home() {
     return (
         <div style={styles.page}>
             {/* 1. HERO - HELLO WORLD */}
             <section style={styles.sectionHero}>
                 <div style={styles.heroGlow} />
-                <div className="container">
+                {symbols.map((sym, i) => (
+                    <FloatingSymbol key={i} {...sym} />
+                ))}
+                <div className="container" style={{ position: 'relative', zIndex: 10 }}>
                     <motion.div
                         initial="hidden" animate="show" variants={staggerContainer}
                         style={styles.heroContent}
@@ -409,6 +481,15 @@ const styles = {
         boxShadow: '0 0 40px rgba(0,229,255,0.4)',
         zIndex: 10,
         background: 'var(--bg-surface)',
+    },
+    floatingSymbolsContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        zIndex: 5,
     },
     headingBio: {
         fontSize: '3.5rem',
