@@ -139,7 +139,8 @@ export default function Home() {
                         Read the Story →
                     </Link>
                     <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem', textAlign: 'center' }}>
-                        © 2026 <strong style={{ color: 'var(--text-primary)' }}>flowjob</strong>. <span style={{ opacity: 0.6 }}>Built by Rafal Grajewski.</span>
+                        <span style={{ opacity: 0.6 }}>Proudly built by Rafal Grajewski.</span><br />
+                        © 2026 <strong style={{ color: 'var(--text-primary)' }}>flowjob</strong>.
                     </p>
                 </div>
             </footer>

@@ -7,6 +7,7 @@ import Onboarding from './pages/Onboarding.jsx';
 import CVBuilder from './pages/CVBuilder.jsx';
 import MyCV from './pages/MyCV.jsx';
 import JobBoard from './pages/JobBoard.jsx';
+import ScrollToTop from './components/ScrollToTop.jsx';
 import { auth } from './services/api.js';
 
 function ProtectedRoute({ children }) {
@@ -23,6 +24,7 @@ function OnboardingGate({ children }) {
 export default function App() {
     return (
         <BrowserRouter>
+            <ScrollToTop />
             <Navbar />
             <main style={{ minHeight: 'calc(100vh - 64px)' }}>
                 <Routes>

@@ -486,15 +486,54 @@ export default function Story() {
                 </div>
             </section>
 
+            {/* 10. SUPPORT OPTIONS */}
+            <section className="section-sm" style={{ background: 'var(--bg-deep)' }}>
+                <div className="container" style={{ textAlign: 'center' }}>
+                    <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} style={{ maxWidth: '600px', margin: '0 auto' }}>
+                        <div className="divider" style={{ marginBottom: '3rem' }} />
+                        <h3 style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', marginBottom: '1rem', fontWeight: 600 }}>Support Flowjob.it</h3>
+                        <p className="paragraph" style={{ marginBottom: '2rem' }}>
+                            If you find my work useful, you can support its further development.
+                        </p>
+                        <a
+                            href="https://buymeacoffee.com/rj.grajewski"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn"
+                            style={{
+                                backgroundColor: '#FFDD00',
+                                color: '#000000',
+                                border: 'none',
+                                fontWeight: 700,
+                                padding: '0.65rem 1.5rem',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.8rem',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 221, 0, 0.4)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = 'none';
+                            }}
+                        >
+                            buymeacoffee.com
+                        </a>
+                    </motion.div>
+                </div>
+            </section>
+
             {/* FOOTER */}
             <footer className="footer">
                 <div className="container" style={{ textAlign: 'center' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                        © 2026 <strong style={{ color: 'var(--text-primary)' }}>flowjob</strong>. All rights reserved. Built by Rafal Grajewski.
+                        <span style={{ opacity: 0.6 }}>Proudly built by Rafal Grajewski.</span><br />
+                        © 2026 <strong style={{ color: 'var(--text-primary)' }}>flowjob</strong>.
                     </p>
                 </div>
             </footer>
-        </div >
+        </div>
     );
 }
-
