@@ -120,19 +120,27 @@ export default function Home() {
                 </div>
             </section>
 
-            <footer style={{ borderTop: '1px solid var(--border)', padding: '1.25rem 0', background: 'var(--bg-default)', zIndex: 10 }}>
-                <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
-                    <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
+            <footer style={{ borderTop: '1px solid var(--border)', padding: '2.5rem 0', background: 'var(--bg-default)', zIndex: 10 }}>
+                <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem' }}>
+                    <Link to="/story" style={{
+                        color: 'var(--text-primary)',
+                        textDecoration: 'none',
+                        fontWeight: 500,
+                        fontSize: '0.95rem',
+                        padding: '0.75rem 1.5rem',
+                        borderRadius: 'var(--radius-pill)',
+                        border: '1px solid var(--border)',
+                        background: 'var(--bg-elevated)',
+                        transition: 'all 0.2s ease',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                    }} onMouseOver={e => { e.target.style.borderColor = 'var(--accent-cyan)'; e.target.style.color = 'var(--accent-cyan)' }} onMouseOut={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.color = 'var(--text-primary)' }}>
+                        Read the Story →
+                    </Link>
+                    <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem', textAlign: 'center' }}>
                         © 2026 <strong style={{ color: 'var(--text-primary)' }}>flowjob</strong>. <span style={{ opacity: 0.6 }}>Built by Rafal Grajewski.</span>
                     </p>
-                    <div style={{ display: 'flex', gap: '1.5rem' }}>
-                        <Link to="/story" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = 'var(--accent-cyan)'} onMouseOut={e => e.target.style.color = 'var(--text-secondary)'}>
-                            Read the Story
-                        </Link>
-                        <a href="https://github.com/rjgrajewski" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = 'var(--accent-cyan)'} onMouseOut={e => e.target.style.color = 'var(--text-secondary)'}>
-                            GitHub
-                        </a>
-                    </div>
                 </div>
             </footer>
         </div>
