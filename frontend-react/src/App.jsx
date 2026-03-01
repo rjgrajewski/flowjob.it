@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import Home from './pages/Home.jsx';
+import Story from './pages/Story.jsx';
 import Register from './pages/Register.jsx';
 import Onboarding from './pages/Onboarding.jsx';
 import CVBuilder from './pages/CVBuilder.jsx';
@@ -26,6 +27,7 @@ export default function App() {
             <main style={{ minHeight: 'calc(100vh - 64px)' }}>
                 <Routes>
                     <Route path="/" element={<Home />} />
+                    <Route path="/story" element={<Story />} />
                     <Route path="/get-started" element={<Register />} />
                     <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                     <Route path="/my-skills" element={<OnboardingGate><CVBuilder /></OnboardingGate>} />

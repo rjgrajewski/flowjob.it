@@ -37,6 +37,9 @@ export default function Navbar() {
                 <nav style={styles.nav}>
                     {user && (
                         <>
+                            <NavLink to="/story" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
+                                Story
+                            </NavLink>
                             <NavLink to="/jobs" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.linkActive : {}) })}>
                                 Offers
                             </NavLink>
