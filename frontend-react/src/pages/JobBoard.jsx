@@ -17,6 +17,13 @@ export default function JobBoard() {
     const [operatingModeFilter, setOperatingModeFilter] = useState('');
     const [employmentTypeFilter, setEmploymentTypeFilter] = useState('');
 
+    const [visibleCount, setVisibleCount] = useState(30);
+
+    // Reset pagination when filters or jobs list changes
+    useEffect(() => {
+        setVisibleCount(30);
+    }, [locationFilter, operatingModeFilter, employmentTypeFilter, jobs.length]);
+
     useEffect(() => {
         const loadUserSkills = async () => {
             const user = auth.getUser();
@@ -118,7 +125,7 @@ export default function JobBoard() {
 
         setInitialSortConfig(sorted.map(s => s.id));
         // ONLY run when these arrays change length to avoid infinite re-renders on skill click
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [jobs.length, locationFilter, operatingModeFilter, employmentTypeFilter]);
 
     const filteredJobs = useMemo(() => {
@@ -144,6 +151,10 @@ export default function JobBoard() {
     const blockedCount = useMemo(() => {
         return jobs.filter(job => job.requiredSkills?.some(s => antiSkills.has(s))).length;
     }, [jobs, antiSkills]);
+
+    const visibleJobs = useMemo(() => {
+        return filteredJobs.slice(0, visibleCount);
+    }, [filteredJobs, visibleCount]);
 
     // Convert Sets to Arrays once to avoid reallocating inside the render loop for every JobCard
     const userSkillsArray = useMemo(() => Array.from(userSkills), [userSkills]);
@@ -197,7 +208,7 @@ export default function JobBoard() {
                     </div>
                 ) : (
                     <>
-                        {filteredJobs.map((job, i) => {
+                        {visibleJobs.map((job, i) => {
                             const uniqueKey = job.id || job.url || `${job.title}-${job.company}-${i}`;
                             return (
                                 <JobCard
@@ -210,6 +221,17 @@ export default function JobBoard() {
                                 />
                             );
                         })}
+                        {visibleCount < filteredJobs.length && (
+                            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem', marginBottom: '1rem' }}>
+                                <button
+                                    onClick={() => setVisibleCount(prev => prev + 30)}
+                                    className="btn btn-primary"
+                                    style={{ padding: '0.75rem 2rem', fontSize: '1rem', fontWeight: 600, borderRadius: '8px' }}
+                                >
+                                    Load More ({filteredJobs.length - visibleCount} remaining)
+                                </button>
+                            </div>
+                        )}
                     </>
                 )}
             </div>

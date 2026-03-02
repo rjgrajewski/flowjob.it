@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auth } from '../services/api.js';
-
+import './Register.css';
 // Returns a list of met and unmet password requirements
 function getPasswordRequirements(password) {
     if (!password) password = '';
@@ -65,11 +65,11 @@ export default function Register() {
     };
 
     return (
-        <div style={styles.wrapper}>
+        <div className="register-wrapper">
             {/* Left panel */}
-            <div style={styles.leftPanel}>
-                <div style={styles.leftContent}>
-                    <div style={styles.logoBadge}>
+            <div className="register-left-panel">
+                <div className="register-left-content">
+                    <div className="register-logo-badge">
                         flow<span style={{ color: 'var(--accent-cyan)' }}>job</span>
                     </div>
                     <h2 style={{ lineHeight: 1.2, marginBottom: '1rem' }}>
@@ -83,14 +83,14 @@ export default function Register() {
             </div>
 
             {/* Right form panel */}
-            <div style={styles.rightPanel}>
-                <div style={styles.formCard}>
+            <div className="register-right-panel">
+                <div className="register-form-card">
                     {/* Tabs */}
-                    <div style={styles.tabs}>
+                    <div className="register-tabs">
                         {['register', 'login'].map(t => (
                             <button
                                 key={t}
-                                style={{ ...styles.tab, ...(tab === t ? styles.tabActive : {}) }}
+                                className={`register-tab ${tab === t ? 'active' : ''}`}
                                 onClick={() => { setTab(t); setError(''); }}
                             >
                                 {t === 'register' ? 'Create Account' : 'Sign In'}
@@ -117,7 +117,7 @@ export default function Register() {
                                 <label className="form-label">Password</label>
                                 <input className="form-input" type="password" name="password" value={form.password} onChange={handleChange} placeholder="••••••••" required />
                                 {tab === 'register' && (
-                                    <div style={styles.checklistWrap}>
+                                    <div className="register-checklist-wrap">
                                         {passwordRequirements.map(req => (
                                             <div key={req.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                                 <span style={{
@@ -180,72 +180,3 @@ export default function Register() {
         </div>
     );
 }
-
-const styles = {
-    wrapper: {
-        display: 'flex',
-        minHeight: 'calc(100vh - 64px)',
-    },
-    leftPanel: {
-        flex: '1 1 420px',
-        background: 'var(--bg-surface)',
-        borderRight: '1px solid var(--border)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '4rem 3rem',
-    },
-    leftContent: {
-        maxWidth: '360px',
-    },
-    logoBadge: {
-        fontSize: '1.5rem',
-        fontWeight: 800,
-        marginBottom: '2rem',
-        color: 'var(--text-primary)',
-    },
-    rightPanel: {
-        flex: '1 1 400px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '4rem 3rem',
-    },
-    formCard: {
-        width: '100%',
-        maxWidth: '400px',
-    },
-    tabs: {
-        display: 'flex',
-        gap: '0',
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-pill)',
-        padding: '4px',
-    },
-    tab: {
-        flex: 1,
-        padding: '0.55rem',
-        border: 'none',
-        borderRadius: 'var(--radius-pill)',
-        background: 'none',
-        color: 'var(--text-secondary)',
-        font: 'inherit',
-        fontSize: '0.9rem',
-        fontWeight: 500,
-        cursor: 'pointer',
-        transition: 'all 0.15s',
-    },
-    tabActive: {
-        background: 'var(--bg-elevated)',
-        color: 'var(--accent-cyan)',
-        boxShadow: '0 0 0 1px var(--border)',
-    },
-    checklistWrap: {
-        marginTop: '0.75rem',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.35rem',
-        padding: '0.25rem 0.5rem',
-    }
-};
