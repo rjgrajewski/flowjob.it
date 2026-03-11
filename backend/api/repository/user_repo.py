@@ -10,6 +10,7 @@ class UserRepository:
 
     async def get_user_skills(self, user_id: str) -> dict:
         async with self.pool.acquire() as conn:
+            # 1. Fetch skills
             rows = await conn.fetch(
                 """
                 SELECT s.canonical_skill_name, s.original_skill_name, us.skill_type, COALESCE(us.show_on_cv, false) AS show_on_cv
@@ -19,6 +20,13 @@ class UserRepository:
                 """,
                 user_id
             )
+            
+            # 2. Fetch confirmed tutorials from users table
+            user_row = await conn.fetchrow(
+                "SELECT confirmed_tutorials FROM users WHERE id = $1",
+                user_id
+            )
+            confirmed_tutorials = user_row["confirmed_tutorials"] if user_row and user_row["confirmed_tutorials"] else []
             
             skills = []
             anti_skills = []
@@ -40,7 +48,8 @@ class UserRepository:
                 "skills": list(set(skills)),
                 "antiSkills": list(set(anti_skills)),
                 "highlightedSkills": list(set(highlighted_skills)),
-                "skippedSkills": list(set(skipped_skills))
+                "skippedSkills": list(set(skipped_skills)),
+                "confirmedTutorials": list(confirmed_tutorials)
             }
 
     async def save_user_skills(
@@ -49,7 +58,8 @@ class UserRepository:
         skills: List[str],
         anti_skills: List[str],
         highlighted_skills: List[str] = None,
-        skipped_skills: List[str] = None
+        skipped_skills: List[str] = None,
+        confirmed_tutorials: List[str] = None
     ) -> dict:
         highlighted_skills = highlighted_skills or []
         skipped_skills = skipped_skills or []
@@ -139,6 +149,14 @@ class UserRepository:
                     highlight_uuids,
                     user_id
                 )
+
+                # 5. Save confirmed tutorials
+                if confirmed_tutorials is not None:
+                    await conn.execute(
+                        "UPDATE users SET confirmed_tutorials = $1 WHERE id = $2",
+                        confirmed_tutorials,
+                        user_id
+                    )
 
         return await self.get_user_skills(user_id)
     async def save_onboarding_full(self, user_id: str, data: 'OnboardingRequest') -> bool:

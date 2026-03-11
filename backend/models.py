@@ -39,12 +39,14 @@ class UserSkillsRequest(BaseModel):
     antiSkills: List[str] = []
     highlightedSkills: List[str] = []
     skippedSkills: List[str] = []
+    confirmedTutorials: List[str] = []
 
 class UserSkillsResponse(BaseModel):
     skills: List[str]
     antiSkills: List[str]
     highlightedSkills: List[str]
     skippedSkills: List[str] = []
+    confirmedTutorials: List[str] = []
 
 class EducationEntry(BaseModel):
     school_name: str

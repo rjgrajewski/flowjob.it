@@ -45,7 +45,8 @@ async def save_skills(
             body.skills,
             body.antiSkills,
             highlighted_skills=body.highlightedSkills or [],
-            skipped_skills=body.skippedSkills or []
+            skipped_skills=body.skippedSkills or [],
+            confirmed_tutorials=body.confirmedTutorials
         )
     except Exception as e:
         logger.exception("save_skills failed for user_id=%s: %s", user_id, e)

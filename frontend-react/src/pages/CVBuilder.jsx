@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api, auth } from '../services/api.js';
 import { useSkills } from '../hooks/useSkills.js';
 import SwipeSkillSelector from '../components/SwipeSkillSelector.jsx';
-import SkillSwipeTutorial from '../components/SkillSwipeTutorial.jsx';
 
 function useIsMobile() {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -24,6 +23,8 @@ export default function CVBuilder() {
     const { skills, loading } = useSkills([...selected]);
     const [bufferedDeck, setBufferedDeck] = useState([]);
     const [anti, setAnti] = useState(new Set());
+    const [confirmedTutorials, setConfirmedTutorials] = useState([]);
+    const [pendingAction, setPendingAction] = useState(null); // { direction, skillName }
     
     const selectedRef = useRef(new Set());
     const antiRef = useRef(new Set());
@@ -51,6 +52,7 @@ export default function CVBuilder() {
             setAnti(new Set(cv.antiSkills || []));
             setHighlighted(new Set(cv.highlightedSkills || []));
             setSkipped(new Set(cv.skippedSkills || []));
+            setConfirmedTutorials(cv.confirmedTutorials || []);
             setTimeout(() => { if (mounted) initialLoadDone.current = true; }, 100);
         };
         load();
@@ -72,7 +74,8 @@ export default function CVBuilder() {
                     skills: [...selected],
                     antiSkills: [...anti],
                     highlightedSkills: highlightedFiltered,
-                    skippedSkills: [...skipped]
+                    skipped_skills: [...skipped],
+                    confirmedTutorials: confirmedTutorials
                 });
                 setSaved('Saved!');
                 setTimeout(() => setSaved(''), 2500);
@@ -80,7 +83,7 @@ export default function CVBuilder() {
                 setSaved('Error saving');
             }
         }, 1000);
-    }, [selected, anti, highlighted]);
+    }, [selected, anti, highlighted, confirmedTutorials, skipped]);
 
 
 
@@ -92,7 +95,12 @@ export default function CVBuilder() {
         setBufferedDeck(currentDeck => {
             // 1. Identify valid cards currently in the buffer (protect top 2)
             const validCurrentBuffer = currentDeck
-                .filter(s => !selected.has(s.name) && !anti.has(s.name) && !skipped.has(s.name))
+                .filter(s => 
+                    !selected.has(s.name) && 
+                    !anti.has(s.name) && 
+                    !skipped.has(s.name) &&
+                    (!pendingAction || pendingAction.skillName !== s.name)
+                )
                 .slice(0, 2);
             
             // 2. Identify names of the protected cards
@@ -103,13 +111,14 @@ export default function CVBuilder() {
                 !selected.has(s.name) && 
                 !anti.has(s.name) && 
                 !skipped.has(s.name) && 
-                !bufferNames.has(s.name)
+                !bufferNames.has(s.name) &&
+                (!pendingAction || pendingAction.skillName !== s.name)
             );
             
             // 4. Combine safe buffer with new collaborative suggestions
             return [...validCurrentBuffer, ...newFilteredSkills];
         });
-    }, [skills, selected, anti, skipped]);
+    }, [skills, selected, anti, skipped, pendingAction]);
 
 
 
@@ -173,6 +182,28 @@ export default function CVBuilder() {
         setSkipped(s => { const n = new Set(s); n.delete(name); return n; });
     }, []);
 
+    const applyAction = useCallback((direction, name) => {
+        if (direction === 'right') toggleSkill(name);
+        else if (direction === 'left') toggleSkipped(name);
+        else if (direction === 'up') {
+            toggleSkill(name);
+            setHighlighted(h => {
+                const next = new Set(h);
+                next.add(name);
+                return next;
+            });
+        }
+        else if (direction === 'down') toggleAnti(name);
+    }, [toggleSkill, toggleSkipped, toggleAnti]);
+
+    const handleSwipe = useCallback((direction, name) => {
+        if (confirmedTutorials.includes(direction)) {
+            applyAction(direction, name);
+        } else {
+            setPendingAction({ direction, skillName: name });
+        }
+    }, [confirmedTutorials, applyAction]);
+
     // Keep highlighted a subset of selected (e.g. when user deselects a skill)
     useEffect(() => {
         setHighlighted(prev => {
@@ -186,7 +217,27 @@ export default function CVBuilder() {
 
     return (
         <div style={{ ...styles.wrapper, flexDirection: 'column', overflowX: 'hidden' }}>
-            <SkillSwipeTutorial />
+            <AnimatePresence>
+                {pendingAction && (
+                    <ConfirmationModal
+                        action={pendingAction}
+                        onConfirm={(dontShowAgain) => {
+                            if (dontShowAgain) {
+                                setConfirmedTutorials(prev => [...prev, pendingAction.direction]);
+                            }
+                            applyAction(pendingAction.direction, pendingAction.skillName);
+                            setPendingAction(null);
+                        }}
+                        onUndo={() => {
+                            // If frequency is available in original data, we should try to keep it.
+                            // But for now we just put back the name.
+                            const name = pendingAction.skillName;
+                            setBufferedDeck(prev => [{ name, frequency: 0 }, ...prev]);
+                            setPendingAction(null);
+                        }}
+                    />
+                )}
+            </AnimatePresence>
             {/* MAIN AREA */}
             <div style={{ ...styles.main, padding: isMobile ? '0.5rem' : '1.5rem 2rem' }}>
                 
@@ -243,17 +294,10 @@ export default function CVBuilder() {
                             onRemoveAnti={toggleAnti}
                             onRemoveSkipped={removeSkipped}
                             onToggleHighlighted={toggleHighlighted}
-                            onSwipeRight={toggleSkill}
-                            onSwipeLeft={toggleSkipped}
-                            onSwipeUp={(name) => {
-                                toggleSkill(name);
-                                setHighlighted(h => {
-                                    const next = new Set(h);
-                                    next.add(name);
-                                    return next;
-                                });
-                            }}
-                            onSwipeDown={toggleAnti}
+                            onSwipeRight={(name) => handleSwipe('right', name)}
+                            onSwipeLeft={(name) => handleSwipe('left', name)}
+                            onSwipeUp={(name) => handleSwipe('up', name)}
+                            onSwipeDown={(name) => handleSwipe('down', name)}
                         />
                     )}
                 </div>
@@ -295,3 +339,101 @@ const styles = {
         animation: 'pulse 1.5s ease-in-out infinite',
     },
 };
+
+function ConfirmationModal({ action, onConfirm, onUndo }) {
+    const [dontShowAgain, setDontShowAgain] = useState(false);
+    
+    const configs = {
+        up: { label: 'Show off', color: '#00e676', icon: '★', desc: 'Added to your visible CV & strongly improves job matches.' },
+        right: { label: 'Got it', color: 'var(--accent-cyan)', icon: '✓', desc: 'Improves job matches (but remains hidden from your CV).' },
+        down: { label: 'Avoid', color: 'var(--accent-red)', icon: '🚫', desc: 'Blocks this skill. Hides job requirements related to it.' },
+        left: { label: 'Skip', color: '#888', icon: '✕', desc: 'Skips for now without affecting your jobs or CV.' }
+    };
+    
+    const config = configs[action.direction];
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+                position: 'fixed', inset: 0, zIndex: 2000,
+                background: 'rgba(0,0,0,0.85)',
+                backdropFilter: 'blur(8px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '1.5rem'
+            }}
+        >
+            <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                style={{
+                    background: 'var(--bg-elevated)',
+                    width: '100%', maxWidth: '400px',
+                    borderRadius: '24px',
+                    padding: '2rem',
+                    border: `1px solid ${config.color}`,
+                    boxShadow: `0 20px 40px rgba(0,0,0,0.4), 0 0 20px ${config.color}22`,
+                    textAlign: 'center'
+                }}
+            >
+                <div style={{ 
+                    fontSize: '3rem', marginBottom: '1rem', 
+                    color: config.color, filter: `drop-shadow(0 0 10px ${config.color}44)` 
+                }}>
+                    {config.icon}
+                </div>
+                
+                <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem' }}>{config.label}</h2>
+                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1.5rem' }}>
+                    {config.desc}
+                </p>
+
+                <div 
+                    onClick={() => setDontShowAgain(!dontShowAgain)}
+                    style={{ 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                        gap: '0.5rem', marginBottom: '2rem', cursor: 'pointer' 
+                    }}
+                >
+                    <div style={{ 
+                        width: '20px', height: '20px', borderRadius: '4px',
+                        border: '2px solid var(--border)',
+                        background: dontShowAgain ? config.color : 'transparent',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.2s'
+                    }}>
+                        {dontShowAgain && <span style={{ color: '#000', fontSize: '12px', fontWeight: 900 }}>✓</span>}
+                    </div>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Don't show again</span>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button 
+                        onClick={onUndo}
+                        style={{ 
+                            flex: 1, padding: '1rem', borderRadius: '14px',
+                            background: 'var(--bg-surface)', border: '1px solid var(--border)',
+                            color: 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer'
+                        }}
+                    >
+                        Undo
+                    </button>
+                    <button 
+                        onClick={() => onConfirm(dontShowAgain)}
+                        style={{ 
+                            flex: 2, padding: '1rem', borderRadius: '14px',
+                            background: config.color, border: 'none',
+                            color: '#000', fontWeight: 700, cursor: 'pointer',
+                            boxShadow: `0 5px 15px ${config.color}44`
+                        }}
+                    >
+                        OK
+                    </button>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+}
