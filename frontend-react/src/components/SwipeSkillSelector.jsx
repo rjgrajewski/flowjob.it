@@ -127,11 +127,11 @@ export default function SwipeSkillSelector({ skills, onSwipeRight, onSwipeLeft, 
 
     const handleSwipe = useCallback((direction, skillName) => {
         setExitDirections(prev => ({ ...prev, [skillName]: direction }));
+        setLocalSkipped(prev => new Set(prev).add(skillName));
 
         setTimeout(() => {
             if (direction === 'left') {
                 if (onSwipeLeft) onSwipeLeft(skillName);
-                setLocalSkipped(prev => new Set(prev).add(skillName));
             } else if (direction === 'right') {
                 if (onSwipeRight) onSwipeRight(skillName);
             } else if (direction === 'up') {
@@ -139,6 +139,11 @@ export default function SwipeSkillSelector({ skills, onSwipeRight, onSwipeLeft, 
             } else if (direction === 'down') {
                 if (onSwipeDown) onSwipeDown(skillName);
             }
+            setExitDirections(prev => {
+                const next = { ...prev };
+                delete next[skillName];
+                return next;
+            });
         }, 50);
     }, [onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown]);
 

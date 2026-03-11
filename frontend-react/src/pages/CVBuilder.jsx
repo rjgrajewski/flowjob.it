@@ -156,10 +156,10 @@ export default function CVBuilder() {
                 }
             });
 
-            return [...exactMatches, ...startsWithMatches, ...containsMatches].slice(0, isMobile ? 30 : 50);
+            return [...exactMatches, ...startsWithMatches, ...containsMatches];
         }
 
-        return availableSkills.slice(0, isMobile ? 30 : 50);
+        return availableSkills;
     }, [sortedSkills, search, selected, anti, isMobile]);
 
 
