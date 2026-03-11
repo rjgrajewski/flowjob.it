@@ -305,14 +305,12 @@ export default function SwipeSkillSelector({
         return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-secondary)', gap: '1.5rem' }}>
                 <span>{search ? `No skills found for "${search}"` : 'All caught up!'}</span>
-                {isMobile && (
-                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                        <CategoryBadge color="var(--accent-cyan)" icon="✓" count={Math.max(0, knowCount)} label="Know" onClick={() => setModalCategory('know')} />
-                        <CategoryBadge color="#888" icon="✕" count={Math.max(0, skipCount)} label="Skip" onClick={() => setModalCategory('skip')} />
-                        <CategoryBadge color="var(--accent-red)" icon="↓" count={blockCount} label="Block" onClick={() => setModalCategory('block')} />
-                        <CategoryBadge color="#00e676" icon="★" count={mustHaveCount} label="Must Have" onClick={() => setModalCategory('mustHave')} />
-                    </div>
-                )}
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <CategoryBadge color="var(--accent-cyan)" icon="✓" count={Math.max(0, knowCount)} label="Know" onClick={() => setModalCategory('know')} />
+                    <CategoryBadge color="#888" icon="✕" count={Math.max(0, skipCount)} label="Skip" onClick={() => setModalCategory('skip')} />
+                    <CategoryBadge color="var(--accent-red)" icon="↓" count={blockCount} label="Block" onClick={() => setModalCategory('block')} />
+                    <CategoryBadge color="#00e676" icon="★" count={mustHaveCount} label="Must Have" onClick={() => setModalCategory('mustHave')} />
+                </div>
                 {modalCategory && categories[modalCategory] && (
                     <SkillsModal
                         {...categories[modalCategory]}
@@ -340,7 +338,7 @@ export default function SwipeSkillSelector({
                 </AnimatePresence>
             </div>
             
-            {/* Desktop: action buttons + legend */}
+            {/* Desktop: action buttons */}
             {!isMobile && (
                 <>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem', flexWrap: 'wrap', justifyContent: 'center', zIndex: 15 }}>
@@ -349,28 +347,20 @@ export default function SwipeSkillSelector({
                         <IconButton color="#00e676" icon="↑" label="Star" onClick={() => visibleSkills.length && handleSwipe('up', visibleSkills[0].name)} />
                         <IconButton color="var(--accent-cyan)" icon="✓" label="Know" onClick={() => visibleSkills.length && handleSwipe('right', visibleSkills[0].name)} />
                     </div>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '1.5rem', textAlign: 'center', opacity: 0.7 }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', margin: '1rem 0', textAlign: 'center', opacity: 0.7 }}>
                         {visibleSkills.length > 0 && <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{skills.length - localSkipped.size}</span>}{' '}
                         skills remaining · Use <strong>arrow keys</strong> or swipe
                     </p>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', marginTop: '0.4rem', display: 'flex', gap: '0.8rem', flexWrap: 'wrap', justifyContent: 'center', opacity: 0.5 }}>
-                        <span>→ Know</span>
-                        <span>← Skip</span>
-                        <span>↓ Block</span>
-                        <span>↑ Must Have</span>
-                    </div>
                 </>
             )}
 
-            {/* Mobile: 4 category badges */}
-            {isMobile && (
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem', flexWrap: 'wrap', justifyContent: 'center', zIndex: 15 }}>
-                    <CategoryBadge color="var(--accent-cyan)" icon="✓" count={Math.max(0, knowCount)} label="Know" onClick={() => setModalCategory('know')} />
-                    <CategoryBadge color="#888" icon="✕" count={Math.max(0, skipCount)} label="Skip" onClick={() => setModalCategory('skip')} />
-                    <CategoryBadge color="var(--accent-red)" icon="↓" count={blockCount} label="Block" onClick={() => setModalCategory('block')} />
-                    <CategoryBadge color="#00e676" icon="★" count={mustHaveCount} label="Must Have" onClick={() => setModalCategory('mustHave')} />
-                </div>
-            )}
+            {/* Badges (Mobile and Desktop) */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', zIndex: 15 }}>
+                <CategoryBadge color="var(--accent-cyan)" icon="✓" count={Math.max(0, knowCount)} label="Know" onClick={() => setModalCategory('know')} />
+                <CategoryBadge color="#888" icon="✕" count={Math.max(0, skipCount)} label="Skip" onClick={() => setModalCategory('skip')} />
+                <CategoryBadge color="var(--accent-red)" icon="↓" count={blockCount} label="Block" onClick={() => setModalCategory('block')} />
+                <CategoryBadge color="#00e676" icon="★" count={mustHaveCount} label="Must Have" onClick={() => setModalCategory('mustHave')} />
+            </div>
 
             {/* Modal */}
             {modalCategory && categories[modalCategory] && (
