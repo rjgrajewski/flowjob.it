@@ -210,17 +210,16 @@ export default function CVBuilder() {
     return (
         <div style={{ ...styles.wrapper, flexDirection: isMobile ? 'column' : 'row', overflowX: 'hidden' }}>
 
-            {/* LEFT SIDEBAR */}
-            <aside ref={sidebarRef} style={{
+            {/* LEFT SIDEBAR - hidden on mobile */}
+            {!isMobile && <aside ref={sidebarRef} style={{
                 ...styles.sidebar,
-                order: isMobile ? 2 : 1,
-                width: isMobile ? '100%' : '280px',
-                height: isMobile ? 'auto' : 'calc(100vh - 64px)',
-                position: isMobile ? 'relative' : 'sticky',
-                top: isMobile ? 0 : '64px',
-                borderRight: isMobile ? 'none' : '1px solid var(--border)',
-                borderTop: isMobile ? '1px solid var(--border)' : 'none',
-                gap: isMobile ? '1.5rem' : '0'
+                order: 1,
+                width: '280px',
+                height: 'calc(100vh - 64px)',
+                position: 'sticky',
+                top: '64px',
+                borderRight: '1px solid var(--border)',
+                gap: '0'
             }}>
                 <h3 style={{ ...styles.sidebarTitle, display: isMobile ? 'none' : 'block' }}>Your Profile</h3>
 
@@ -330,60 +329,36 @@ export default function CVBuilder() {
                         )}
                     </AnimatePresence>
                 </div>
-            </aside>
+            </aside>}
 
             {/* MAIN AREA */}
-            <div style={{ ...styles.main, order: isMobile ? 1 : 2, padding: isMobile ? '1rem' : '1.5rem 2rem' }}>
-                <div style={{ ...styles.mainHeader, flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'flex-start' }}>
-                    <div>
-                        <h1 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '0.25rem' }}>Skill Map</h1>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                            <span style={{ color: 'var(--accent-cyan)' }}>Click</span> to select ·{' '}
-                            <span style={{ color: 'var(--accent-red)' }}>{isMobile ? 'Block mode' : 'Shift+Click'}</span> to block
-                        </p>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: isMobile ? '100%' : 'auto' }}>
-                        <div style={{ ...styles.searchWrapper, width: '100%' }}>
-                            <span style={styles.searchPrompt}>❯</span>
-                            <input
-                                className="form-input"
-                                placeholder={search ? "" : placeholderText}
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                                style={{ ...styles.searchInput, width: '100%' }}
-                            />
+            <div style={{ ...styles.main, order: isMobile ? 1 : 2, padding: isMobile ? '0.5rem' : '1.5rem 2rem' }}>
+                {/* Header + search: hidden on mobile */}
+                {!isMobile && (
+                    <div style={{ ...styles.mainHeader, flexDirection: 'row', alignItems: 'flex-start' }}>
+                        <div>
+                            <h1 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '0.25rem' }}>Skill Map</h1>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                                <span style={{ color: 'var(--accent-cyan)' }}>Click</span> to select ·{' '}
+                                <span style={{ color: 'var(--accent-red)' }}>Shift+Click</span> to block
+                            </p>
                         </div>
-                        {isMobile && (
-                            <div style={{ display: 'flex', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', padding: '4px', gap: '4px' }}>
-                                <button
-                                    onClick={() => setInteractionMode('select')}
-                                    style={{
-                                        flex: 1, padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: 'none',
-                                        background: interactionMode === 'select' ? 'var(--accent-cyan)' : 'transparent',
-                                        color: interactionMode === 'select' ? '#000' : 'var(--text-secondary)',
-                                        fontWeight: 600, transition: '0.2s', fontSize: '0.85rem'
-                                    }}
-                                >
-                                    ✅ Select
-                                </button>
-                                <button
-                                    onClick={() => setInteractionMode('block')}
-                                    style={{
-                                        flex: 1, padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: 'none',
-                                        background: interactionMode === 'block' ? 'var(--accent-red)' : 'transparent',
-                                        color: interactionMode === 'block' ? '#fff' : 'var(--text-secondary)',
-                                        fontWeight: 600, transition: '0.2s', fontSize: '0.85rem'
-                                    }}
-                                >
-                                    🚫 Block
-                                </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: 'auto' }}>
+                            <div style={{ ...styles.searchWrapper, width: '100%' }}>
+                                <span style={styles.searchPrompt}>❯</span>
+                                <input
+                                    className="form-input"
+                                    placeholder={search ? "" : placeholderText}
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
+                                    style={{ ...styles.searchInput, width: '100%' }}
+                                />
                             </div>
-                        )}
+                        </div>
                     </div>
-                </div>
+                )}
 
-                <div style={{ ...styles.bubbleCloudContainer, minHeight: isMobile ? '450px' : '640px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} ref={containerRef}>
+                <div style={{ ...styles.bubbleCloudContainer, minHeight: isMobile ? 'calc(100vh - 80px)' : '640px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: isMobile ? 'none' : '1px solid var(--border)', background: isMobile ? 'transparent' : 'var(--bg-surface)' }} ref={containerRef}>
                     {loading ? (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-secondary)' }}>
                             <div className="pulse" style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--bg-elevated)', animation: 'pulse 1.5s ease-in-out infinite' }} />
@@ -392,6 +367,13 @@ export default function CVBuilder() {
                         <SwipeSkillSelector
                             skills={filtered}
                             search={search}
+                            isMobile={isMobile}
+                            selected={selected}
+                            anti={anti}
+                            highlighted={highlighted}
+                            onRemoveSelected={toggleSkill}
+                            onRemoveAnti={toggleAnti}
+                            onToggleHighlighted={toggleHighlighted}
                             onSwipeRight={toggleSkill}
                             onSwipeLeft={(name) => { /* Skipped handled internally */ }}
                             onSwipeUp={(name) => {

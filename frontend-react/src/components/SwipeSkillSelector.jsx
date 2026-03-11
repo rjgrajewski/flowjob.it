@@ -115,9 +115,120 @@ const SwipeCard = ({ skill, index, onSwipe, frontCard, exitDirection }) => {
     );
 };
 
-export default function SwipeSkillSelector({ skills, onSwipeRight, onSwipeLeft, onSwipeDown, onSwipeUp, search }) {
+// --- Category Badge ---
+function CategoryBadge({ color, icon, count, label, onClick }) {
+    return (
+        <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={onClick}
+            style={{
+                display: 'flex', alignItems: 'center', gap: '0.35rem',
+                padding: '0.4rem 0.75rem',
+                borderRadius: '999px',
+                border: `1.5px solid ${color}`,
+                background: 'var(--bg-elevated)',
+                color: color,
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+            }}
+            title={label}
+        >
+            <span style={{ fontSize: '0.75rem' }}>{icon}</span>
+            <span>{count}</span>
+        </motion.button>
+    );
+}
+
+// --- Skills Modal ---
+function SkillsModal({ title, color, icon, skills, onRemove, onClose }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            style={{
+                position: 'fixed', inset: 0, zIndex: 1000,
+                background: 'rgba(0,0,0,0.7)',
+                backdropFilter: 'blur(6px)',
+                display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+                padding: '0',
+            }}
+        >
+            <motion.div
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                onClick={e => e.stopPropagation()}
+                style={{
+                    width: '100%', maxHeight: '75vh',
+                    background: 'var(--bg-surface)',
+                    borderTop: `3px solid ${color}`,
+                    borderRadius: '20px 20px 0 0',
+                    padding: '1.25rem',
+                    display: 'flex', flexDirection: 'column',
+                    overflow: 'hidden',
+                }}
+            >
+                {/* Handle bar */}
+                <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'var(--border)', margin: '0 auto 1rem' }} />
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color, display: 'flex', alignItems: 'center', gap: '0.4rem', margin: 0 }}>
+                        {icon} {title}
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({skills.length})</span>
+                    </h3>
+                    <button
+                        onClick={onClose}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '1.5rem', cursor: 'pointer', padding: '0.25rem' }}
+                    >✕</button>
+                </div>
+
+                <div style={{ overflowY: 'auto', flex: 1 }}>
+                    {skills.length === 0 ? (
+                        <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.85rem', textAlign: 'center', padding: '2rem 0' }}>
+                            No skills yet
+                        </p>
+                    ) : (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                            {skills.sort((a, b) => a.localeCompare(b)).map(name => (
+                                <motion.span
+                                    key={name}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.5 }}
+                                    style={{
+                                        fontSize: '0.8rem', padding: '0.3rem 0.6rem',
+                                        borderRadius: '999px', border: `1px solid ${color}`,
+                                        background: 'var(--bg-elevated)', color,
+                                        cursor: onRemove ? 'pointer' : 'default',
+                                        fontWeight: 500,
+                                    }}
+                                    onClick={() => onRemove && onRemove(name)}
+                                    title={onRemove ? 'Tap to remove' : ''}
+                                >
+                                    {name} {onRemove && <span style={{ opacity: 0.5 }}>✕</span>}
+                                </motion.span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+}
+
+export default function SwipeSkillSelector({
+    skills, onSwipeRight, onSwipeLeft, onSwipeDown, onSwipeUp, search,
+    isMobile, selected, anti, highlighted,
+    onRemoveSelected, onRemoveAnti, onToggleHighlighted,
+}) {
     const [localSkipped, setLocalSkipped] = useState(new Set());
     const [exitDirections, setExitDirections] = useState({});
+    const [modalCategory, setModalCategory] = useState(null);
 
     useEffect(() => {
         if (search) setLocalSkipped(new Set());
@@ -163,17 +274,63 @@ export default function SwipeSkillSelector({ skills, onSwipeRight, onSwipeLeft, 
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [visibleSkills, handleSwipe]);
 
+    // Derive counts for badges
+    const knowCount = selected ? selected.size - (highlighted ? highlighted.size : 0) : 0;
+    const mustHaveCount = highlighted ? highlighted.size : 0;
+    const blockCount = anti ? anti.size : 0;
+    const skipCount = localSkipped.size - (selected ? selected.size : 0) - (anti ? anti.size : 0);
+
+    // Category config for modal
+    const categories = {
+        know: {
+            title: 'Know', color: 'var(--accent-cyan)', icon: '✓',
+            skills: selected && highlighted ? [...selected].filter(s => !highlighted.has(s)) : [],
+            onRemove: onRemoveSelected,
+        },
+        mustHave: {
+            title: 'Must Have', color: '#00e676', icon: '★',
+            skills: highlighted ? [...highlighted] : [],
+            onRemove: (name) => { if (onToggleHighlighted) onToggleHighlighted(name); },
+        },
+        block: {
+            title: 'Blocked', color: 'var(--accent-red)', icon: '🚫',
+            skills: anti ? [...anti] : [],
+            onRemove: onRemoveAnti,
+        },
+        skip: {
+            title: 'Skipped', color: '#888', icon: '✕',
+            skills: [...localSkipped].filter(s => !(selected && selected.has(s)) && !(anti && anti.has(s))),
+            onRemove: null, // skipped skills can't be un-skipped from modal
+        },
+    };
+
     if (!skills || skills.length === 0 || visibleSkills.length === 0) {
         return (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-secondary)' }}>
-                {search ? `No skills found for "${search}"` : 'All caught up!'}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-secondary)', gap: '1.5rem' }}>
+                <span>{search ? `No skills found for "${search}"` : 'All caught up!'}</span>
+                {isMobile && (
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        <CategoryBadge color="var(--accent-cyan)" icon="✓" count={Math.max(0, knowCount)} label="Know" onClick={() => setModalCategory('know')} />
+                        <CategoryBadge color="#888" icon="✕" count={Math.max(0, skipCount)} label="Skip" onClick={() => setModalCategory('skip')} />
+                        <CategoryBadge color="var(--accent-red)" icon="↓" count={blockCount} label="Block" onClick={() => setModalCategory('block')} />
+                        <CategoryBadge color="#00e676" icon="★" count={mustHaveCount} label="Must Have" onClick={() => setModalCategory('mustHave')} />
+                    </div>
+                )}
+                <AnimatePresence>
+                    {modalCategory && categories[modalCategory] && (
+                        <SkillsModal
+                            {...categories[modalCategory]}
+                            onClose={() => setModalCategory(null)}
+                        />
+                    )}
+                </AnimatePresence>
             </div>
         );
     }
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%', overflow: 'hidden', padding: '1rem' }}>
-            <div style={{ position: 'relative', width: '320px', height: '420px', maxWidth: '100%' }}>
+            <div style={{ position: 'relative', width: '320px', height: isMobile ? '360px' : '420px', maxWidth: '100%' }}>
                 <AnimatePresence>
                     {visibleSkills.map((skill, i) => (
                         <SwipeCard 
@@ -188,23 +345,47 @@ export default function SwipeSkillSelector({ skills, onSwipeRight, onSwipeLeft, 
                 </AnimatePresence>
             </div>
             
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem', flexWrap: 'wrap', justifyContent: 'center', zIndex: 15 }}>
-                <IconButton color="#888" icon="✕" label="Skip" onClick={() => visibleSkills.length && handleSwipe('left', visibleSkills[0].name)} />
-                <IconButton color="var(--accent-red)" icon="↓" label="Block" onClick={() => visibleSkills.length && handleSwipe('down', visibleSkills[0].name)} />
-                <IconButton color="#00e676" icon="↑" label="Star" onClick={() => visibleSkills.length && handleSwipe('up', visibleSkills[0].name)} />
-                <IconButton color="var(--accent-cyan)" icon="✓" label="Know" onClick={() => visibleSkills.length && handleSwipe('right', visibleSkills[0].name)} />
-            </div>
-            
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '1.5rem', textAlign: 'center', opacity: 0.7 }}>
-                {visibleSkills.length > 0 && <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{skills.length - localSkipped.size}</span>}{' '}
-                skills remaining · Use <strong>arrow keys</strong> or swipe
-            </p>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', marginTop: '0.4rem', display: 'flex', gap: '0.8rem', flexWrap: 'wrap', justifyContent: 'center', opacity: 0.5 }}>
-                <span>→ Know</span>
-                <span>← Skip</span>
-                <span>↓ Block</span>
-                <span>↑ Must Have</span>
-            </div>
+            {/* Desktop: action buttons + legend */}
+            {!isMobile && (
+                <>
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem', flexWrap: 'wrap', justifyContent: 'center', zIndex: 15 }}>
+                        <IconButton color="#888" icon="✕" label="Skip" onClick={() => visibleSkills.length && handleSwipe('left', visibleSkills[0].name)} />
+                        <IconButton color="var(--accent-red)" icon="↓" label="Block" onClick={() => visibleSkills.length && handleSwipe('down', visibleSkills[0].name)} />
+                        <IconButton color="#00e676" icon="↑" label="Star" onClick={() => visibleSkills.length && handleSwipe('up', visibleSkills[0].name)} />
+                        <IconButton color="var(--accent-cyan)" icon="✓" label="Know" onClick={() => visibleSkills.length && handleSwipe('right', visibleSkills[0].name)} />
+                    </div>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '1.5rem', textAlign: 'center', opacity: 0.7 }}>
+                        {visibleSkills.length > 0 && <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{skills.length - localSkipped.size}</span>}{' '}
+                        skills remaining · Use <strong>arrow keys</strong> or swipe
+                    </p>
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', marginTop: '0.4rem', display: 'flex', gap: '0.8rem', flexWrap: 'wrap', justifyContent: 'center', opacity: 0.5 }}>
+                        <span>→ Know</span>
+                        <span>← Skip</span>
+                        <span>↓ Block</span>
+                        <span>↑ Must Have</span>
+                    </div>
+                </>
+            )}
+
+            {/* Mobile: 4 category badges */}
+            {isMobile && (
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem', flexWrap: 'wrap', justifyContent: 'center', zIndex: 15 }}>
+                    <CategoryBadge color="var(--accent-cyan)" icon="✓" count={Math.max(0, knowCount)} label="Know" onClick={() => setModalCategory('know')} />
+                    <CategoryBadge color="#888" icon="✕" count={Math.max(0, skipCount)} label="Skip" onClick={() => setModalCategory('skip')} />
+                    <CategoryBadge color="var(--accent-red)" icon="↓" count={blockCount} label="Block" onClick={() => setModalCategory('block')} />
+                    <CategoryBadge color="#00e676" icon="★" count={mustHaveCount} label="Must Have" onClick={() => setModalCategory('mustHave')} />
+                </div>
+            )}
+
+            {/* Modal */}
+            <AnimatePresence>
+                {modalCategory && categories[modalCategory] && (
+                    <SkillsModal
+                        {...categories[modalCategory]}
+                        onClose={() => setModalCategory(null)}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 }
