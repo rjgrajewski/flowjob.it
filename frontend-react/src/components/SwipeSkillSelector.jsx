@@ -331,7 +331,7 @@ export default function SwipeSkillSelector({
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%', overflow: 'hidden', padding: isMobile ? '2rem 1rem 1rem 1rem' : '1rem' }}>
-            <div style={{ position: 'relative', width: '320px', height: isMobile ? '360px' : '420px', maxWidth: '100%', marginBottom: isMobile ? '2.5rem' : '0' }}>
+            <div style={{ position: 'relative', width: '320px', height: isMobile ? '360px' : '420px', maxWidth: '100%', marginBottom: '3rem' }}>
                 <AnimatePresence>
                     {visibleSkills.map((skill, i) => (
                         <SwipeCard 
