@@ -314,9 +314,9 @@ export default function SwipeSkillSelector({
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-secondary)', gap: '1.5rem' }}>
                 <span>{search ? `No skills found for "${search}"` : 'All caught up!'}</span>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                    <CategoryBadge color="var(--accent-cyan)" icon="✓" count={Math.max(0, knowCount)} label="Know" onClick={() => setModalCategory('know')} />
                     <CategoryBadge color="#888" icon="✕" count={Math.max(0, skipCount)} label="Skip" onClick={() => setModalCategory('skip')} />
                     <CategoryBadge color="var(--accent-red)" icon="↓" count={blockCount} label="Block" onClick={() => setModalCategory('block')} />
+                    <CategoryBadge color="var(--accent-cyan)" icon="✓" count={Math.max(0, knowCount)} label="Know" onClick={() => setModalCategory('know')} />
                     <CategoryBadge color="#00e676" icon="★" count={mustHaveCount} label="Must Have" onClick={() => setModalCategory('mustHave')} />
                 </div>
                 {modalCategory && categories[modalCategory] && (
@@ -348,9 +348,9 @@ export default function SwipeSkillSelector({
             
             {/* Badges (Mobile and Desktop) */}
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', zIndex: 15 }}>
-                <CategoryBadge color="var(--accent-cyan)" icon="✓" count={Math.max(0, knowCount)} label="Know" onClick={() => setModalCategory('know')} />
                 <CategoryBadge color="#888" icon="✕" count={Math.max(0, skipCount)} label="Skip" onClick={() => setModalCategory('skip')} />
                 <CategoryBadge color="var(--accent-red)" icon="↓" count={blockCount} label="Block" onClick={() => setModalCategory('block')} />
+                <CategoryBadge color="var(--accent-cyan)" icon="✓" count={Math.max(0, knowCount)} label="Know" onClick={() => setModalCategory('know')} />
                 <CategoryBadge color="#00e676" icon="★" count={mustHaveCount} label="Must Have" onClick={() => setModalCategory('mustHave')} />
             </div>
 
