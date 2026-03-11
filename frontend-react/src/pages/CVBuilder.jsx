@@ -25,7 +25,7 @@ export default function CVBuilder() {
     const [anti, setAnti] = useState(new Set());
     const [confirmedTutorials, setConfirmedTutorials] = useState([]);
     const [pendingAction, setPendingAction] = useState(null); // { direction, skillName }
-    
+
     const selectedRef = useRef(new Set());
     const antiRef = useRef(new Set());
     const skippedRef = useRef(new Set());
@@ -34,7 +34,7 @@ export default function CVBuilder() {
     useEffect(() => { selectedRef.current = selected; }, [selected]);
     useEffect(() => { antiRef.current = anti; }, [anti]);
     useEffect(() => { skippedRef.current = skipped; }, [skipped]);
-    
+
     const [saved, setSaved] = useState('');
     const saveTimeout = useRef(null);
     const initialLoadDone = useRef(false);
@@ -95,26 +95,26 @@ export default function CVBuilder() {
         setBufferedDeck(currentDeck => {
             // 1. Identify valid cards currently in the buffer (protect top 2)
             const validCurrentBuffer = currentDeck
-                .filter(s => 
-                    !selected.has(s.name) && 
-                    !anti.has(s.name) && 
+                .filter(s =>
+                    !selected.has(s.name) &&
+                    !anti.has(s.name) &&
                     !skipped.has(s.name) &&
                     (!pendingAction || pendingAction.skillName !== s.name)
                 )
                 .slice(0, 2);
-            
+
             // 2. Identify names of the protected cards
             const bufferNames = new Set(validCurrentBuffer.map(s => s.name));
-            
+
             // 3. Filter the new API skills to exclude already processed AND already buffered cards
-            const newFilteredSkills = skills.filter(s => 
-                !selected.has(s.name) && 
-                !anti.has(s.name) && 
-                !skipped.has(s.name) && 
+            const newFilteredSkills = skills.filter(s =>
+                !selected.has(s.name) &&
+                !anti.has(s.name) &&
+                !skipped.has(s.name) &&
                 !bufferNames.has(s.name) &&
                 (!pendingAction || pendingAction.skillName !== s.name)
             );
-            
+
             // 4. Combine safe buffer with new collaborative suggestions
             return [...validCurrentBuffer, ...newFilteredSkills];
         });
@@ -240,7 +240,7 @@ export default function CVBuilder() {
             </AnimatePresence>
             {/* MAIN AREA */}
             <div style={{ ...styles.main, padding: isMobile ? '0.5rem' : '1.5rem 2rem' }}>
-                
+
                 {/* Save Indicator */}
                 <div style={{ position: 'absolute', top: '1rem', right: '1.5rem', zIndex: 50 }}>
                     <AnimatePresence>
@@ -338,16 +338,16 @@ const styles = {
         background: 'var(--bg-elevated)',
         animation: 'pulse 1.5s ease-in-out infinite',
     },
-};function ConfirmationModal({ action, onConfirm, onUndo }) {
+}; function ConfirmationModal({ action, onConfirm, onUndo }) {
     const [dontShowAgain, setDontShowAgain] = useState(false);
-    
+
     const configs = {
-        up: { label: 'SHOW OFF', color: '#00e676', rotation: '0deg', desc: 'Added to your visible CV & strongly improves job matches.' },
-        right: { label: 'GOT IT', color: 'var(--accent-cyan)', rotation: '-10deg', desc: 'Improves job matches (but remains hidden from your CV).' },
-        down: { label: 'AVOID', color: 'var(--accent-red)', rotation: '0deg', desc: 'Blocks this skill. Hides job requirements related to it.' },
-        left: { label: 'SKIP', color: '#888', rotation: '10deg', desc: 'Skips for now without affecting your jobs or CV.' }
+        up: { label: 'SHOW OFF', color: '#00e676', rotation: '0deg', desc: 'Places the skill on your CV and improves job matches.' },
+        right: { label: 'GOT IT', color: 'var(--accent-cyan)', rotation: '-10deg', desc: 'Improves job matches but remains invisible in your CV.' },
+        down: { label: 'AVOID', color: 'var(--accent-red)', rotation: '0deg', desc: 'Eliminates matches with job listings that require the skill.' },
+        left: { label: 'SKIP', color: '#888', rotation: '10deg', desc: 'Skips the skill without affecting job matches or your CV.' }
     };
-    
+
     const config = configs[action.direction];
 
     return (
@@ -381,7 +381,7 @@ const styles = {
                 }}
             >
                 {/* Stamp Label */}
-                <div style={{ 
+                <div style={{
                     marginBottom: '2rem',
                     padding: '0.6rem 1.8rem',
                     border: `5px solid ${config.color}`,
@@ -397,20 +397,20 @@ const styles = {
                 }}>
                     {config.label}
                 </div>
-                
+
                 <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '2rem', fontSize: '1.05rem' }}>
                     {config.desc}
                 </p>
 
-                <div 
+                <div
                     onClick={() => setDontShowAgain(!dontShowAgain)}
-                    style={{ 
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                    style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
                         gap: '0.6rem', marginBottom: '2.5rem', cursor: 'pointer',
                         userSelect: 'none'
                     }}
                 >
-                    <div style={{ 
+                    <div style={{
                         width: '22px', height: '22px', borderRadius: '5px',
                         border: '2px solid var(--border)',
                         background: dontShowAgain ? config.color : 'transparent',
@@ -423,9 +423,9 @@ const styles = {
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
-                    <button 
+                    <button
                         onClick={onUndo}
-                        style={{ 
+                        style={{
                             flex: 1, padding: '1rem', borderRadius: '14px',
                             background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
                             color: 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer',
@@ -434,9 +434,9 @@ const styles = {
                     >
                         Undo
                     </button>
-                    <button 
+                    <button
                         onClick={() => onConfirm(dontShowAgain)}
-                        style={{ 
+                        style={{
                             flex: 1.8, padding: '1rem', borderRadius: '14px',
                             background: config.color, border: 'none',
                             color: '#000', fontWeight: 750, cursor: 'pointer',
