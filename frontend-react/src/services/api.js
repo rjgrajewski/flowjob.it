@@ -57,7 +57,7 @@ export const api = {
         return res.json();
     },
     getUserCV: async (userId) => {
-        if (!userId) return { skills: [], antiSkills: [], highlightedSkills: [] };
+        if (!userId) return { skills: [], antiSkills: [], highlightedSkills: [], skippedSkills: [] };
         try {
             const res = handleUnauthorized(await fetch(`${BASE}/users/${userId}/skills`, {
                 headers: getAuthHeaders(),
@@ -66,7 +66,7 @@ export const api = {
             return await res.json();
         } catch (e) {
             console.error(e);
-            return { skills: [], antiSkills: [], highlightedSkills: [] };
+            return { skills: [], antiSkills: [], highlightedSkills: [], skippedSkills: [] };
         }
     },
     getStats: async () => {

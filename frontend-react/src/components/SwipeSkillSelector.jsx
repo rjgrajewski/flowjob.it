@@ -220,8 +220,8 @@ function SkillsModal({ title, color, icon, skills, onRemove, onClose }) {
 
 export default function SwipeSkillSelector({
     skills, onSwipeRight, onSwipeLeft, onSwipeDown, onSwipeUp, search,
-    isMobile, selected, anti, highlighted,
-    onRemoveSelected, onRemoveAnti, onToggleHighlighted,
+    isMobile, selected, anti, highlighted, skipped,
+    onRemoveSelected, onRemoveAnti, onRemoveSkipped, onToggleHighlighted,
 }) {
     const [localSkipped, setLocalSkipped] = useState(new Set());
     const [exitDirections, setExitDirections] = useState({});
@@ -275,7 +275,7 @@ export default function SwipeSkillSelector({
     const knowCount = selected ? selected.size - (highlighted ? highlighted.size : 0) : 0;
     const mustHaveCount = highlighted ? highlighted.size : 0;
     const blockCount = anti ? anti.size : 0;
-    const skipCount = localSkipped.size - (selected ? selected.size : 0) - (anti ? anti.size : 0);
+    const skipCount = skipped ? skipped.size : 0;
 
     // Category config for modal
     const categories = {
@@ -296,8 +296,8 @@ export default function SwipeSkillSelector({
         },
         skip: {
             title: 'Skipped', color: '#888', icon: '✕',
-            skills: [...localSkipped].filter(s => !(selected && selected.has(s)) && !(anti && anti.has(s))),
-            onRemove: null, // skipped skills can't be un-skipped from modal
+            skills: skipped ? [...skipped] : [],
+            onRemove: onRemoveSkipped,
         },
     };
 

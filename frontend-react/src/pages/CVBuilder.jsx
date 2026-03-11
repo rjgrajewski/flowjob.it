@@ -64,15 +64,18 @@ export default function CVBuilder() {
     const [interactionMode, setInteractionMode] = useState('select');
     const [selected, setSelected] = useState(new Set());
     const [highlighted, setHighlighted] = useState(new Set());
+    const [skipped, setSkipped] = useState(new Set());
     const { skills, loading } = useSkills([...selected]);
     const [search, setSearch] = useState('');
     const [anti, setAnti] = useState(new Set());
     const selectedRef = useRef(new Set());
     const antiRef = useRef(new Set());
+    const skippedRef = useRef(new Set());
 
     // Keep refs in sync with state for use in toggle handlers
     useEffect(() => { selectedRef.current = selected; }, [selected]);
     useEffect(() => { antiRef.current = anti; }, [anti]);
+    useEffect(() => { skippedRef.current = skipped; }, [skipped]);
     const [saved, setSaved] = useState('');
     const saveTimeout = useRef(null);
     const initialLoadDone = useRef(false);
@@ -93,6 +96,7 @@ export default function CVBuilder() {
             setSelected(new Set(cv.skills || []));
             setAnti(new Set(cv.antiSkills || []));
             setHighlighted(new Set(cv.highlightedSkills || []));
+            setSkipped(new Set(cv.skippedSkills || []));
             setTimeout(() => { if (mounted) initialLoadDone.current = true; }, 100);
         };
         load();
@@ -113,7 +117,8 @@ export default function CVBuilder() {
                 await api.saveUserCV(user.id, {
                     skills: [...selected],
                     antiSkills: [...anti],
-                    highlightedSkills: highlightedFiltered
+                    highlightedSkills: highlightedFiltered,
+                    skippedSkills: [...skipped]
                 });
                 setSaved('Saved!');
                 setTimeout(() => setSaved(''), 2500);
@@ -134,9 +139,9 @@ export default function CVBuilder() {
             .map(({ value }) => value);
     }, [skills]);
 
-    // Exclude already-selected and anti skills from bubble map, replenishing with new skills
+    // Exclude already-selected, anti, and skipped skills from bubble map
     const filtered = useMemo(() => {
-        const availableSkills = sortedSkills.filter(s => !selected.has(s.name) && !anti.has(s.name));
+        const availableSkills = sortedSkills.filter(s => !selected.has(s.name) && !anti.has(s.name) && !skipped.has(s.name));
 
         if (search) {
             const lowerSearch = search.toLowerCase();
@@ -160,7 +165,7 @@ export default function CVBuilder() {
         }
 
         return availableSkills;
-    }, [sortedSkills, search, selected, anti, isMobile]);
+    }, [sortedSkills, search, selected, anti, skipped, isMobile]);
 
 
 
@@ -174,8 +179,12 @@ export default function CVBuilder() {
 
     const toggleSkill = useCallback((name) => {
         const curAnti = antiRef.current;
+        const curSkipped = skippedRef.current;
         if (curAnti.has(name)) {
             setAnti(a => { const n = new Set(a); n.delete(name); return n; });
+        }
+        if (curSkipped.has(name)) {
+            setSkipped(s => { const n = new Set(s); n.delete(name); return n; });
         }
         setSelected(s => {
             const n = new Set(s);
@@ -186,14 +195,38 @@ export default function CVBuilder() {
 
     const toggleAnti = useCallback((name) => {
         const curSelected = selectedRef.current;
+        const curSkipped = skippedRef.current;
         if (curSelected.has(name)) {
             setSelected(s => { const n = new Set(s); n.delete(name); return n; });
+        }
+        if (curSkipped.has(name)) {
+            setSkipped(s => { const n = new Set(s); n.delete(name); return n; });
         }
         setAnti(a => {
             const n = new Set(a);
             n.has(name) ? n.delete(name) : n.add(name);
             return n;
         });
+    }, []);
+
+    const toggleSkipped = useCallback((name) => {
+        const curSelected = selectedRef.current;
+        const curAnti = antiRef.current;
+        if (curSelected.has(name)) {
+            setSelected(s => { const n = new Set(s); n.delete(name); return n; });
+        }
+        if (curAnti.has(name)) {
+            setAnti(a => { const n = new Set(a); n.delete(name); return n; });
+        }
+        setSkipped(s => {
+            const n = new Set(s);
+            n.has(name) ? n.delete(name) : n.add(name);
+            return n;
+        });
+    }, []);
+
+    const removeSkipped = useCallback((name) => {
+        setSkipped(s => { const n = new Set(s); n.delete(name); return n; });
     }, []);
 
     // Keep highlighted a subset of selected (e.g. when user deselects a skill)
@@ -371,11 +404,13 @@ export default function CVBuilder() {
                             selected={selected}
                             anti={anti}
                             highlighted={highlighted}
+                            skipped={skipped}
                             onRemoveSelected={toggleSkill}
                             onRemoveAnti={toggleAnti}
+                            onRemoveSkipped={removeSkipped}
                             onToggleHighlighted={toggleHighlighted}
                             onSwipeRight={toggleSkill}
-                            onSwipeLeft={(name) => { /* Skipped handled internally */ }}
+                            onSwipeLeft={toggleSkipped}
                             onSwipeUp={(name) => {
                                 toggleSkill(name);
                                 setHighlighted(h => {

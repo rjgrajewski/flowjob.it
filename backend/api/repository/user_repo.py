@@ -23,6 +23,7 @@ class UserRepository:
             skills = []
             anti_skills = []
             highlighted_skills = []
+            skipped_skills = []
             
             for row in rows:
                 name = row["canonical_skill_name"] or row["original_skill_name"]
@@ -32,11 +33,14 @@ class UserRepository:
                         highlighted_skills.append(name)
                 elif row["skill_type"] == 'AVOIDS':
                     anti_skills.append(name)
+                elif row["skill_type"] == 'SKIPPED':
+                    skipped_skills.append(name)
                     
             return {
                 "skills": list(set(skills)),
                 "antiSkills": list(set(anti_skills)),
-                "highlightedSkills": list(set(highlighted_skills))
+                "highlightedSkills": list(set(highlighted_skills)),
+                "skippedSkills": list(set(skipped_skills))
             }
 
     async def save_user_skills(
@@ -44,17 +48,19 @@ class UserRepository:
         user_id: str,
         skills: List[str],
         anti_skills: List[str],
-        highlighted_skills: List[str] = None
+        highlighted_skills: List[str] = None,
+        skipped_skills: List[str] = None
     ) -> dict:
         highlighted_skills = highlighted_skills or []
+        skipped_skills = skipped_skills or []
         async with self.pool.acquire() as conn:
             # We need to map string names back to UUIDs from the skills table first.
             # If no names match, we do NOT delete existing rows (avoid wiping data).
-            all_names = skills + anti_skills
+            all_names = skills + anti_skills + skipped_skills
             if not all_names:
                 async with conn.transaction():
                     await conn.execute("DELETE FROM user_skills WHERE user_id = $1", user_id)
-                return {"skills": [], "antiSkills": [], "highlightedSkills": []}
+                return {"skills": [], "antiSkills": [], "highlightedSkills": [], "skippedSkills": []}
 
             skill_records = await conn.fetch(
                 """
@@ -84,6 +90,11 @@ class UserRepository:
                 for uid in name_to_uuids.get(a, []):
                     if uid not in added:
                         inserts.append((user_id, uid, 'AVOIDS'))
+                        added.add(uid)
+            for s in set(skipped_skills):
+                for uid in name_to_uuids.get(s, []):
+                    if uid not in added:
+                        inserts.append((user_id, uid, 'SKIPPED'))
                         added.add(uid)
 
             # If we have requested skills but none matched the DB, do not delete – log and return current state
