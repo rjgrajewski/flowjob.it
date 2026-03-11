@@ -182,6 +182,29 @@ export default function CVBuilder() {
         setSkipped(s => { const n = new Set(s); n.delete(name); return n; });
     }, []);
 
+    const getSkillFrequency = useCallback((name) => {
+        const skill = skills.find(s => s.name === name);
+        return skill ? skill.frequency : 0;
+    }, [skills]);
+
+    const handleReSwipe = useCallback((name, category) => {
+        // 1. Remove from category
+        if (category === 'know') {
+            setSelected(prev => { const n = new Set(prev); n.delete(name); return n; });
+        } else if (category === 'mustHave') {
+            setSelected(prev => { const n = new Set(prev); n.delete(name); return n; });
+            setHighlighted(prev => { const n = new Set(prev); n.delete(name); return n; });
+        } else if (category === 'block') {
+            setAnti(prev => { const n = new Set(prev); n.delete(name); return n; });
+        } else if (category === 'skip') {
+            setSkipped(prev => { const n = new Set(prev); n.delete(name); return n; });
+        }
+
+        // 2. Add to top of deck
+        const freq = getSkillFrequency(name);
+        setBufferedDeck(prevDeck => [{ name, frequency: freq }, ...prevDeck.filter(s => s.name !== name)]);
+    }, [getSkillFrequency]);
+
     const applyAction = useCallback((direction, name) => {
         if (direction === 'right') toggleSkill(name);
         else if (direction === 'left') toggleSkipped(name);
@@ -290,10 +313,7 @@ export default function CVBuilder() {
                             anti={anti}
                             highlighted={highlighted}
                             skipped={skipped}
-                            onRemoveSelected={toggleSkill}
-                            onRemoveAnti={toggleAnti}
-                            onRemoveSkipped={removeSkipped}
-                            onToggleHighlighted={toggleHighlighted}
+                            onReSwipe={handleReSwipe}
                             onSwipeRight={(name) => handleSwipe('right', name)}
                             onSwipeLeft={(name) => handleSwipe('left', name)}
                             onSwipeUp={(name) => handleSwipe('up', name)}

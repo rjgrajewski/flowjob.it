@@ -213,9 +213,9 @@ function SkillsModal({ title, color, icon, skills, onRemove, onClose }) {
                                         fontWeight: 500,
                                     }}
                                     onClick={() => onRemove && onRemove(name)}
-                                    title={onRemove ? 'Tap to remove' : ''}
+                                    title={onRemove ? 'Tap to re-swipe' : ''}
                                 >
-                                    {name} {onRemove && <span style={{ opacity: 0.5 }}>✕</span>}
+                                    {name} {onRemove && <span style={{ opacity: 0.6, fontSize: '0.9em', marginLeft: '0.2rem' }}>↺</span>}
                                 </motion.span>
                             ))}
                         </div>
@@ -229,7 +229,7 @@ function SkillsModal({ title, color, icon, skills, onRemove, onClose }) {
 export default function SwipeSkillSelector({
     skills, onSwipeRight, onSwipeLeft, onSwipeDown, onSwipeUp, search,
     isMobile, selected, anti, highlighted, skipped,
-    onRemoveSelected, onRemoveAnti, onRemoveSkipped, onToggleHighlighted,
+    onReSwipe,
 }) {
     const [localSkipped, setLocalSkipped] = useState(new Set());
     const [exitDirections, setExitDirections] = useState({});
@@ -290,22 +290,22 @@ export default function SwipeSkillSelector({
         know: {
             title: 'Got it', color: 'var(--accent-cyan)', icon: '✓',
             skills: selected && highlighted ? [...selected].filter(s => !highlighted.has(s)) : [],
-            onRemove: onRemoveSelected,
+            onRemove: (name) => { if (onReSwipe) onReSwipe(name, 'know'); setModalCategory(null); },
         },
         mustHave: {
             title: 'Show off', color: '#00e676', icon: '★',
             skills: highlighted ? [...highlighted] : [],
-            onRemove: (name) => { if (onToggleHighlighted) onToggleHighlighted(name); },
+            onRemove: (name) => { if (onReSwipe) onReSwipe(name, 'mustHave'); setModalCategory(null); },
         },
         block: {
             title: 'Avoid', color: 'var(--accent-red)', icon: '🚫',
             skills: anti ? [...anti] : [],
-            onRemove: onRemoveAnti,
+            onRemove: (name) => { if (onReSwipe) onReSwipe(name, 'block'); setModalCategory(null); },
         },
         skip: {
             title: 'Skipped', color: '#888', icon: '✕',
             skills: skipped ? [...skipped] : [],
-            onRemove: onRemoveSkipped,
+            onRemove: (name) => { if (onReSwipe) onReSwipe(name, 'skip'); setModalCategory(null); },
         },
     };
 
