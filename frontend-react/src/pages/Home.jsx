@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import './Home.css';
 import { symbols } from './Home.constants';
+import { auth } from '../services/api.js';
 
 const fadeUp = {
     hidden: { opacity: 0, y: 40 },
@@ -52,6 +53,10 @@ const FloatingSymbol = ({ icon: Icon, color, delay = 0, size = 30, initialPos = 
 };
 
 export default function Home() {
+    if (auth.isAuthenticated()) {
+        return <Navigate to="/jobs" replace />;
+    }
+
     return (
         <div className="page" style={{ overflowX: 'hidden', minHeight: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
             <section style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '2rem 1rem' }}>

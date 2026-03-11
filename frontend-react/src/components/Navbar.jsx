@@ -40,7 +40,7 @@ export default function Navbar() {
         <header className="navbar-header">
             <div className="container navbar-inner">
                 {/* Logo */}
-                <NavLink to="/" className="navbar-logo" onClick={closeMobileMenu}>
+                <NavLink to={user ? "/jobs" : "/"} className="navbar-logo" onClick={closeMobileMenu}>
                     flowjob<span className="navbar-logo-accent">.it</span>
                 </NavLink>
 
