@@ -346,22 +346,6 @@ export default function SwipeSkillSelector({
                 </AnimatePresence>
             </div>
             
-            {/* Desktop: action buttons */}
-            {!isMobile && (
-                <>
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem', flexWrap: 'wrap', justifyContent: 'center', zIndex: 15 }}>
-                        <IconButton color="#888" icon="✕" label="Skip" onClick={() => visibleSkills.length && handleSwipe('left', visibleSkills[0].name)} />
-                        <IconButton color="var(--accent-red)" icon="↓" label="Block" onClick={() => visibleSkills.length && handleSwipe('down', visibleSkills[0].name)} />
-                        <IconButton color="#00e676" icon="↑" label="Star" onClick={() => visibleSkills.length && handleSwipe('up', visibleSkills[0].name)} />
-                        <IconButton color="var(--accent-cyan)" icon="✓" label="Know" onClick={() => visibleSkills.length && handleSwipe('right', visibleSkills[0].name)} />
-                    </div>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', margin: '1rem 0', textAlign: 'center', opacity: 0.7 }}>
-                        {visibleSkills.length > 0 && <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{skills.length - localSkipped.size}</span>}{' '}
-                        skills remaining · Use <strong>arrow keys</strong> or swipe
-                    </p>
-                </>
-            )}
-
             {/* Badges (Mobile and Desktop) */}
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', zIndex: 15 }}>
                 <CategoryBadge color="var(--accent-cyan)" icon="✓" count={Math.max(0, knowCount)} label="Know" onClick={() => setModalCategory('know')} />
@@ -381,26 +365,3 @@ export default function SwipeSkillSelector({
     );
 }
 
-function IconButton({ color, icon, label, onClick }) {
-    return (
-        <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={onClick}
-            style={{
-                width: '56px', height: '56px',
-                borderRadius: '50%',
-                border: `2px solid ${color}`,
-                background: 'transparent',
-                color: color,
-                fontSize: '1.5rem',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-                boxShadow: `0 0 15px ${color}33`,
-            }}
-            title={label}
-        >
-            {icon}
-        </motion.button>
-    );
-}
