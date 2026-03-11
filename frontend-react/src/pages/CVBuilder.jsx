@@ -205,6 +205,40 @@ export default function CVBuilder() {
         setBufferedDeck(prevDeck => [{ name, frequency: freq }, ...prevDeck.filter(s => s.name !== name)]);
     }, [getSkillFrequency]);
 
+    const handleClearCategory = useCallback((category) => {
+        const curSelected = selectedRef.current;
+        const curAnti = antiRef.current;
+        const curSkipped = skippedRef.current;
+        
+        let namesToClear = [];
+        
+        if (category === 'know') {
+            namesToClear = [...curSelected].filter(s => !highlighted.has(s));
+            setSelected(prev => { const n = new Set(prev); namesToClear.forEach(name => n.delete(name)); return n; });
+        } else if (category === 'mustHave') {
+            namesToClear = [...highlighted];
+            setHighlighted(new Set());
+            setSelected(prev => { const n = new Set(prev); namesToClear.forEach(name => n.delete(name)); return n; });
+        } else if (category === 'block') {
+            namesToClear = [...curAnti];
+            setAnti(new Set());
+        } else if (category === 'skip') {
+            namesToClear = [...curSkipped];
+            setSkipped(new Set());
+        }
+
+        if (namesToClear.length > 0) {
+            const newBufferedCards = namesToClear.map(name => ({
+                name,
+                frequency: getSkillFrequency(name)
+            }));
+            setBufferedDeck(prevDeck => [
+                ...newBufferedCards,
+                ...prevDeck.filter(s => !namesToClear.includes(s.name))
+            ]);
+        }
+    }, [getSkillFrequency, highlighted]);
+
     const applyAction = useCallback((direction, name) => {
         if (direction === 'right') toggleSkill(name);
         else if (direction === 'left') toggleSkipped(name);
@@ -314,6 +348,7 @@ export default function CVBuilder() {
                             highlighted={highlighted}
                             skipped={skipped}
                             onReSwipe={handleReSwipe}
+                            onClearCategory={handleClearCategory}
                             onSwipeRight={(name) => handleSwipe('right', name)}
                             onSwipeLeft={(name) => handleSwipe('left', name)}
                             onSwipeUp={(name) => handleSwipe('up', name)}

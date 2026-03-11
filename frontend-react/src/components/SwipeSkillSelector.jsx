@@ -149,7 +149,7 @@ function CategoryBadge({ color, icon, count, label, onClick }) {
 }
 
 // --- Skills Modal ---
-function SkillsModal({ title, color, icon, skills, onRemove, onClose }) {
+function SkillsModal({ title, color, icon, skills, onRemove, onClearAll, onClose }) {
     return (
         <div
             onClick={onClose}
@@ -185,10 +185,25 @@ function SkillsModal({ title, color, icon, skills, onRemove, onClose }) {
                         {icon} {title}
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({skills.length})</span>
                     </h3>
-                    <button
-                        onClick={onClose}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '1.5rem', cursor: 'pointer', padding: '0.25rem' }}
-                    >✕</button>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        {skills.length > 0 && onClearAll && (
+                            <button
+                                onClick={onClearAll}
+                                style={{
+                                    background: 'rgba(255,255,255,0.05)', border: `1px solid ${color}`,
+                                    color: color, fontSize: '0.75rem', fontWeight: 600,
+                                    padding: '0.2rem 0.6rem', borderRadius: '4px', cursor: 'pointer',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                Clear All
+                            </button>
+                        )}
+                        <button
+                            onClick={onClose}
+                            style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '1.5rem', cursor: 'pointer', padding: '0.25rem' }}
+                        >✕</button>
+                    </div>
                 </div>
 
                 <div style={{ overflowY: 'auto', flex: 1 }}>
@@ -229,7 +244,7 @@ function SkillsModal({ title, color, icon, skills, onRemove, onClose }) {
 export default function SwipeSkillSelector({
     skills, onSwipeRight, onSwipeLeft, onSwipeDown, onSwipeUp, search,
     isMobile, selected, anti, highlighted, skipped,
-    onReSwipe,
+    onReSwipe, onClearCategory,
 }) {
     const [localSkipped, setLocalSkipped] = useState(new Set());
     const [exitDirections, setExitDirections] = useState({});
@@ -291,21 +306,25 @@ export default function SwipeSkillSelector({
             title: 'Got it', color: 'var(--accent-cyan)', icon: '✓',
             skills: selected && highlighted ? [...selected].filter(s => !highlighted.has(s)) : [],
             onRemove: (name) => { if (onReSwipe) onReSwipe(name, 'know'); setModalCategory(null); },
+            onClearAll: () => { if (onClearCategory) onClearCategory('know'); setModalCategory(null); },
         },
         mustHave: {
             title: 'Show off', color: '#00e676', icon: '★',
             skills: highlighted ? [...highlighted] : [],
             onRemove: (name) => { if (onReSwipe) onReSwipe(name, 'mustHave'); setModalCategory(null); },
+            onClearAll: () => { if (onClearCategory) onClearCategory('mustHave'); setModalCategory(null); },
         },
         block: {
             title: 'Avoid', color: 'var(--accent-red)', icon: '🚫',
             skills: anti ? [...anti] : [],
             onRemove: (name) => { if (onReSwipe) onReSwipe(name, 'block'); setModalCategory(null); },
+            onClearAll: () => { if (onClearCategory) onClearCategory('block'); setModalCategory(null); },
         },
         skip: {
             title: 'Skipped', color: '#888', icon: '✕',
             skills: skipped ? [...skipped] : [],
             onRemove: (name) => { if (onReSwipe) onReSwipe(name, 'skip'); setModalCategory(null); },
+            onClearAll: () => { if (onClearCategory) onClearCategory('skip'); setModalCategory(null); },
         },
     };
 
