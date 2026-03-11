@@ -48,6 +48,20 @@ const SwipeCard = ({ skill, index, onSwipe, frontCard, exitDirection }) => {
         down: { y: 400, opacity: 0, transition: { duration: 0.3 } }
     };
 
+    const words = skill.name.split(/\s+/);
+    const maxWordLength = Math.max(...words.map(w => w.length));
+    
+    let fontSize = 'clamp(1.8rem, 10vw, 2.8rem)';
+    if (maxWordLength >= 18) {
+        fontSize = 'clamp(1.0rem, 5vw, 1.4rem)';
+    } else if (maxWordLength >= 15) {
+        fontSize = 'clamp(1.2rem, 6vw, 1.6rem)';
+    } else if (maxWordLength >= 12) {
+        fontSize = 'clamp(1.5rem, 7vw, 2.0rem)';
+    } else if (skill.name.length > 12) {
+        fontSize = 'clamp(1.5rem, 8vw, 2.2rem)';
+    }
+
     return (
         <motion.div
             style={{
@@ -84,13 +98,12 @@ const SwipeCard = ({ skill, index, onSwipe, frontCard, exitDirection }) => {
                 onDragEnd={frontCard ? handleDragEnd : undefined}
                 whileTap={frontCard ? { cursor: 'grabbing' } : undefined}
             >
-                <div style={{ textAlign: 'center', padding: '1.5rem' }}>
+                <div style={{ textAlign: 'center', padding: '1.5rem', width: '100%', boxSizing: 'border-box' }}>
                     <h2 style={{ 
-                        fontSize: skill.name.length > 10 ? 'clamp(1.5rem, 8vw, 2.2rem)' : 'clamp(1.8rem, 10vw, 2.8rem)', 
+                        fontSize: fontSize, 
                         fontWeight: 800, 
                         overflowWrap: 'break-word', 
                         wordBreak: 'normal', 
-                        hyphens: 'auto',
                         lineHeight: 1.1,
                         margin: 0 
                     }}>
