@@ -20,7 +20,16 @@ export default function CVBuilder() {
     const [selected, setSelected] = useState(new Set());
     const [highlighted, setHighlighted] = useState(new Set());
     const [skipped, setSkipped] = useState(new Set());
-    const { skills, loading } = useSkills([...selected]);
+    const [cvLoaded, setCvLoaded] = useState(false);
+    
+    // Only capture selected skills once when CV the finishes loading
+    // to prevent the deck from constantly reshuffling on every swipe.
+    const initialSelected = useMemo(() => {
+        return cvLoaded ? [...selected] : [];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [cvLoaded]);
+    
+    const { skills, loading } = useSkills(initialSelected);
     const [anti, setAnti] = useState(new Set());
     
     const selectedRef = useRef(new Set());
@@ -49,6 +58,7 @@ export default function CVBuilder() {
             setAnti(new Set(cv.antiSkills || []));
             setHighlighted(new Set(cv.highlightedSkills || []));
             setSkipped(new Set(cv.skippedSkills || []));
+            setCvLoaded(true);
             setTimeout(() => { if (mounted) initialLoadDone.current = true; }, 100);
         };
         load();
@@ -82,18 +92,10 @@ export default function CVBuilder() {
 
 
 
-    const sortedSkills = useMemo(() => {
-        return [...skills]
-            .map(value => ({ value, sort: Math.random() }))
-            .sort((a, b) => (b.value.frequency || 0) - (a.value.frequency || 0) || a.sort - b.sort)
-            .map(({ value }) => value);
-    }, [skills]);
-
-    // Exclude already-selected, anti, and skipped skills from bubble map
     // Exclude already-selected, anti, and skipped skills from deck
     const filtered = useMemo(() => {
-        return sortedSkills.filter(s => !selected.has(s.name) && !anti.has(s.name) && !skipped.has(s.name));
-    }, [sortedSkills, selected, anti, skipped]);
+        return skills.filter(s => !selected.has(s.name) && !anti.has(s.name) && !skipped.has(s.name));
+    }, [skills, selected, anti, skipped]);
 
 
 
