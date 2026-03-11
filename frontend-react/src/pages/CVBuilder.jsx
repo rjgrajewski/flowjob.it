@@ -74,7 +74,7 @@ export default function CVBuilder() {
                     skills: [...selected],
                     antiSkills: [...anti],
                     highlightedSkills: highlightedFiltered,
-                    skipped_skills: [...skipped],
+                    skippedSkills: [...skipped],
                     confirmedTutorials: confirmedTutorials
                 });
                 setSaved('Saved!');

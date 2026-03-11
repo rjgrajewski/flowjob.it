@@ -52,14 +52,14 @@ const SwipeCard = ({ skill, index, onSwipe, frontCard, exitDirection }) => {
     const maxWordLength = Math.max(...words.map(w => w.length));
     
     let fontSize = 'clamp(1.8rem, 10vw, 2.8rem)';
-    if (maxWordLength >= 18) {
-        fontSize = 'clamp(1.0rem, 5vw, 1.4rem)';
-    } else if (maxWordLength >= 15) {
-        fontSize = 'clamp(1.2rem, 6vw, 1.6rem)';
-    } else if (maxWordLength >= 12) {
-        fontSize = 'clamp(1.5rem, 7vw, 2.0rem)';
+    if (maxWordLength >= 14) {
+        fontSize = 'clamp(1.1rem, 5vw, 1.5rem)';
+    } else if (maxWordLength >= 11) {
+        fontSize = 'clamp(1.3rem, 6vw, 1.8rem)';
+    } else if (maxWordLength >= 9) {
+        fontSize = 'clamp(1.5rem, 7.5vw, 2.2rem)';
     } else if (skill.name.length > 12) {
-        fontSize = 'clamp(1.5rem, 8vw, 2.2rem)';
+        fontSize = 'clamp(1.6rem, 8vw, 2.4rem)';
     }
 
     return (
