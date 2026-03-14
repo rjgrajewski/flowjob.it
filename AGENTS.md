@@ -23,7 +23,7 @@
 - Connection uses env vars: `AWS_DB_ENDPOINT`, `AWS_DB_NAME`, `AWS_DB_USERNAME`, `AWS_DB_PASSWORD`.
 - These are injected as secrets in the Cloud Agent environment pointing to a remote AWS RDS instance.
 - If `SECRET_ARN` env var is set, the backend will attempt to load credentials from AWS Secrets Manager first.
-- Schema DDL lives in `services/sql/tables/` and migrations in `services/sql/migrations/`.
+- Schema DDL lives in `backend/sql/tables/` and migrations in `backend/sql/migrations/`.
 
 ### Lint / Type checking
 

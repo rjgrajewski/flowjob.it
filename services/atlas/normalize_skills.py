@@ -104,7 +104,8 @@ def parse_tech_stack(tech_stack: str) -> List[str]:
 async def init_tables(conn: asyncpg.Connection):
     """Initialize necessary tables."""
     # Ensure offer_skills exists
-    schema_path = Path(__file__).parent.parent / "sql" / "tables" / "offer_skills.sql"
+    project_root = Path(__file__).resolve().parent.parent.parent
+    schema_path = project_root / "backend" / "sql" / "tables" / "offer_skills.sql"
     if schema_path.exists():
         await conn.execute(schema_path.read_text())
     

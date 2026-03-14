@@ -94,10 +94,10 @@ The backend uses a repository pattern (`backend/api/repository/`) with async `as
 
 ### Database Migrations
 
-SQL migrations live in `services/sql/migrations/`. Run them via:
+SQL migrations live in `backend/sql/migrations/`. Run them via:
 
 ```bash
-python3 backend/run_migration.py services/sql/migrations/005_user_onboarding.sql
+python3 backend/run_migration.py backend/sql/migrations/005_user_onboarding.sql
 ```
 
 ---
@@ -139,17 +139,17 @@ flowjob/
 │  ├─ database.py               # asyncpg pool (AWS RDS / Secrets Manager)
 │  ├─ models.py                 # Pydantic request/response models
 │  ├─ run_migration.py          # SQL migration runner
+│  ├─ sql/                      # Database schema
+│  │  ├─ tables/                # offers, skills, offer_skills, users
+│  │  ├─ views/                 # offers_parsed
+│  │  └─ migrations/            # 001..009 incremental schema changes
 │  └─ api/
 │     ├─ auth_utils.py          # JWT helpers
 │     ├─ routers/               # auth, skills, offers, users
 │     └─ repository/            # auth_repo, skills_repo, offers_repo, user_repo
 ├─ services/
 │  ├─ scout/                    # Web scraper (Playwright)
-│  ├─ atlas/                    # Skill normalization (AWS Bedrock)
-│  └─ sql/
-│     ├─ tables/                # offers, skills, offer_skills, users
-│     ├─ views/                 # offers_parsed
-│     └─ migrations/            # 001..009 incremental schema changes
+│  └─ atlas/                    # Skill normalization (AWS Bedrock)
 ├─ infra/                       # AWS SAM template for Atlas Lambda
 │  ├─ template.yaml
 │  ├─ deploy.sh

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 Generic migration runner. Usage from repo root:
-    python3 backend/run_migration.py services/sql/migrations/005_user_onboarding.sql
-    python3 backend/run_migration.py services/sql/migrations/007_show_on_cv.sql
-    python3 backend/run_migration.py services/sql/migrations/008_data_processing_clause.sql
+    python3 backend/run_migration.py backend/sql/migrations/005_user_onboarding.sql
+    python3 backend/run_migration.py backend/sql/migrations/007_show_on_cv.sql
+    python3 backend/run_migration.py backend/sql/migrations/008_data_processing_clause.sql
 """
 import asyncio
 import logging

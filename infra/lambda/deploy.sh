@@ -47,6 +47,10 @@ fi
 SCRAPER_ROLE_ARN="${SCRAPER_ROLE_ARN:-}"
 SECRET_ARN="${SECRET_ARN:-}"
 
+# Copy backend/sql into services/ so Lambda package includes schema files
+cp -r backend/sql services/sql
+trap 'rm -rf services/sql' EXIT
+
 # Build (layer with asyncpg requires Docker)
 echo "Building..."
 sam build -t infra/lambda/template.yaml --use-container

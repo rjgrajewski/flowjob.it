@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY services/ ./services/
+COPY backend/sql/ ./backend/sql/
 
 # Set environment variables
 ENV PYTHONPATH=/app/services

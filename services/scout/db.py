@@ -81,7 +81,8 @@ async def init_db_connection() -> asyncpg.Connection:
         raise Exception(f"❌ Failed to connect to database: {e}")
 
     # Ensure the offers table exists
-    schema_path = Path(__file__).parent.parent / "sql" / "tables" / "offers.sql"
+    project_root = Path(__file__).resolve().parent.parent.parent
+    schema_path = project_root / "backend" / "sql" / "tables" / "offers.sql"
     if schema_path.exists():
         ddl = schema_path.read_text()
         await conn.execute(ddl)
