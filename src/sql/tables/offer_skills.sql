@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS offer_skills (
     job_url TEXT REFERENCES offers(job_url) ON DELETE CASCADE,
-    skill_id UUID REFERENCES skills(sortkey) ON DELETE CASCADE,
+    skill_id UUID REFERENCES skills(uuid) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (job_url, skill_id)
 );

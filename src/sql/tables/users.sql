@@ -1,6 +1,8 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- Users table to store profile and authentication info
 CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE NOT NULL,
     full_name TEXT,
     avatar_url TEXT,
@@ -20,7 +22,7 @@ CREATE TABLE IF NOT EXISTS user_skills (
     user_id UUID REFERENCES users (id) ON DELETE CASCADE,
     skill_id UUID REFERENCES skills (uuid) ON DELETE CASCADE,
     skill_type TEXT NOT NULL,
-    -- 'HAS', 'WANTS', 'AVOIDS'
+    -- 'HAS', 'AVOIDS', 'SKIPPED'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, skill_id, skill_type)
 );

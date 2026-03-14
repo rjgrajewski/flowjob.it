@@ -1,6 +1,6 @@
 # Scout - JustJoin.it Job Scraper
 
-![Python 3.9](https://img.shields.io/badge/python-3.9-blue) ![Playwright](https://img.shields.io/badge/playwright-1.52.0-blue) ![asyncpg](https://img.shields.io/badge/asyncpg-0.29.0-blue) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.3-blue)
+![Python 3.12](https://img.shields.io/badge/python-3.12-blue) ![Playwright](https://img.shields.io/badge/playwright-1.52.0-blue) ![asyncpg](https://img.shields.io/badge/asyncpg-0.29.0-blue) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.3-blue)
 
 ## 📚 Table of Contents
 
@@ -144,7 +144,7 @@ class JustJoinItSelectors:
 
 ### Prerequisites
 
-- Python 3.9+
+- Python 3.12+
 - PostgreSQL 15.3+ (or AWS RDS)
 - pip and virtualenv
 

@@ -41,6 +41,13 @@ export const api = {
         if (!res.ok) throw new Error('Failed to fetch skills');
         return res.json();
     },
+    getUniversities: async (query) => {
+        const normalized = query.trim();
+        if (normalized.length < 3) return { results: [] };
+        const res = await fetchWithTimeout(`${BASE}/universities?query=${encodeURIComponent(normalized)}`, {}, 5000);
+        if (!res.ok) throw new Error('Failed to fetch universities');
+        return res.json();
+    },
     getOffers: async () => {
         const res = await fetch(`${BASE}/offers`);
         if (!res.ok) throw new Error('Failed to fetch offers');
@@ -57,7 +64,7 @@ export const api = {
         return res.json();
     },
     getUserCV: async (userId) => {
-        if (!userId) return { skills: [], antiSkills: [], highlightedSkills: [], skippedSkills: [] };
+        if (!userId) return { skills: [], antiSkills: [], highlightedSkills: [], skippedSkills: [], confirmedTutorials: [] };
         try {
             const res = handleUnauthorized(await fetch(`${BASE}/users/${userId}/skills`, {
                 headers: getAuthHeaders(),
@@ -66,7 +73,7 @@ export const api = {
             return await res.json();
         } catch (e) {
             console.error(e);
-            return { skills: [], antiSkills: [], highlightedSkills: [], skippedSkills: [] };
+            return { skills: [], antiSkills: [], highlightedSkills: [], skippedSkills: [], confirmedTutorials: [] };
         }
     },
     getStats: async () => {

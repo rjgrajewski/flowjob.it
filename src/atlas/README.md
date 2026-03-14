@@ -1,6 +1,6 @@
 # Atlas - AI Skills Analysis
 
-![Python 3.9](https://img.shields.io/badge/python-3.9-blue) ![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock-orange)
+![Python 3.12](https://img.shields.io/badge/python-3.12-blue) ![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock-orange)
 
 ## 🚀 Overview
 

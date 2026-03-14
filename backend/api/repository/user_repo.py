@@ -1,8 +1,20 @@
 import logging
 from asyncpg import Pool
-from typing import List, Dict
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
+
+
+def _unique_preserving_order(items: List[str]) -> List[str]:
+    seen = set()
+    unique_items = []
+    for item in items:
+        if item in seen:
+            continue
+        seen.add(item)
+        unique_items.append(item)
+    return unique_items
+
 
 class UserRepository:
     def __init__(self, pool: Pool):
@@ -45,32 +57,56 @@ class UserRepository:
                     skipped_skills.append(name)
                     
             return {
-                "skills": list(set(skills)),
-                "antiSkills": list(set(anti_skills)),
-                "highlightedSkills": list(set(highlighted_skills)),
-                "skippedSkills": list(set(skipped_skills)),
-                "confirmedTutorials": list(confirmed_tutorials)
+                "skills": _unique_preserving_order(skills),
+                "antiSkills": _unique_preserving_order(anti_skills),
+                "highlightedSkills": _unique_preserving_order(highlighted_skills),
+                "skippedSkills": _unique_preserving_order(skipped_skills),
+                "confirmedTutorials": _unique_preserving_order(list(confirmed_tutorials))
             }
 
     async def save_user_skills(
         self,
         user_id: str,
-        skills: List[str],
-        anti_skills: List[str],
-        highlighted_skills: List[str] = None,
-        skipped_skills: List[str] = None,
-        confirmed_tutorials: List[str] = None
+        skills: Optional[List[str]] = None,
+        anti_skills: Optional[List[str]] = None,
+        highlighted_skills: Optional[List[str]] = None,
+        skipped_skills: Optional[List[str]] = None,
+        confirmed_tutorials: Optional[List[str]] = None
     ) -> dict:
-        highlighted_skills = highlighted_skills or []
-        skipped_skills = skipped_skills or []
+        current_state = await self.get_user_skills(user_id)
+        resolved_skills = _unique_preserving_order(skills if skills is not None else current_state["skills"])
+        resolved_anti_skills = _unique_preserving_order(anti_skills if anti_skills is not None else current_state["antiSkills"])
+        resolved_skipped_skills = _unique_preserving_order(skipped_skills if skipped_skills is not None else current_state["skippedSkills"])
+        resolved_highlighted_skills = _unique_preserving_order(
+            highlighted_skills if highlighted_skills is not None else current_state["highlightedSkills"]
+        )
+        resolved_confirmed_tutorials = _unique_preserving_order(
+            confirmed_tutorials if confirmed_tutorials is not None else current_state["confirmedTutorials"]
+        )
+        resolved_skills_set = set(resolved_skills)
+        resolved_highlighted_skills = [
+            name for name in resolved_highlighted_skills
+            if name in resolved_skills_set
+        ]
+
         async with self.pool.acquire() as conn:
-            # We need to map string names back to UUIDs from the skills table first.
-            # If no names match, we do NOT delete existing rows (avoid wiping data).
-            all_names = skills + anti_skills + skipped_skills
+            # Missing fields in the request are treated as "keep current value".
+            all_names = resolved_skills + resolved_anti_skills + resolved_skipped_skills
             if not all_names:
                 async with conn.transaction():
                     await conn.execute("DELETE FROM user_skills WHERE user_id = $1", user_id)
-                return {"skills": [], "antiSkills": [], "highlightedSkills": [], "skippedSkills": []}
+                    await conn.execute(
+                        "UPDATE users SET confirmed_tutorials = $1 WHERE id = $2",
+                        resolved_confirmed_tutorials,
+                        user_id
+                    )
+                return {
+                    "skills": [],
+                    "antiSkills": [],
+                    "highlightedSkills": [],
+                    "skippedSkills": [],
+                    "confirmedTutorials": resolved_confirmed_tutorials,
+                }
 
             skill_records = await conn.fetch(
                 """
@@ -91,17 +127,17 @@ class UserRepository:
 
             inserts = []
             added = set()
-            for s in set(skills):
+            for s in resolved_skills:
                 for uid in name_to_uuids.get(s, []):
                     if uid not in added:
                         inserts.append((user_id, uid, 'HAS'))
                         added.add(uid)
-            for a in set(anti_skills):
+            for a in resolved_anti_skills:
                 for uid in name_to_uuids.get(a, []):
                     if uid not in added:
                         inserts.append((user_id, uid, 'AVOIDS'))
                         added.add(uid)
-            for s in set(skipped_skills):
+            for s in resolved_skipped_skills:
                 for uid in name_to_uuids.get(s, []):
                     if uid not in added:
                         inserts.append((user_id, uid, 'SKIPPED'))
@@ -120,7 +156,14 @@ class UserRepository:
                     user_id,
                     list(unmatched)[:10],
                 )
-                return await self.get_user_skills(user_id)
+                async with conn.transaction():
+                    await conn.execute(
+                        "UPDATE users SET confirmed_tutorials = $1 WHERE id = $2",
+                        resolved_confirmed_tutorials,
+                        user_id
+                    )
+                current_state["confirmedTutorials"] = resolved_confirmed_tutorials
+                return current_state
 
             async with conn.transaction():
                 await conn.execute("DELETE FROM user_skills WHERE user_id = $1", user_id)
@@ -133,8 +176,10 @@ class UserRepository:
                         """,
                         inserts
                     )
-                skills_set = set(skills)
-                highlighted_valid = [h for h in highlighted_skills if h in skills_set]
+                highlighted_valid = [
+                    highlighted_skill for highlighted_skill in resolved_highlighted_skills
+                    if highlighted_skill in resolved_skills_set
+                ]
                 highlight_uuids = []
                 for name in highlighted_valid:
                     for uid in name_to_uuids.get(name, []):
@@ -143,23 +188,38 @@ class UserRepository:
                             break
                 await conn.execute(
                     """
-                    UPDATE user_skills SET show_on_cv = (skill_id = ANY($1))
-                    WHERE user_id = $2 AND skill_type = 'HAS'
+                    UPDATE user_skills
+                    SET show_on_cv = false
+                    WHERE user_id = $1 AND skill_type = 'HAS'
                     """,
-                    highlight_uuids,
+                    user_id
+                )
+                if highlight_uuids:
+                    await conn.execute(
+                        """
+                        UPDATE user_skills
+                        SET show_on_cv = true
+                        WHERE user_id = $1 AND skill_type = 'HAS' AND skill_id = ANY($2::uuid[])
+                        """,
+                        user_id,
+                        highlight_uuids
+                    )
+
+                await conn.execute(
+                    "UPDATE users SET confirmed_tutorials = $1 WHERE id = $2",
+                    resolved_confirmed_tutorials,
                     user_id
                 )
 
-                # 5. Save confirmed tutorials
-                if confirmed_tutorials is not None:
-                    await conn.execute(
-                        "UPDATE users SET confirmed_tutorials = $1 WHERE id = $2",
-                        confirmed_tutorials,
-                        user_id
-                    )
-
         return await self.get_user_skills(user_id)
+
     async def save_onboarding_full(self, user_id: str, data: 'OnboardingRequest') -> bool:
+        for index, experience in enumerate(data.experience, start=1):
+            if not experience.job_title or not experience.company_name or experience.start_date is None:
+                raise ValueError(
+                    f"Experience entry {index} requires a job title, company name, and start year."
+                )
+
         async with self.pool.acquire() as conn:
             async with conn.transaction():
                 # 1. Update/Insert Profile
@@ -251,4 +311,3 @@ class UserRepository:
                 "education": [dict(r) for r in edu_rows],
                 "experience": [dict(r) for r in exp_rows]
             }
-

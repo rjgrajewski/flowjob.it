@@ -5,11 +5,12 @@ If unset, no invocation (safe for local runs).
 """
 import logging
 import os
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
 
-def invoke_normalize_lambda(payload: dict | None = None):
+def invoke_normalize_lambda(payload: Optional[Dict[str, Any]] = None):
     """Invoke normalization Lambda asynchronously. No-op if Lambda name/ARN not configured."""
     name = os.getenv("NORMALIZE_LAMBDA_NAME")
     arn = os.getenv("NORMALIZE_LAMBDA_ARN")

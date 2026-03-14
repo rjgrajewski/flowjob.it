@@ -1,6 +1,6 @@
 # flowjob: IT Job Search Engine
 
-![Python](https://img.shields.io/badge/Python-3.9+-3776ab?style=for-the-badge&logo=python&logoColor=white) ![React](https://img.shields.io/badge/React-18-61dafb?style=for-the-badge&logo=react&logoColor=black) ![AWS](https://img.shields.io/badge/AWS-Fargate%20%7C%20RDS%20%7C%20Bedrock-ff9900?style=for-the-badge&logo=amazon-aws&logoColor=white) ![Playwright](https://img.shields.io/badge/Playwright-Browser%20Automation-2ead33?style=for-the-badge&logo=playwright&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12+-3776ab?style=for-the-badge&logo=python&logoColor=white) ![React](https://img.shields.io/badge/React-18-61dafb?style=for-the-badge&logo=react&logoColor=black) ![AWS](https://img.shields.io/badge/AWS-Fargate%20%7C%20RDS%20%7C%20Bedrock-ff9900?style=for-the-badge&logo=amazon-aws&logoColor=white) ![Playwright](https://img.shields.io/badge/Playwright-Browser%20Automation-2ead33?style=for-the-badge&logo=playwright&logoColor=white)
 
 ## Overview
 
@@ -23,7 +23,7 @@ The frontend is a **Vite + React** SPA with a dark "Terminal Nights" aesthetic.
 
 ### Running locally
 
-> Node.js 20.x and Python 3.9+ are required.
+> Node.js 20.x and Python 3.12+ are required.
 
 **One command (backend + frontend):**
 
@@ -85,9 +85,10 @@ The backend uses a repository pattern (`backend/api/repository/`) with async `as
 | `POST` | `/api/register` | — | Create a new account (email + password) |
 | `POST` | `/api/login` | — | Authenticate and receive JWT token |
 | `GET` | `/api/skills` | — | Returns all normalized skills with frequency. Accepts `?selected=` query param |
+| `GET` | `/api/universities` | — | Returns university suggestions for onboarding autocomplete |
 | `GET` | `/api/offers` | — | Returns job offers with required skills |
 | `GET` | `/api/users/{id}/skills` | JWT | Get user's selected skills, anti-skills, highlighted skills |
-| `POST` | `/api/users/{id}/skills` | JWT | Save user's skill profile |
+| `POST` | `/api/users/{id}/skills` | JWT | Save or partially update the user's skill profile |
 | `GET` | `/api/users/{id}/onboarding` | JWT | Get onboarding data (profile, education, experience) |
 | `POST` | `/api/users/{id}/onboarding` | JWT | Save onboarding data |
 
@@ -148,7 +149,7 @@ flowjob/
 │  └─ sql/
 │     ├─ tables/                # offers, skills, offer_skills, users
 │     ├─ views/                 # offers_parsed
-│     └─ migrations/            # 001..008 incremental schema changes
+│     └─ migrations/            # 001..009 incremental schema changes
 ├─ infra/                       # AWS SAM template for Atlas Lambda
 │  ├─ template.yaml
 │  ├─ deploy.sh

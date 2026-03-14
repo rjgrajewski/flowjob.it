@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from backend.database import init_db_pool, close_db_pool
-from backend.api.routers import auth, skills, offers, users, stats
+from backend.api.routers import auth, skills, offers, users, stats, reference
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,6 +29,7 @@ app.include_router(skills.router)
 app.include_router(offers.router)
 app.include_router(users.router)
 app.include_router(stats.router)
+app.include_router(reference.router)
 
 frontend_dist = "frontend-react/dist"
 if os.path.exists(frontend_dist):

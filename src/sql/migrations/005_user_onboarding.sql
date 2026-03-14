@@ -1,4 +1,6 @@
 -- Migration: User Onboarding and Detailed Profiles
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- 1. Add onboarding_completed flag to users
 ALTER TABLE users
 ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT FALSE;

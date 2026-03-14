@@ -40,14 +40,17 @@ async def save_skills(
     if current_user != user_id:
         raise HTTPException(status_code=403, detail="Access denied")
     try:
+        # Missing list fields mean "keep current value"; an explicit [] means "clear it".
         return await repo.save_user_skills(
             user_id,
             body.skills,
             body.antiSkills,
-            highlighted_skills=body.highlightedSkills or [],
-            skipped_skills=body.skippedSkills or [],
+            highlighted_skills=body.highlightedSkills,
+            skipped_skills=body.skippedSkills,
             confirmed_tutorials=body.confirmedTutorials
         )
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         logger.exception("save_skills failed for user_id=%s: %s", user_id, e)
         raise HTTPException(status_code=500, detail=str(e))
@@ -64,6 +67,8 @@ async def save_onboarding(
     try:
         await repo.save_onboarding_full(user_id, body)
         return {"status": "success"}
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         logger.exception("Error saving onboarding for user_id=%s: %s", user_id, e)
         raise HTTPException(status_code=500, detail=str(e))

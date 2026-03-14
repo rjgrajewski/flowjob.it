@@ -2,6 +2,8 @@
 -- PostgreSQL does not support ALTER TABLE ... REORDER COLUMNS directly.
 -- We recreate the table with the desired column order:
 --   uuid, original_skill_name, canonical_skill_name, category, created_at
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 BEGIN;
 -- 1. Create new table with correct column order
 CREATE TABLE skills_new (

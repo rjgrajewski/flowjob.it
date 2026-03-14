@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { auth } from '../services/api.js';
+import { api, auth } from '../services/api.js';
 import { YearPicker } from '../components/YearPicker.jsx';
 
 const STEPS = [
@@ -19,6 +19,35 @@ const slideVariants = {
     center: { x: 0, opacity: 1, transition: { duration: 0.3 } },
     exit: (dir) => ({ x: dir > 0 ? -100 : 100, opacity: 0, transition: { duration: 0.2 } }),
 };
+
+const EXPERIENCE_DRAFT_ERROR = 'Add a start year or clear the draft experience entry before continuing.';
+
+function hasExperienceDraft(entry) {
+    return Boolean(
+        entry.job_title.trim() ||
+        entry.company_name.trim() ||
+        entry.description.trim() ||
+        entry.start_date ||
+        entry.end_date ||
+        entry.is_current
+    );
+}
+
+function hasCompleteExperience(entry) {
+    return Boolean(entry.job_title.trim() && entry.company_name.trim() && entry.start_date);
+}
+
+function normalizeExperience(entry) {
+    const description = typeof entry.description === 'string' ? entry.description.trim() : '';
+    return {
+        ...entry,
+        job_title: entry.job_title.trim(),
+        company_name: entry.company_name.trim(),
+        description: description || null,
+        start_date: entry.start_date || null,
+        end_date: entry.is_current || entry.end_date === '' ? null : entry.end_date,
+    };
+}
 
 
 export default function Onboarding() {
@@ -70,22 +99,11 @@ export default function Onboarding() {
         }
         const timer = setTimeout(async () => {
             try {
-                // Using RAD-on (OPI PIB) - official Polish source
-                const res = await fetch(`https://radon.nauka.gov.pl/opendata/polon/institutions?name=${uniQuery}&resultLevel=1`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setUniSuggestions(data.results.map(u => u.name));
-                }
+                const data = await api.getUniversities(uniQuery);
+                setUniSuggestions(data.results || []);
             } catch (e) {
                 console.error('Error fetching universities:', e);
-                // Fallback to Hipolabs if RAD-on fails
-                try {
-                    const res = await fetch(`http://universities.hipolabs.com/search?name=${uniQuery}&country=Poland`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        setUniSuggestions(data.map(u => u.name));
-                    }
-                } catch (err) { console.error(err); }
+                setUniSuggestions([]);
             }
         }, 500);
         return () => clearTimeout(timer);
@@ -110,11 +128,19 @@ export default function Onboarding() {
     };
 
     const goNext = async () => {
+        setError(null);
+
         // Auto-add current temp entries if they are filled
         if (STEPS[currentStepIdx].id === 'education' && tempEdu.school_name && tempEdu.field_of_study) {
             addEducation();
         }
-        if (STEPS[currentStepIdx].id === 'experience' && tempExp.job_title && tempExp.company_name) {
+        if (STEPS[currentStepIdx].id === 'experience') {
+            if (hasExperienceDraft(tempExp) && !hasCompleteExperience(tempExp)) {
+                setError(EXPERIENCE_DRAFT_ERROR);
+                return;
+            }
+        }
+        if (STEPS[currentStepIdx].id === 'experience' && hasCompleteExperience(tempExp)) {
             addExperience();
         }
 
@@ -136,6 +162,10 @@ export default function Onboarding() {
         setSaving(true);
         setError(null);
         try {
+            if (hasExperienceDraft(tempExp) && !hasCompleteExperience(tempExp)) {
+                throw new Error(EXPERIENCE_DRAFT_ERROR);
+            }
+
             // Include unsaved temp entries if they have basic info
             let finalEducation = [...education];
             if (tempEdu.school_name && tempEdu.field_of_study) {
@@ -144,14 +174,11 @@ export default function Onboarding() {
             }
 
             let finalExperience = [...experience];
-            if (tempExp.job_title && tempExp.company_name) {
-                finalExperience.push({ ...tempExp });
+            if (hasCompleteExperience(tempExp)) {
+                finalExperience.push(normalizeExperience(tempExp));
             }
 
-            const cleanExperience = finalExperience.map(exp => ({
-                ...exp,
-                end_date: exp.end_date === "" ? null : exp.end_date
-            }));
+            const cleanExperience = finalExperience.map(normalizeExperience);
 
             const finalProfile = {
                 ...profile,
@@ -186,10 +213,14 @@ export default function Onboarding() {
     };
 
     const addExperience = () => {
-        if (!tempExp.job_title || !tempExp.company_name || !tempExp.start_date) {
+        if (!hasCompleteExperience(tempExp)) {
+            if (hasExperienceDraft(tempExp)) {
+                setError(EXPERIENCE_DRAFT_ERROR);
+            }
             return;
         }
-        setExperience([...experience, { ...tempExp }]);
+        setError(null);
+        setExperience([...experience, normalizeExperience(tempExp)]);
         setTempExp({ job_title: '', company_name: '', description: '', start_date: '', end_date: '', is_current: false });
     };
 
@@ -390,7 +421,11 @@ export default function Onboarding() {
                     <input
                         type="checkbox"
                         checked={tempExp.is_current}
-                        onChange={e => setTempExp({ ...tempExp, is_current: e.target.checked })}
+                        onChange={e => setTempExp({
+                            ...tempExp,
+                            is_current: e.target.checked,
+                            end_date: e.target.checked ? '' : tempExp.end_date,
+                        })}
                     />
                     <label style={{ fontSize: '0.85rem' }}>I currently work here</label>
                 </div>
