@@ -322,7 +322,7 @@ if i > 1 and (i - 1) % ScrapingConfig.RESTART_BROWSER_EVERY == 0:
 - [Project README](../../README.md) - Project overview and architecture
 - [Atlas Normalization (infra)](../../infra/lambda/README.md) - Lambda deployment triggered by Scout
 
-> **Note:** The AWS Fargate deployment scripts (`aws/deployment/scout/`) are not tracked in git. They are maintained locally and contain IAM setup, ECS task definitions, and Dockerfile.
+> **Note:** The AWS Fargate deployment scripts live in [`infra/ecs/`](../../infra/ecs/) and are tracked in git. They contain IAM setup, ECS task definitions, and Dockerfile.
 
 ---
 

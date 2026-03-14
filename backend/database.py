@@ -19,9 +19,7 @@ async def init_db_pool():
             os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv("AWS_BEDROCK_SECRET_ACCESS_KEY")
 
         try:
-            import sys
-            sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-            from services.scout.aws_secrets import setup_database_credentials_from_secrets
+            from backend.aws_secrets import setup_database_credentials_from_secrets
             setup_database_credentials_from_secrets(secret_arn)
         except Exception as e:
             logger.error("Failed to load secrets from AWS: %s", e)

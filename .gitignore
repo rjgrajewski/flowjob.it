@@ -31,6 +31,7 @@ wheels/
 
 # Node
 node_modules/
+frontend/package-lock.json
 
 # Environment / secrets
 .env

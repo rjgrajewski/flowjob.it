@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 # Load env vars first
 load_dotenv()
 
-# Add src to path to allow importing scout modules
-sys.path.append(os.path.join(os.getcwd(), 'src'))
+# Add services to path to allow importing scout modules
+sys.path.append(os.path.join(os.getcwd(), 'services'))
 
 # Now we can import from scout
 from scout.db import init_db_connection

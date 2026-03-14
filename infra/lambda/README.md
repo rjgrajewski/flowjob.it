@@ -49,9 +49,9 @@ From the repository root:
 #   AWS_REGION=eu-central-1
 #   DATABASE_URL=postgresql://user:pass@host:5432/db
 #   SCRAPER_ROLE_ARN=arn:aws:iam::ACCOUNT:role/fargate-role-name  # optional
-./infra/deploy.sh
+./infra/lambda/deploy.sh
 ```
 
-On first deploy you can run `sam deploy --guided` from the `infra/` directory first to save the configuration (e.g. region, stack name). The `deploy.sh` script builds and deploys using parameters from `.env`.
+On first deploy you can run `sam deploy --guided` from the `infra/lambda/` directory first to save the configuration (e.g. region, stack name). The `deploy.sh` script builds and deploys using parameters from `.env`.
 
 After deploy, add to the Fargate task definition (scraper) the environment variables: `NORMALIZE_LAMBDA_NAME=aligno-normalize-skills` and `AWS_REGION=eu-central-1` (if different). That task’s role must have `lambda:InvokeFunction` permission for `aligno-normalize-skills` – when deploying, pass `SCRAPER_ROLE_ARN` and the template will add this permission.

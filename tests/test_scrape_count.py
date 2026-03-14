@@ -3,8 +3,8 @@ import os
 import sys
 import logging
 
-# Add src to path
-sys.path.append(os.path.join(os.getcwd(), 'src'))
+# Add services to path
+sys.path.append(os.path.join(os.getcwd(), 'services'))
 
 from scout.scrape_core import init_browser, collect_offer_links
 from scout.config import ScrapingConfig

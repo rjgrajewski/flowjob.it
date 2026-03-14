@@ -30,9 +30,8 @@ Complete deployment guide for running Aligno Scout (job offers module) as a **sc
 ## 📁 Architecture
 
 ```
-aws/deployment/scout/
+infra/ecs/
 ├── Dockerfile                    # Docker image for Scout
-├── .dockerignore                 # Files ignored by Docker build
 ├── ecs-task-definition.json.template  # ECS task definition template
 ├── deploy.sh                     # Main deployment script (update code)
 ├── quick-deploy.sh               # Full setup (infrastructure + app)
