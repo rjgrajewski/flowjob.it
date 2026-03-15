@@ -19,11 +19,11 @@ Parameters:
   DbEndpoint:
     Type: String
     Default: ""
-    Description: "RDS endpoint hostname (required when SECRET_ARN only contains username/password)."
+    Description: "RDS endpoint hostname (secret managed by RDS only stores credentials)."
   DbName:
     Type: String
     Default: ""
-    Description: "Database name (required when SECRET_ARN only contains username/password)."
+    Description: "Database name (secret managed by RDS only stores credentials)."
   ScraperRoleArn:
     Type: String
     Default: ""
