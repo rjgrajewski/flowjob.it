@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Setup AWS infrastructure for Aligno Scout
+# Setup AWS infrastructure for flowjob Scout
 set -e
 
 AWS_REGION="eu-central-1"
 VPC_CIDR="10.0.0.0/16"
 SUBNET_CIDR="10.0.1.0/24"
 
-echo "🏗️ Setting up AWS infrastructure for Aligno Scout..."
+echo "🏗️ Setting up AWS infrastructure for flowjob Scout..."
 
 # Create VPC
 echo "🌐 Creating VPC..."

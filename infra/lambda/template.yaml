@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: Aligno skill normalization Lambda (daily run).
+Description: flowjob skill normalization Lambda (daily run).
 
 Parameters:
   SecretArn:
@@ -37,7 +37,7 @@ Resources:
   NormalizeSkillsLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      LayerName: aligno-normalize-deps
+      LayerName: flowjob-normalize-deps
       ContentUri: ../layer/
       CompatibleRuntimes:
         - python3.12
@@ -48,7 +48,7 @@ Resources:
   NormalizeSkillsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: aligno-normalize-skills
+      FunctionName: flowjob-normalize-skills
       CodeUri: ../../services
       Handler: atlas.lambda_handler.handler
       Layers:

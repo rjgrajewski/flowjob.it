@@ -3,7 +3,7 @@
 # Test script for local Docker build and execution
 set -e
 
-echo "🧪 Testing Aligno Scout locally with Docker..."
+echo "🧪 Testing flowjob Scout locally with Docker..."
 echo ""
 
 # Detect platform

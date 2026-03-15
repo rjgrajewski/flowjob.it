@@ -150,13 +150,14 @@ flowjob/
 ├─ services/
 │  ├─ scout/                    # Web scraper (Playwright)
 │  └─ atlas/                    # Skill normalization (AWS Bedrock)
-├─ infra/                       # AWS SAM template for Atlas Lambda
-│  ├─ template.yaml
-│  ├─ deploy.sh
-│  └─ README.md
+├─ infra/                       # AWS deployment configs
+│  ├─ lambda/                   # SAM template for Atlas Lambda
+│  ├─ ecs/                      # ECS/Fargate deployment for Scout
+│  └─ layer/                    # Lambda dependency layer
+├─ scripts/                     # Operational & maintenance scripts
 ├─ api/                         # Vercel serverless entrypoint
 │  └─ index.py
-├─ tests/                       # Test scripts and SQL queries
+├─ tests/                       # Automated tests
 ├─ vercel.json                  # Vercel deployment config
 ├─ .env.example                 # Environment variables template
 ├─ requirements.txt             # Python dependencies

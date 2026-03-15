@@ -4,7 +4,7 @@
 
 ## 🚀 Overview
 
-Atlas is the intelligence layer of Aligno, responsible for analyzing raw job data collected by Scout. Currently, it focuses on **Skills Normalization** using specific Large Language Models (LLMs) via AWS Bedrock.
+Atlas is the intelligence layer of flowjob, responsible for analyzing raw job data collected by Scout. Currently, it focuses on **Skills Normalization** using specific Large Language Models (LLMs) via AWS Bedrock.
 
 ## 🔧 Key Features
 
@@ -25,7 +25,7 @@ atlas/
 
 ### Deployment
 
-Atlas is deployed as an **AWS Lambda** (`aligno-normalize-skills`) via SAM. After each successful scrape, Scout invokes this Lambda asynchronously. See [infra/lambda/README.md](../../infra/lambda/README.md) for deployment instructions.
+Atlas is deployed as an **AWS Lambda** (`flowjob-normalize-skills`) via SAM. After each successful scrape, Scout invokes this Lambda asynchronously. See [infra/lambda/README.md](../../infra/lambda/README.md) for deployment instructions.
 
 ## ⚙️ How it Works (`normalize_skills.py`)
 

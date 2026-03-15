@@ -1,6 +1,6 @@
-# Aligno Scout - AWS Fargate Deployment
+# flowjob Scout - AWS Fargate Deployment
 
-Complete deployment guide for running Aligno Scout (job offers module) as a **scheduled task on AWS Fargate** (daily at 2 AM UTC).
+Complete deployment guide for running flowjob Scout (job offers module) as a **scheduled task on AWS Fargate** (daily at 2 AM UTC).
 
 
 ## 📚 Table of Contents
@@ -64,7 +64,7 @@ Before deploying, ensure you have:
 
 ### Required Configuration File
 
-Create `.env` file in the **project root** (`Aligno/.env`) with:
+Create `.env` file in the **project root** (`flowjob/.env`) with:
   **Note:** Copy from `.env.example` and fill in your values.
     ```bash
     # AWS Account Configuration
@@ -72,11 +72,11 @@ Create `.env` file in the **project root** (`Aligno/.env`) with:
     AWS_REGION=eu-central-1
 
     # Secrets Manager
-    SECRET_ARN=arn:aws:secretsmanager:eu-central-1:123456789012:secret:aligno-db-credentials-xxxxxx
+    SECRET_ARN=arn:aws:secretsmanager:eu-central-1:123456789012:secret:flowjob-db-credentials-xxxxxx
 
     # Database Configuration (non-sensitive)
     AWS_DB_ENDPOINT=your-rds-endpoint.rds.amazonaws.com
-    AWS_DB_NAME=aligno_db
+    AWS_DB_NAME=flowjob_db
 
     # Local Development Fallback (if Secrets Manager fails)
     AWS_DB_USERNAME=your_username
@@ -177,9 +177,9 @@ Change schedule (example: 3 AM UTC).
 
 ## 🔗 Related Documentation
 
-- [Aligno README](../../README.md)
+- [flowjob README](../../README.md)
 - [Scout README](../../services/scout/README.md)
 
 ---
 
-**Proudly built and maintained by Rafal Grajewski for the Aligno project**
+**Proudly built and maintained by Rafal Grajewski for the flowjob project**

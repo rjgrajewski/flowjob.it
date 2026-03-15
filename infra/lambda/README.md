@@ -5,7 +5,7 @@
 Normalization is **triggered after scraping completes**, not at a fixed time:
 
 1. A schedule (EventBridge / Fargate/EC2) runs the **scraper** (scout).
-2. After a successful run, the scraper **invokes asynchronously** the Lambda `aligno-normalize-skills`.
+2. After a successful run, the scraper **invokes asynchronously** the Lambda `flowjob-normalize-skills`.
 3. The Lambda runs the full normalization pipeline (extract → normalize → deduplicate → link).
 
 This way normalization runs only on days when the scrape succeeded, and always on up-to-date data.
@@ -14,7 +14,7 @@ This way normalization runs only on days when the scrape succeeded, and always o
 
 Set the following in the environment where the scraper runs (e.g. Fargate, EC2, cron):
 
-- **`NORMALIZE_LAMBDA_NAME`** = `aligno-normalize-skills`  
+- **`NORMALIZE_LAMBDA_NAME`** = `flowjob-normalize-skills`  
   or **`NORMALIZE_LAMBDA_ARN`** = full ARN of the function  
 - **`AWS_REGION`** = e.g. `eu-central-1` (if different from default)
 
@@ -54,4 +54,4 @@ From the repository root:
 
 On first deploy you can run `sam deploy --guided` from the `infra/lambda/` directory first to save the configuration (e.g. region, stack name). The `deploy.sh` script builds and deploys using parameters from `.env`.
 
-After deploy, add to the Fargate task definition (scraper) the environment variables: `NORMALIZE_LAMBDA_NAME=aligno-normalize-skills` and `AWS_REGION=eu-central-1` (if different). That task’s role must have `lambda:InvokeFunction` permission for `aligno-normalize-skills` – when deploying, pass `SCRAPER_ROLE_ARN` and the template will add this permission.
+After deploy, add to the Fargate task definition (scraper) the environment variables: `NORMALIZE_LAMBDA_NAME=flowjob-normalize-skills` and `AWS_REGION=eu-central-1` (if different). That task’s role must have `lambda:InvokeFunction` permission for `flowjob-normalize-skills` – when deploying, pass `SCRAPER_ROLE_ARN` and the template will add this permission.

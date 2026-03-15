@@ -1,6 +1,6 @@
 """
 Invoke the skill-normalization Lambda after scraping completes.
-Set NORMALIZE_LAMBDA_NAME (e.g. aligno-normalize-skills) or NORMALIZE_LAMBDA_ARN in env.
+Set NORMALIZE_LAMBDA_NAME (e.g. flowjob-normalize-skills) or NORMALIZE_LAMBDA_ARN in env.
 If unset, no invocation (safe for local runs).
 """
 import logging

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Deploy script for Aligno Scout as ECS Scheduled Task (runs once per day)
+# Deploy script for flowjob Scout as ECS Scheduled Task (runs once per day)
 set -e
 
 # Load environment variables from .env file
@@ -21,7 +21,7 @@ SCHEDULE_RULE_NAME="scout-daily-schedule"
 # Cron: run daily at 2 AM UTC (4 AM CET in summer, 3 AM CET in winter)
 SCHEDULE_EXPRESSION="cron(0 2 * * ? *)"
 
-echo "🚀 Starting deployment of Aligno Scout as Scheduled Task..."
+echo "🚀 Starting deployment of flowjob Scout as Scheduled Task..."
 echo "   AWS Account: ${AWS_ACCOUNT_ID}"
 echo "   Region: ${AWS_REGION}"
 echo "   Schedule: Daily at 2 AM UTC"

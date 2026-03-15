@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Setup IAM roles and policies for Aligno Scout
+# Setup IAM roles and policies for flowjob Scout
 set -e
 
 # Load environment variables from .env file
@@ -16,7 +16,7 @@ AWS_REGION="${AWS_REGION:-eu-central-1}"
 AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:?AWS_ACCOUNT_ID must be set in .env file}"
 SECRET_ARN="${SECRET_ARN:?SECRET_ARN must be set in .env file}"
 
-echo "🔐 Setting up IAM roles and policies for Aligno Scout..."
+echo "🔐 Setting up IAM roles and policies for flowjob Scout..."
 echo "   AWS Account: ${AWS_ACCOUNT_ID}"
 echo "   Region: ${AWS_REGION}"
 

@@ -66,13 +66,13 @@ fi
 [ -n "$SCRAPER_ROLE_ARN" ] && PARAMS+=("ScraperRoleArn=$SCRAPER_ROLE_ARN")
 [ -n "$SECRET_ARN" ] && PARAMS+=("SecretArn=$SECRET_ARN")
 
-echo "Deploying (stack: aligno-normalize)..."
+echo "Deploying (stack: flowjob-normalize)..."
 sam deploy \
   --template-file .aws-sam/build/template.yaml \
-  --stack-name aligno-normalize \
+  --stack-name flowjob-normalize \
   --capabilities CAPABILITY_IAM \
   --parameter-overrides "${PARAMS[@]}" \
   --region "$AWS_REGION" \
   --resolve-s3
 
-echo "Done. Set in Fargate (scraper) env: NORMALIZE_LAMBDA_NAME=aligno-normalize-skills"
+echo "Done. Set in Fargate (scraper) env: NORMALIZE_LAMBDA_NAME=flowjob-normalize-skills"

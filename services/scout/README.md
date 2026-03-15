@@ -179,7 +179,7 @@ Create a `.env` file in the project root:
 ```bash
 # Database Configuration (AWS RDS)
 AWS_DB_ENDPOINT=your-rds-endpoint.amazonaws.com
-AWS_DB_NAME=aligno-db
+AWS_DB_NAME=flowjob-db
 AWS_DB_USERNAME=your_username
 AWS_DB_PASSWORD=your_password
 AWS_REGION=eu-central-1

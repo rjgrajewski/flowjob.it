@@ -3,7 +3,7 @@
 # Quick deploy script - runs all necessary steps
 set -e
 
-echo "🚀 Quick Deploy - Aligno Scout to AWS Fargate"
+echo "🚀 Quick Deploy - flowjob Scout to AWS Fargate"
 echo "================================================"
 echo "Deployment Mode: Scheduled Task (daily at 2 AM UTC)"
 echo "Estimated cost: ~\$18/month (Fargate + RDS)"
