@@ -65,6 +65,8 @@ if [ -z "$DATABASE_URL" ]; then
 else
   PARAMS+=("DatabaseUrl=$DATABASE_URL")
 fi
+[ -n "$AWS_DB_ENDPOINT" ] && PARAMS+=("DbEndpoint=$AWS_DB_ENDPOINT")
+[ -n "$AWS_DB_NAME" ] && PARAMS+=("DbName=$AWS_DB_NAME")
 [ -n "$SCRAPER_ROLE_ARN" ] && PARAMS+=("ScraperRoleArn=$SCRAPER_ROLE_ARN")
 [ -n "$SECRET_ARN" ] && PARAMS+=("SecretArn=$SECRET_ARN")
 

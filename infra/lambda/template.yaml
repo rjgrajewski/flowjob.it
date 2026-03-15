@@ -16,6 +16,14 @@ Parameters:
     Type: String
     Default: eu-central-1
     Description: AWS region for Bedrock and Lambda.
+  DbEndpoint:
+    Type: String
+    Default: ""
+    Description: "RDS endpoint hostname (required when SECRET_ARN only contains username/password)."
+  DbName:
+    Type: String
+    Default: ""
+    Description: "Database name (required when SECRET_ARN only contains username/password)."
   ScraperRoleArn:
     Type: String
     Default: ""
@@ -57,6 +65,8 @@ Resources:
         Variables:
           SECRET_ARN: !Ref SecretArn
           DATABASE_URL: !Ref DatabaseUrl
+          AWS_DB_ENDPOINT: !Ref DbEndpoint
+          AWS_DB_NAME: !Ref DbName
       # AWS_REGION is set automatically by Lambda; AwsRegion is only used in parameters (Schedule etc.)
       Policies:
         - Version: "2012-10-17"
