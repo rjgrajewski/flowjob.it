@@ -5,10 +5,10 @@ FROM mcr.microsoft.com/playwright/python:v1.52.0-noble
 WORKDIR /app
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+COPY requirements-scraper.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-scraper.txt
 
 # Copy application code
 COPY services/ ./services/
