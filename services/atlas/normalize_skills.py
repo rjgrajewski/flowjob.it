@@ -675,13 +675,7 @@ async def run_normalization_process(stage: str = 'all', clear_first: bool = Fals
         if clear_first:
             await clear_skills_tables(conn)
 
-        # Load environment variables for Bedrock
-        session = boto3.Session(
-            aws_access_key_id=os.getenv('AWS_BEDROCK_ACCESS_KEY'),
-            aws_secret_access_key=os.getenv('AWS_BEDROCK_SECRET_ACCESS_KEY'),
-            region_name=os.getenv('AWS_REGION')
-        )
-        bedrock = session.client(service_name='bedrock-runtime')
+        bedrock = boto3.client('bedrock-runtime', region_name=os.getenv('AWS_REGION', 'eu-central-1'))
 
         if stage in ['all', 'extract']:
             # 1. Extract Distinct (only if not skipping)
